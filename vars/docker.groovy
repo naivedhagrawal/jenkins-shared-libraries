@@ -1,36 +1,40 @@
 def call(String image = 'docker:latest') {
-    podTemplate(
+    return [
+        agentContainer: 'jnlp',
+        agentInjection: true,
         showRawYaml: false,
-        yaml: '''
-              apiVersion: v1
-              kind: Pod
-              spec:
-                volumes:
-                - name: docker-socket
-                  emptyDir: {}
-                containers:
-                - name: docker
-                  image: ${image}
-                  readinessProbe:
-                    exec:
-                      command: [sh, -c, "ls -S /var/run/docker.sock"]
-                    initialDelaySeconds: 5
+        containers: [
+            containerTemplate(name: 'jnlp', image: 'jenkins/inbound-agent:latest', alwaysPullImage: true, privileged: true),
+            containerTemplate(
+                name: 'docker',
+                image: image,
+                readinessProbe: [
+                    exec: [
+                        command: ['sh', '-c', 'ls -S /var/run/docker.sock']
+                    ],
+                    initialDelaySeconds: 5,
                     periodSeconds: 5
-                  command:
-                  - sleep
-                  args:
-                  - 99d
-                  volumeMounts:
-                  - name: docker-socket
-                    mountPath: /var/run
-                - name: docker-daemon
-                  image: docker:dind
-                  securityContext:
+                ],
+                command: ['sleep'],
+                args: ['99d'],
+                volumeMounts: [
+                    volumeMount(name: 'docker-socket', mountPath: '/var/run')
+                ]
+            ),
+            containerTemplate(
+                name: 'docker-daemon',
+                image: 'docker:dind',
+                securityContext: [
                     privileged: true
-                  command: ["dockerd"]
-                  volumeMounts:
-                  - name: docker-socket
-                    mountPath: /var/run
-        '''
-    )
+                ],
+                command: ['dockerd'],
+                volumeMounts: [
+                    volumeMount(name: 'docker-socket', mountPath: '/var/run')
+                ]
+            )
+        ],
+        volumes: [
+            emptyDirVolume(mountPath: '/var/run', name: 'docker-socket')
+        ]
+    ]
 }
