@@ -7,7 +7,7 @@ def call(String version = 'latest') {
             containerTemplate(name: 'jnlp', image: 'jenkins/inbound-agent:latest', alwaysPullImage: true, privileged: true),
             containerTemplate(
                 name: 'docker',
-                image: docker:${version},
+                image: "docker:${version}",
                 readinessProbe: [
                     exec: [
                         command: ['sh', '-c', 'ls -S /var/run/docker.sock']
