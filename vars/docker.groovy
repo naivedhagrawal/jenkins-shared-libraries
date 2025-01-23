@@ -18,7 +18,7 @@ def call(String version = 'latest') {
                 command: ['sleep'],
                 args: ['99d'],
                 volumeMounts: [
-                    volumeMount(name: 'docker-socket', mountPath: '/var/run')
+                    emptyDirVolume(mountPath: '/var/run', name: 'docker-socket')
                 ]
             ),
             containerTemplate(
@@ -29,7 +29,7 @@ def call(String version = 'latest') {
                 ],
                 command: ['dockerd'],
                 volumeMounts: [
-                    volumeMount(name: 'docker-socket', mountPath: '/var/run')
+                    emptyDirVolume(mountPath: '/var/run', name: 'docker-socket')
                 ]
             )
         ],
