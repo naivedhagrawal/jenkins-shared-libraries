@@ -8,7 +8,7 @@ spec:
     emptyDir: {}
   containers:
   - name: docker
-    image: $(image)
+    image: ${image}
     readinessProbe:
       exec:
         command: [sh, -c, "ls -S /var/run/docker.sock"]
