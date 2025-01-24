@@ -1,4 +1,4 @@
-// @Library('shared-library') _
+// @Library('Shared-Libraries') _
 // Fuction call --> docker(image:version)
 
 def call(String image = 'docker:latest') {

@@ -1,4 +1,4 @@
-// @Library('shared-library') _
+// @Library('Shared-Libraries') _
 // Fuction call --> pod(container name,image:version)
 
 def call(String name = 'jnlp', String image = 'jenkins/inbound-agent:latest') {
