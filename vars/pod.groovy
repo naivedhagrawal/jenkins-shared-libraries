@@ -14,5 +14,4 @@ def call(String name = 'jnlp', String image = 'jenkins/inbound-agent:latest') {
             - cat
             tty: true
         """
-    showRawYaml: false
 }
