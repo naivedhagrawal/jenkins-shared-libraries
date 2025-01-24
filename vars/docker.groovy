@@ -1,3 +1,6 @@
+// @Library('shared-library') _
+// Fuction call --> docker(image:version)
+
 def call(String image = 'docker:latest') {
     return """
 apiVersion: v1
