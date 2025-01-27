@@ -1,7 +1,7 @@
 // @Library('Shared-Libraries') _
 // Fuction call --> snyk(image:version)
 
-def call(String projectType, String SNYK_TOKEN, boolean runImageScan = false, String imageName = '', boolean runIacScan = false) {
+def call(String projectType, boolean runImageScan = false, String imageName = '', boolean runIacScan = false) {
     def snykImage = ''
     switch (projectType) {
         case 'maven':
@@ -17,7 +17,6 @@ def call(String projectType, String SNYK_TOKEN, boolean runImageScan = false, St
             error "Unsupported project type: ${projectType}"
     }
     def scanCommands = """
-        snyk auth ${SNYK_TOKEN}
         snyk test
     """
     if (runImageScan) {
@@ -48,15 +47,19 @@ def call(String projectType, String SNYK_TOKEN, boolean runImageScan = false, St
             - sh
             - -c
             - |
-              try {
-                  ${scanCommands}
-              } catch (Exception e) {
-                  echo "Snyk scan failed: ${e.getMessage()}"
-                  currentBuild.result = 'FAILURE'
+              withCredentials([string(credentialsId: 'SNYK_TOKEN', variable: 'SNYK_TOKEN')]) {
+                  try {
+                      snyk auth \$SNYK_TOKEN
+                      ${scanCommands}
+                  } catch (Exception e) {
+                      echo "Snyk scan failed: \${e.getMessage()}"
+                      currentBuild.result = 'FAILURE'
+                  }
               }
             tty: true
         """
 }
+
 
 
 
