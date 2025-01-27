@@ -16,6 +16,7 @@ def call(String projectType, boolean runImageScan = false, String imageName = ''
         default:
             error "Unsupported project type: ${projectType}"
     }
+    
     def scanCommands = """
         snyk test
     """
@@ -29,6 +30,7 @@ def call(String projectType, boolean runImageScan = false, String imageName = ''
         snyk iac test
         """
     }
+    
     return """
         apiVersion: v1
         kind: Pod
@@ -48,13 +50,12 @@ def call(String projectType, boolean runImageScan = false, String imageName = ''
             - -c
             - |
               withCredentials([string(credentialsId: 'SNYK_TOKEN', variable: 'SNYK_TOKEN')]) {
-                  snyk auth \\$SNYK_TOKEN && \
-                  ${scanCommands}
+                  snyk auth \\\\$SNYK_TOKEN && \\
+                  ${scanCommands.replaceAll('\n', ' \\\\n')}
               }
             tty: true
-        """
+    """
 }
-
 
 
 
