@@ -1,7 +1,7 @@
 // @Library('Shared-Libraries') _
 // Fuction call --> pod(image:version)
 
-def call(String image = 'none', boolean showRawYaml = false) {
+def call(String image = 'none') {
     return """
         apiVersion: v1
         kind: Pod
