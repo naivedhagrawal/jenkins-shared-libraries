@@ -11,7 +11,7 @@ def call(String projectType, boolean runImageScan = false, String imageName = ''
     switch (projectType) {
         case 'maven':
             snykImage = 'snyk/snyk:maven'
-            error "Unsupported project type: ${projectType}. Supported project types are: maven, node, python."
+            break
         case 'node':
             snykImage = 'snyk/snyk:node'
             break
