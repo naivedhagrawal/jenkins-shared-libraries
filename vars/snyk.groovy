@@ -16,21 +16,17 @@ def call(String projectType, boolean runImageScan = false, String imageName = ''
         default:
             error "Unsupported project type: ${projectType}"
     }
-    
-    def scanCommands = """
-        snyk test
-    """
+
+    // Prepare the scan commands
+    def scanCommands = "snyk test"
     if (runImageScan) {
-        scanCommands += """
-        snyk test --docker ${imageName}
-        """
+        scanCommands += "\nsnyk test --docker ${imageName}"
     }
     if (runIacScan) {
-        scanCommands += """
-        snyk iac test
-        """
+        scanCommands += "\nsnyk iac test"
     }
-    
+
+    // Return the Kubernetes YAML for the pod
     return """
         apiVersion: v1
         kind: Pod
@@ -44,12 +40,13 @@ def call(String projectType, boolean runImageScan = false, String imageName = ''
             - -c
             - |
               withCredentials([string(credentialsId: 'SNYK_TOKEN', variable: 'SNYK_TOKEN')]) {
-                  snyk auth \$SNYK_TOKEN && \\
-                  ${scanCommands.replaceAll("\n", " \\\n")}
+                snyk auth \$SNYK_TOKEN && \\
+                ${scanCommands.replaceAll("\n", " \\\n")}
               }
             tty: true
     """
 }
+
 
 
 
