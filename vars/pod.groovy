@@ -1,7 +1,7 @@
 // @Library('Shared-Libraries') _
 // Fuction call --> pod(container name,image:version)
 
-def call(String name = 'jnlp', String image = 'jenkins/inbound-agent:latest') {
+def call(String name = 'jnlp', String image = 'jenkins/inbound-agent:latest', boolean showRawYaml = false) {
     return """
         apiVersion: v1
         kind: Pod

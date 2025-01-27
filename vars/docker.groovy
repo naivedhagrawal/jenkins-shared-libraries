@@ -1,7 +1,7 @@
 // @Library('Shared-Libraries') _
 // Fuction call --> docker(image:version)
 
-def call(String image = 'docker:latest') {
+def call(String image = 'docker:latest', boolean showRawYaml = false) {
     return """
 apiVersion: v1
 kind: Pod
