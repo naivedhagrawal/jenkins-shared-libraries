@@ -45,7 +45,7 @@ def call(String projectType, boolean runImageScan = false, String imageName = ''
             - |
               withCredentials([string(credentialsId: 'SNYK_TOKEN', variable: 'SNYK_TOKEN')]) {
                   snyk auth \$SNYK_TOKEN && \\
-                  ${scanCommands}
+                  ${scanCommands.replaceAll("\n", " \\\n")}
               }
             tty: true
     """
