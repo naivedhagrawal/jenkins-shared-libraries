@@ -48,13 +48,8 @@ def call(String projectType, boolean runImageScan = false, String imageName = ''
             - -c
             - |
               withCredentials([string(credentialsId: 'SNYK_TOKEN', variable: 'SNYK_TOKEN')]) {
-                  try {
-                      snyk auth \\$SNYK_TOKEN
-                      ${scanCommands}
-                  } catch (Exception e) {
-                      echo "Snyk scan failed: \${e.getMessage()}"
-                      currentBuild.result = 'FAILURE'
-                  }
+                  snyk auth \\$SNYK_TOKEN
+                  ${scanCommands}
               }
             tty: true
         """
