@@ -8,7 +8,7 @@ def call() {
         spec:
           containers:
           - name: snyk
-            image: naivedh/snyk-image:latest
+            image: snyk/snyk
             imagePullPolicy: Always
             command:
             - cat
