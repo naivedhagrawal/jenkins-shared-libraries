@@ -40,12 +40,6 @@ def call(String projectType, boolean runImageScan = false, String imageName = ''
             image: ${snykImage}
             imagePullPolicy: Always
             command:
-            - cat
-            tty: true
-          - name: scanner
-            image: snyk/snyk-cli
-            imagePullPolicy: Always
-            command:
             - sh
             - -c
             - |
