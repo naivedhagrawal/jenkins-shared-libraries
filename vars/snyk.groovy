@@ -44,7 +44,7 @@ def call(String projectType, boolean runImageScan = false, String imageName = ''
     }
 
     // Return the Kubernetes YAML for the pod
-        return """
+    return """
     apiVersion: v1
     kind: Pod
     spec:
@@ -63,5 +63,5 @@ def call(String projectType, boolean runImageScan = false, String imageName = ''
             ${scanCommands.replaceAll("\n", " \\\n")}
           }
         tty: true
-        """
+    """
 }
