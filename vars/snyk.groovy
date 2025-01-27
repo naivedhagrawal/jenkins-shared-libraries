@@ -41,9 +41,5 @@ def call(String projectType, boolean runImageScan = false, String imageName = ''
                 ${scanCommands.replaceAll("\n", " \\\n")}
               }
             tty: true
-          - name: jnlp
-            image: jenkins/inbound-agent
-            args: ['\$(JENKINS_URL)', '\$(SECRET)', '\$(JENKINS_AGENT_NAME)']
-            tty: true
     """
 }
