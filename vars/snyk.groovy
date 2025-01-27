@@ -17,7 +17,7 @@ def call(String projectType, String snykToken, boolean runImageScan = false, Str
             error "Unsupported project type: ${projectType}"
     }
     def scanCommands = """
-        snyk auth ${snykToken}
+        snyk auth ${SNYK_TOKEN}
         snyk test
     """
     if (runImageScan) {
