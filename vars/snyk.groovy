@@ -1,7 +1,7 @@
 // @Library('Shared-Libraries') _
-// Fuction call --> pod(image:version)
+// Fuction call --> snyk(image:version)
 
-def call(String projectType) {
+def call(String projectType, String snykToken, boolean runImageScan = false, String imageName = '', boolean runIacScan = false) {
     def snykImage = ''
     switch (projectType) {
         case 'maven':
@@ -16,6 +16,20 @@ def call(String projectType) {
         default:
             error "Unsupported project type: ${projectType}"
     }
+    def scanCommands = """
+        snyk auth ${snykToken}
+        snyk test
+    """
+    if (runImageScan) {
+        scanCommands += """
+        snyk test --docker ${imageName}
+        """
+    }
+    if (runIacScan) {
+        scanCommands += """
+        snyk iac test
+        """
+    }
     return """
         apiVersion: v1
         kind: Pod
@@ -27,8 +41,38 @@ def call(String projectType) {
             command:
             - cat
             tty: true
+          - name: scanner
+            image: snyk/snyk-cli
+            imagePullPolicy: Always
+            command:
+            - sh
+            - -c
+            - |
+              try {
+                  ${scanCommands}
+              } catch (Exception e) {
+                  echo "Snyk scan failed: ${e.getMessage()}"
+                  currentBuild.result = 'FAILURE'
+              }
+            tty: true
         """
 }
+
+
+
+
+/* Pipeline usage
+
+stage('Snyk Scan') {
+            steps {
+                container('scanner') {
+                    script {
+                        snykImageSelector('maven', 'your-container-image', env.SNYK_TOKEN, true, true)
+                    }
+                }
+            
+*/
+
 
 /* Images
 Current images
