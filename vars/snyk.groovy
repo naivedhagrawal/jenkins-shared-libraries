@@ -1,5 +1,5 @@
 // @Library('Shared-Libraries') _
-// Fuction call --> snyk(image:version)
+// Fuction call --> snyk(arguments)
 
 def call(String projectType, boolean runImageScan = false, String imageName = '', boolean runIacScan = false) {
     def snykImage = ''
@@ -47,32 +47,18 @@ def call(String projectType, boolean runImageScan = false, String imageName = ''
             - sh
             - -c
             - |
-              withCredentials([string(credentialsId: 'SNYK_TOKEN', variable: 'SNYK_TOKEN')]) {
-                  try {
-                      snyk auth \$SNYK_TOKEN
-                      ${scanCommands}
-                  } catch (Exception e) {
-                      echo "Snyk scan failed: \${e.getMessage()}"
-                      currentBuild.result = 'FAILURE'
-                  }
+              try {
+                  ${scanCommands}
+              } catch (Exception e) {
+                  echo "Snyk scan failed: \${e.getMessage()}"
+                  currentBuild.result = 'FAILURE'
               }
             tty: true
         """
 }
 
 
-
-
-
 /* Pipeline usage
-
-stage('Snyk Scan') {
-            steps {
-                container('scanner') {
-                    script {
-                        snykImageSelector('maven', 'your-container-image', env.SNYK_TOKEN, true, true)
-                    }
-                }
             
 */
 
