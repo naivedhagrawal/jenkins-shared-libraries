@@ -52,7 +52,7 @@ def call(String projectType, boolean runImageScan = false, String imageName = ''
                       snyk auth \\$SNYK_TOKEN
                       ${scanCommands}
                   } catch (Exception e) {
-                      echo "Snyk scan failed: \\${e.getMessage()}"
+                      echo "Snyk scan failed: \${e.getMessage()}"
                       currentBuild.result = 'FAILURE'
                   }
               }
