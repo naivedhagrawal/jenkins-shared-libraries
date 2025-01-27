@@ -1,7 +1,7 @@
 // @Library('Shared-Libraries') _
 // Fuction call --> snyk(image:version)
 
-def call(String projectType, String snykToken, boolean runImageScan = false, String imageName = '', boolean runIacScan = false) {
+def call(String projectType, String SNYK_TOKEN, boolean runImageScan = false, String imageName = '', boolean runIacScan = false) {
     def snykImage = ''
     switch (projectType) {
         case 'maven':
