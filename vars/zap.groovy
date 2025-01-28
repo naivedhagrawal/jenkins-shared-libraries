@@ -12,10 +12,5 @@ spec:
     command:
       - cat
     tty: true
-    env:
-      - name: ZAP_PATH
-        value: "/zap/zap.sh"
-      - name: HOME
-        value: "/home/zap"
 """
 }
