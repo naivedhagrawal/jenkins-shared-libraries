@@ -1,7 +1,10 @@
+@Grab('org.yaml:snakeyaml:2.0') // Add SnakeYAML dependency
+
 import io.fabric8.kubernetes.api.model.Pod
+import org.yaml.snakeyaml.Yaml
 
 def call(List stagesConfig, String gitUrl = '', String defaultBranch = 'main') {
-    def POD_LABEL = "jenkins-agent-${UUID.randomUUID().toString()}" // Define POD_LABEL
+    def POD_LABEL = "jenkins-agent-${UUID.randomUUID().toString()}"
 
     stagesConfig.each { stageConfig ->
         if (!stageConfig.name || !stageConfig.podImage || !stageConfig.podImageVersion) {
@@ -12,11 +15,10 @@ def call(List stagesConfig, String gitUrl = '', String defaultBranch = 'main') {
         def branch = stageConfig.branch ?: defaultBranch
         def podTemplateName = stageConfig.podTemplate ?: 'podTemplate.yaml'
 
-        // Load and configure the pod template (correctly)
         def pod = loadPodTemplate(podTemplateName, stageConfig, containerName)
 
         pod {
-            label(POD_LABEL) // Set the label on the pod
+            label(POD_LABEL)
             node(POD_LABEL) {
                 stage(stageConfig.name) {
                     checkout scm: [
@@ -38,22 +40,26 @@ def call(List stagesConfig, String gitUrl = '', String defaultBranch = 'main') {
     }
 }
 
-
 def loadPodTemplate(String podTemplateName, Map stageConfig, String containerName) {
-    def pod = readYaml(libraryResource("kubernetes/${podTemplateName}")) as Pod
+    def yaml = new Yaml()
+    def podYaml = libraryResource("kubernetes/${podTemplateName}")
+    def pod = yaml.load(podYaml) as LinkedHashMap // Load as LinkedHashMap first
 
-    // Set the image and version
+    // Convert to Pod object (more robust)
+    def mapper = new com.fasterxml.jackson.databind.ObjectMapper()
+    pod = mapper.convertValue(pod, Pod.class)
+
+    // Set image and version
     pod.spec.containers.each { container ->
-        if (container.name == containerName || container.name == "{{CONTAINER_NAME}}") { // Check both existing name and placeholder
+        if (container.name == containerName || container.name == "{{CONTAINER_NAME}}") {
             container.image = "${stageConfig.podImage}:${stageConfig.podImageVersion}"
         }
     }
-        // Set the name if it exists
-        pod.spec.containers.each { container ->
-        if (container.name == "{{CONTAINER_NAME}}") { // Check both existing name and placeholder
+
+    pod.spec.containers.each { container ->
+        if (container.name == "{{CONTAINER_NAME}}") {
             container.name = containerName
         }
     }
-
     return pod
 }
