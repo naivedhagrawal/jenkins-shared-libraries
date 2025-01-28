@@ -5,7 +5,7 @@ kind: Pod
 spec:
   containers:
   - name: zap
-    image: owasp/zap-stable:latest # Use a specific version!
+    image: zaproxy/zap-stable # Use a specific version!
     ports:
     - containerPort: 8080 # ZAP's default port
 """
