@@ -7,7 +7,7 @@ metadata:
 spec:
   containers:
   - name: zap
-    image: owasp/zap-stable  # Or owasp/zap-weekly
+    image: zaproxy/zap-stable
     ports:
     - containerPort: 8080 # ZAP API port
     - containerPort: 8090 # ZAP UI port (optional, for debugging)
