@@ -5,26 +5,31 @@ metadata:
     some-label: dind
 spec:
   securityContext:
-    runAsUser: 0
+    runAsUser: 0  # Running as root to enable Docker-in-Docker functionality
   containers:
+    # Main container for Jenkins agent
     - name: "{{CONTAINER_NAME}}"
       image: "{{POD_IMAGE}}:{{POD_IMAGE_VERSION}}"
       imagePullPolicy: Always
       args: ["jenkins-agent"]
       tty: true
       securityContext:
-        privileged: true
+        privileged: true  # Required for Docker-in-Docker
       volumeMounts:
         - name: docker-socket
-          mountPath: /var/run/docker.sock
+          mountPath: /var/run/docker.sock  # Mount Docker socket to allow Docker commands
+
+    # Docker-in-Docker container (used for running Docker commands inside the pod)
     - name: dind
-      image: "docker:20.10-dind"
+      image: "docker:20.10-dind"  # Official Docker-in-Docker image
       imagePullPolicy: Always
       securityContext:
-        privileged: true
+        privileged: true  # Privileged mode to allow Docker operations
       volumeMounts:
         - name: docker-socket
-          mountPath: /var/run/docker.sock
+          mountPath: /var/run/docker.sock  # Sharing the Docker socket with the main container
+
   volumes:
+    # Volume to share the Docker socket between containers
     - name: docker-socket
-      emptyDir: {}
+      emptyDir: {}  # Temporary directory used for sharing the Docker socket
