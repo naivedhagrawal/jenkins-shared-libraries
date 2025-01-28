@@ -1,7 +1,7 @@
-@Grab('org.yaml:snakeyaml:2.0') // Add SnakeYAML dependency
-
+@Grab('org.yaml:snakeyaml:2.0')
 import io.fabric8.kubernetes.api.model.Pod
 import org.yaml.snakeyaml.Yaml
+import com.fasterxml.jackson.databind.ObjectMapper
 
 def call(List stagesConfig, String gitUrl = '', String defaultBranch = 'main') {
     def POD_LABEL = "jenkins-agent-${UUID.randomUUID().toString()}"
@@ -17,9 +17,11 @@ def call(List stagesConfig, String gitUrl = '', String defaultBranch = 'main') {
 
         def pod = loadPodTemplate(podTemplateName, stageConfig, containerName)
 
-        pod {
-            label(POD_LABEL)
-            node(POD_LABEL) {
+        // CORRECT WAY TO USE THE POD OBJECT
+        kubernetes.pod(pod).start() // Start the pod
+
+        try {
+            node(POD_LABEL) {  // Use the label to connect to the started pod
                 stage(stageConfig.name) {
                     checkout scm: [
                         $class: 'GitSCM',
@@ -36,20 +38,21 @@ def call(List stagesConfig, String gitUrl = '', String defaultBranch = 'main') {
                     }
                 }
             }
+        } finally {
+            kubernetes.pod(pod).delete() // Ensure pod deletion even if errors occur
         }
     }
 }
 
+
 def loadPodTemplate(String podTemplateName, Map stageConfig, String containerName) {
     def yaml = new Yaml()
     def podYaml = libraryResource("kubernetes/${podTemplateName}")
-    def pod = yaml.load(podYaml) as LinkedHashMap // Load as LinkedHashMap first
+    def pod = yaml.load(podYaml) as LinkedHashMap
 
-    // Convert to Pod object (more robust)
-    def mapper = new com.fasterxml.jackson.databind.ObjectMapper()
+    def mapper = new ObjectMapper()
     pod = mapper.convertValue(pod, Pod.class)
 
-    // Set image and version
     pod.spec.containers.each { container ->
         if (container.name == containerName || container.name == "{{CONTAINER_NAME}}") {
             container.image = "${stageConfig.podImage}:${stageConfig.podImageVersion}"
