@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    some-label: value
+spec:
+  containers:
+    - name: "{{CONTAINER_NAME}}"
+      image: "{{POD_IMAGE}}:{{POD_IMAGE_VERSION}}"
+      imagePullPolicy: Always
+      args: ["jenkins-agent"]
+      tty: true
+      resources:
+        requests:
+          memory: "512Mi"
+          cpu: "500m"
+        limits:
+          memory: "1Gi"
+          cpu: "1000m"
