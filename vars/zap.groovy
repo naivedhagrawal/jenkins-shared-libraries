@@ -3,7 +3,7 @@ def call() {
 apiVersion: v1
 kind: Pod
 metadata:
-  name: zap-pod
+  name: zap
 spec:
   containers:
   - name: zap
