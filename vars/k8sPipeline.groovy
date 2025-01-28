@@ -1,5 +1,5 @@
 // k8sPipeline.groovy
-@GrabResolver(name='jenkins', rootDir='https://repo.jenkins-ci.org/public/')
+@GrabResolver(name='jenkins', root='https://repo.jenkins-ci.org/public/')
 @Grab('org.jenkins-ci.plugins:kubernetes:4306.vc91e951ea_eb_d') // Replace with the correct version
 @Grab('org.yaml:snakeyaml:2.0')
 import io.fabric8.kubernetes.api.model.Pod
