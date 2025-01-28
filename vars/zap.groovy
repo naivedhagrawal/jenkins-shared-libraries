@@ -10,7 +10,14 @@ spec:
     - containerPort: 8080 # ZAP's default port
     imagePullPolicy: Always
     command:
-      - cat
+      - /zap/zap.sh
+      - -daemon
+      - -port
+      - "8080"
+      - -config
+      - api.disablekey=true
+      - -newsession
+      - /tmp/zap-session
     tty: true
 """
 }
