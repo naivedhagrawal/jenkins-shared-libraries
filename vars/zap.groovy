@@ -19,5 +19,8 @@ spec:
       - -newsession
       - /tmp/zap-session
     tty: true
+    env:
+      - name: ZAP_HOME
+        value: /temp/zap/home
 """
 }
