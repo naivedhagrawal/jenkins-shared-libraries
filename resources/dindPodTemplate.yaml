@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    some-label: dind
+spec:
+  securityContext:
+    runAsUser: 0
+  containers:
+    - name: "{{CONTAINER_NAME}}"
+      image: "{{POD_IMAGE}}:{{POD_IMAGE_VERSION}}"
+      imagePullPolicy: Always
+      args: ["jenkins-agent"]
+      tty: true
+      securityContext:
+        privileged: true
+      volumeMounts:
+        - name: docker-socket
+          mountPath: /var/run/docker.sock
+    - name: dind
+      image: "docker:20.10-dind"
+      imagePullPolicy: Always
+      securityContext:
+        privileged: true
+      volumeMounts:
+        - name: docker-socket
+          mountPath: /var/run/docker.sock
+  volumes:
+    - name: docker-socket
+      emptyDir: {}

@@ -10,7 +10,9 @@ def call(List stagesConfig) {
         // Set the branch (default to 'main' if not specified)
         def branch = stageConfig.branch ?: 'main'
 
-        def podTemplate = libraryResource('kubernetes/podTemplate.yaml')
+        // Select pod template (default or dind)
+        def podTemplateName = stageConfig.podTemplate ?: 'podTemplate.yaml'
+        def podTemplate = libraryResource("kubernetes/${podTemplateName}")
         podTemplate = podTemplate.replace('{{POD_IMAGE}}', stageConfig.podImage)
                                  .replace('{{POD_IMAGE_VERSION}}', stageConfig.podImageVersion)
                                  .replace('{{CONTAINER_NAME}}', containerName)
