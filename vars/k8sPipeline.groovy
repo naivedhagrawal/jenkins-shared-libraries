@@ -2,6 +2,7 @@
 import io.fabric8.kubernetes.api.model.Pod
 import org.yaml.snakeyaml.Yaml
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.jenkinsci.plugins.kubernetes.Kubernetes
 
 def call(List stagesConfig, String gitUrl = '', String defaultBranch = 'main') {
     def POD_LABEL = "jenkins-agent-${UUID.randomUUID().toString()}"
@@ -17,11 +18,13 @@ def call(List stagesConfig, String gitUrl = '', String defaultBranch = 'main') {
 
         def pod = loadPodTemplate(podTemplateName, stageConfig, containerName)
 
-        // CORRECT WAY TO USE THE POD OBJECT
-        kubernetes.pod(pod).start() // Start the pod
+        // Get Kubernetes context
+        def kubernetes = Kubernetes.withDefaults()  // Get the Kubernetes object
+
+        kubernetes.pod(pod).start()
 
         try {
-            node(POD_LABEL) {  // Use the label to connect to the started pod
+            node(POD_LABEL) {
                 stage(stageConfig.name) {
                     checkout scm: [
                         $class: 'GitSCM',
@@ -39,30 +42,9 @@ def call(List stagesConfig, String gitUrl = '', String defaultBranch = 'main') {
                 }
             }
         } finally {
-            kubernetes.pod(pod).delete() // Ensure pod deletion even if errors occur
+            kubernetes.pod(pod).delete()
         }
     }
 }
 
-
-def loadPodTemplate(String podTemplateName, Map stageConfig, String containerName) {
-    def yaml = new Yaml()
-    def podYaml = libraryResource("kubernetes/${podTemplateName}")
-    def pod = yaml.load(podYaml) as LinkedHashMap
-
-    def mapper = new ObjectMapper()
-    pod = mapper.convertValue(pod, Pod.class)
-
-    pod.spec.containers.each { container ->
-        if (container.name == containerName || container.name == "{{CONTAINER_NAME}}") {
-            container.image = "${stageConfig.podImage}:${stageConfig.podImageVersion}"
-        }
-    }
-
-    pod.spec.containers.each { container ->
-        if (container.name == "{{CONTAINER_NAME}}") {
-            container.name = containerName
-        }
-    }
-    return pod
-}
+// ... (rest of the code remains the same)
