@@ -1,4 +1,4 @@
-def call(String name = 'jnlp', String image = 'jenkins/inbound-agent:latest', boolean showRawYaml = false) {
+def call(String name = 'jnlp', String image = 'jenkins/inbound-agent:latest') {
     return """
 apiVersion: v1
 kind: Pod
