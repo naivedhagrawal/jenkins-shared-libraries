@@ -1,6 +1,5 @@
 def call() {
-    return """
-apiVersion: v1
+    return '''apiVersion: v1
 kind: Pod
 spec:
   containers:
@@ -20,6 +19,5 @@ spec:
         - "-port"
         - "8080"  # Port ZAP listens on
         - "-config"
-        - "connection.requestTimeoutInMs=60000"  # Optional: Set request timeout to 60 seconds
-"""
+        - "connection.requestTimeoutInMs=60000"  # Optional: Set request timeout to 60 seconds'''
 }
