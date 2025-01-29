@@ -1,25 +1,26 @@
-def call() {
+def call(string TARGET_URL = '') {
     return """
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: v1
+kind: Pod
 metadata:
-  name: zap
+  name: zaproxy-pod
 spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: zap
-  template:
-    metadata:
-      labels:
-        app: zap
-    spec:
-      containers:
-        - name: zap
-          image: zaproxy/zap-stable:latest
-          args: ["zap.sh", "-daemon", "-port", "8080", "-host", "0.0.0.0"]
-          ports:
-            - containerPort: 8080
+  containers:
+    - name: zaproxy
+      image: zaproxy/zap-stable:latest
+      command: ["zap-baseline.py"]
+      args: ["-t", "${TARGET_URL}"]
+      securityContext:
+        runAsUser: 1000  # Assuming 'zap' user is mapped to UID 1000, adjust accordingly
+      volumeMounts:
+        - name: temp-volume
+          mountPath: /zap/wrk
+  volumes:
+    - name: temp-volume
+      hostPath:
+        path: /tmp
+        type: Directory
+
 
     """
 }
