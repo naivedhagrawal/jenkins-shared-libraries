@@ -15,12 +15,8 @@ spec:
     tty: true
   volumes:
   - name: temp-volume
-    hostPath:
-    path: /tmp
-    type: Directory
+    emptyDir: {}
   - name: output-volume
-    hostPath:
-    path: /tmp/zap-output
-    type: Directory
+    emptyDir: {}
 """
 }
