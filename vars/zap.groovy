@@ -1,6 +1,6 @@
 def call() {
     return """
-apiVersion: apps/v1
+apiVersion: v1
 kind: Pod
 spec:
   containers:
