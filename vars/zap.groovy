@@ -1,22 +1,14 @@
 def call() {
-    return '''
+    return """
 apiVersion: v1
 kind: Pod
 metadata:
-  name: zap-pod
+  name: zap
 spec:
   containers:
-    - name: zap-container
-      image: zaproxy/zap-stable
-      command: ["zap-webui"]
-      ports:
-        - containerPort: 8080
-        - containerPort: 8081
-      volumeMounts:
-        - name: zap-home
-          mountPath: /home/zap/.ZAP
-  volumes:
-    - name: zap-home
-      emptyDir: {}
-'''
+  - name: zap
+    image: zaproxy/zap-stable
+    command: ["/bin/sh", "-c"]
+    args: ["tail -f /dev/null"]
+"""
 }
