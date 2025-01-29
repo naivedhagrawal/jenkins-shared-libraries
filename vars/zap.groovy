@@ -1,11 +1,9 @@
 def call(String TARGET_URL = '') {
     return """apiVersion: v1
 kind: Pod
-metadata:
-  name: zaproxy-pod
 spec:
   containers:
-    - name: zaproxy
+    - name: zap
       image: zaproxy/zap-stable:latest
       command: ["zap-baseline.py"]
       args: ["-t", "${TARGET_URL}"]
