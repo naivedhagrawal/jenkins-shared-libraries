@@ -1,4 +1,4 @@
-def call(String name = 'jnlp', String image = 'jenkins/inbound-agent:latest') {
+def call() {
     return """
 apiVersion: v1
 kind: Pod
