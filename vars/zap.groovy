@@ -1,22 +1,25 @@
 def call() {
     return """
-apiVersion: v1
-kind: Pod
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  labels:
-    component: zap
+  name: zap
 spec:
-  volumes:
-    - name: zap-data
-      emptyDir: {}
-  containers:
-  - name: zap
-    image: zaproxy/zap-stable
-    args: ["zap.sh", "-daemon", "-host", "0.0.0.0", "-port", "8080"]
-    ports:
-    - containerPort: 8080
-    volumeMounts:
-    - name: zap-data
-      mountPath: /zap/.ZAP_HOME
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zap
+  template:
+    metadata:
+      labels:
+        app: zap
+    spec:
+      containers:
+        - name: zap
+          image: zaproxy/zap-stable:latest
+          args: ["zap.sh", "-daemon", "-port", "8080", "-host", "0.0.0.0"]
+          ports:
+            - containerPort: 8080
+
     """
 }
