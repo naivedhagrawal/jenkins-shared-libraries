@@ -1,4 +1,4 @@
-def call(String TARGET_URL = '') {
+def call() {
     return """apiVersion: v1
 kind: Pod
 spec:
