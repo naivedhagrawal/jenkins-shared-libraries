@@ -1,4 +1,4 @@
-def call(string TARGET_URL = '') {
+def call(String TARGET_URL = '') {
     return """
 apiVersion: v1
 kind: Pod
