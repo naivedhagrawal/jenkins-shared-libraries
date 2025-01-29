@@ -28,7 +28,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: zap-service
-  namespace: default
+  namespace: devops-tools
 spec:
   selector:
     app: zap-pod  # This should match the label on the pod
