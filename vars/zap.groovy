@@ -1,6 +1,5 @@
 def call(String TARGET_URL = '') {
-    return """
-apiVersion: v1
+    return """apiVersion: v1
 kind: Pod
 metadata:
   name: zaproxy-pod
@@ -15,12 +14,11 @@ spec:
       volumeMounts:
         - name: temp-volume
           mountPath: /zap/wrk
+      tty: true  # Enable TTY for the container
   volumes:
     - name: temp-volume
       hostPath:
         path: /tmp
         type: Directory
-
-
-    """
+"""
 }
