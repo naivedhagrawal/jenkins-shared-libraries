@@ -28,14 +28,14 @@ def call() {
             tty: true
             livenessProbe:
               httpGet:
-                path: / 
+                path: /JSON
                 port: 8080
               initialDelaySeconds: 10
               periodSeconds: 30
               failureThreshold: 3
             readinessProbe:
               httpGet:
-                path: / 
+                path: /JSON
                 port: 8080
               initialDelaySeconds: 5
               periodSeconds: 15
