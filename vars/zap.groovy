@@ -5,20 +5,9 @@ def call() {
         metadata:
           name: zap
         spec:
-          initContainers:
-          - name: init-chown
-            image: busybox
-            command: ["sh", "-c", "chown -R 1000:1000 /zap"]
-            volumeMounts:
-            - name: zap-data
-              mountPath: /zap/reports
-            - name: zap-wrk
-              mountPath: /zap/wrk
-            - name: zap-home
-              mountPath: /home/zap
           containers:
           - name: zap
-            image: zaproxy/zap-stable:latest
+            image: naivedh/owasp-zap:latest
             securityContext:
               runAsUser: 1000
               readOnlyRootFilesystem: false
