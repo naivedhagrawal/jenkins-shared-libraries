@@ -4,6 +4,8 @@ def call() {
         kind: Pod
         metadata:
           name: zap
+          labels:
+            app: zap
         spec:
           containers:
           - name: zap
