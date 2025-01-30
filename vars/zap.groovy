@@ -22,7 +22,7 @@ def call() {
             - |
               ZAP_HOME=\$(mktemp -d -p \${ZAP_HOME_ENV})
               /zap/zap.sh -daemon -host 0.0.0.0 -port 8080 -dir "\$ZAP_HOME" &
-              timeout 60 sh -c 'while ! curl --fail http://localhost:8080/health; do sleep 5; done'
+              timeout 60 sh -c 'while ! curl --fail -H "Accept: application/json" http://localhost:8080/health; do sleep 5; done'
               tail -f /dev/null
             volumeMounts:
             - name: zap-data
