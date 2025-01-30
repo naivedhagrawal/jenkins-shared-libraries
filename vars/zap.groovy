@@ -12,15 +12,18 @@ def call() {
               runAsUser: 1000
               readOnlyRootFilesystem: false
               fsGroup: 1000
+            env: # Define environment variable
+              - name: ZAP_HOME_ENV # Name of the env variable
+                value: /zap_home # Default path
             ports:
             - containerPort: 8080
             command: ["/bin/sh", "-c"]
             args:
             - |
-              ZAP_HOME=\$(mktemp -d)
-              /zap/zap.sh -daemon -host 0.0.0.0 -port 8080 -dir ${ZAP_HOME} & # Start ZAP
+              ZAP_HOME=\$(mktemp -d -p \${ZAP_HOME_ENV})
+              /zap/zap.sh -daemon -host 0.0.0.0 -port 8080 -dir "\$ZAP_HOME" &
               timeout 60 sh -c 'while ! curl --fail http://localhost:8080/health; do sleep 5; done'
-              tail -f /dev/null # Or some other long-running command
+              tail -f /dev/null
             volumeMounts:
             - name: zap-data
               mountPath: /zap/reports
