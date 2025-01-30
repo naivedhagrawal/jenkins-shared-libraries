@@ -19,7 +19,7 @@ def call() {
               readOnly: false
             - name: zap-wrk
               mountPath: /zap/wrk/data
-              subPath: wrk
+              subPath: data
               readOnly: false
             - name: zap-home
               mountPath: /home/zap/custom_data
