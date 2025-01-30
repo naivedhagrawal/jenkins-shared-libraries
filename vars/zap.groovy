@@ -8,6 +8,7 @@ def call() {
           containers:
           - name: zap
             image: naivedh/owasp-zap:latest
+            command: ["/zap/zap.sh", "-daemon"]
             securityContext:
               runAsUser: 1000
               readOnlyRootFilesystem: false
@@ -25,6 +26,18 @@ def call() {
               mountPath: /home/zap/custom_data
               subPath: custom_data
               readOnly: false
+            livenessProbe:
+              httpGet:
+                path: /
+                port: 8080
+              initialDelaySeconds: 10
+              periodSeconds: 5
+            readinessProbe:
+              httpGet:
+                path: /
+                port: 8080
+              initialDelaySeconds: 5
+              periodSeconds: 5
             tty: true
           volumes:
           - name: zap-data
