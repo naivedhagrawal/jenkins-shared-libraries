@@ -31,7 +31,7 @@ def call() {
             emptyDir: {}
           - name: zap-home
             emptyDir: {}
-          - name: zap-wrks
+          - name: zap-wrk
             emptyDir: {}
           restartPolicy: Always
 
