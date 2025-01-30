@@ -9,9 +9,9 @@ spec:
     runAsUser: 1000
     volumeMounts:
     - name: temp-volume
-      mountPath: /zap/wrk
+      mountPath: /zap
     - name: output-volume
-      mountPath: /zap/output
+      mountPath: /home/zap
     tty: true
   volumes:
   - name: temp-volume
