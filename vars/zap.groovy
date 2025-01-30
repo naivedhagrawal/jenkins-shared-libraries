@@ -9,7 +9,7 @@ def call() {
         spec:
           containers:
           - name: zap
-            image: naivedh/owasp-zap:latest
+            image: zaproxy/zap-bare:latest
             command: ["/zap/zap.sh", "-daemon", "-host", "127.0.0.1", "-port", "8080"]
             securityContext:
               runAsUser: 1000
@@ -28,20 +28,6 @@ def call() {
               mountPath: /home/zap/custom_data
               subPath: custom_data
               readOnly: false
-            livenessProbe:
-              httpGet:
-                path: /
-                port: 8080
-                host: 127.0.0.1
-              initialDelaySeconds: 30
-              periodSeconds: 10
-            readinessProbe:
-              httpGet:
-                path: /
-                port: 8080
-                host: 127.0.0.1
-              initialDelaySeconds: 30
-              periodSeconds: 10
             tty: true
           volumes:
           - name: zap-data
