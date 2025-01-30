@@ -17,8 +17,12 @@ def call() {
               mountPath: /zap/reports
               subPath: reports
               readOnly: false
+            - name: zap-wrk
+              mountPath: /zap/wrk
+              subPath: wrk
+              readOnly: false
             - name: zap-home
-              mountPath: /home/zap/custom_data  # `/home/zap` को प्रभावित किए बिना अलग डायरेक्टरी माउंट करें
+              mountPath: /home/zap/custom_data
               subPath: custom_data
               readOnly: false
             tty: true
@@ -26,7 +30,9 @@ def call() {
           - name: zap-data
             emptyDir: {}
           - name: zap-home
-            emptyDir: {}  # या PVC के लिए PersistentVolumeClaim उपयोग करें
+            emptyDir: {}
+          - name: zap-wrks
+            emptyDir: {}
           restartPolicy: Always
 
 """
