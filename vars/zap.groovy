@@ -49,5 +49,18 @@ def call() {
           - name: zap-wrk
             emptyDir: {}
           restartPolicy: Always
+        ---
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: zap-service
+        spec:
+          selector:
+            app: zap
+          ports:
+          - protocol: TCP
+            port: 8080 
+            targetPort: 8080 
+          type: NodePort
   """
 }
