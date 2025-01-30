@@ -8,7 +8,7 @@ def call() {
           initContainers:
           - name: init-chown
             image: busybox
-            command: ["sh", "-c", "mkdir -p /zap/wrk && touch /zap/wrk/zap.yaml && chown -R zap:zap /zap"]
+            command: ["sh", "-c", "chown -R 1000:1000 /zap"]
             volumeMounts:
             - name: zap-data
               mountPath: /zap/reports
@@ -20,9 +20,9 @@ def call() {
           - name: zap
             image: zaproxy/zap-stable:latest
             securityContext:
-              runAsUser: 1000  # Assuming zap user inside the container has UID 1000
+              runAsUser: 1000
               readOnlyRootFilesystem: false
-              fsGroup: 1000  # Ensure group permissions are also set
+              fsGroup: 1000
             volumeMounts:
             - name: zap-data
               mountPath: /zap/reports
