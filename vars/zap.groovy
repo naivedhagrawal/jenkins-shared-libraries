@@ -1,10 +1,10 @@
 def call() {
     return """
-apiVersion: v1
-kind: Pod
-spec:
-    containers:
-    - name: zap-daemon
+      apiVersion: v1
+      kind: Pod
+      spec:
+          containers:
+          - name: zap-daemon
             image: zaproxy/zap-bare:latest
             command: ["/zap/zap.sh", "-daemon", "-host", "127.0.0.1", "-port", "8080"]
             securityContext:
