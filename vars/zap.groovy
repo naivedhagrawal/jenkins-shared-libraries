@@ -26,10 +26,6 @@ def call() {
               subPath: custom_data
               readOnly: false
             tty: true
-            command:
-              - "/bin/bash"
-              - "-c"
-              - "zap.sh -daemon -port 8080"
           volumes:
           - name: zap-data
             emptyDir: {}
