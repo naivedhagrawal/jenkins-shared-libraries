@@ -8,7 +8,7 @@ spec:
   containers:
     - name: zap-daemon
       image: zaproxy/zap-bare:latest
-      command: ["/zap/zap.sh", "-daemon", "-host", "127.0.0.1", "-port", "8080"]
+      command: ["/zap/zap.sh", "-daemon", "-host", "127.0.0.1", "-port", "8081"]
       securityContext:
         runAsUser: 1000
         readOnlyRootFilesystem: false
