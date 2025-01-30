@@ -26,20 +26,6 @@ def call() {
               subPath: custom_data
               readOnly: false
             tty: true
-            livenessProbe:
-              httpGet:
-                path: /JSON
-                port: 8080
-              initialDelaySeconds: 10
-              periodSeconds: 30
-              failureThreshold: 3
-            readinessProbe:
-              httpGet:
-                path: /JSON
-                port: 8080
-              initialDelaySeconds: 5
-              periodSeconds: 15
-              failureThreshold: 3
             command:
               - "/bin/bash"
               - "-c"
