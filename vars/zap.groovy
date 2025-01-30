@@ -22,6 +22,7 @@ spec:
 
     - name: zap
       image: zaproxy/zap-bare:latest
+      command: ['cat']
       securityContext:
         runAsUser: 1000
         readOnlyRootFilesystem: false
