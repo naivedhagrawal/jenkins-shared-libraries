@@ -40,8 +40,11 @@ def call() {
                 path: /
                 port: 8080
                 host: 127.0.0.1
-              initialDelaySeconds: 5
+              initialDelaySeconds: 10
               periodSeconds: 5
+              failureThreshold: 3
+              successThreshold: 1
+              timeoutSeconds: 2
             tty: true
           volumes:
           - name: zap-data
