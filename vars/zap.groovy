@@ -11,6 +11,7 @@ def call() {
             securityContext:
               runAsUser: 1000
               readOnlyRootFilesystem: false
+              fsGroup: 1000
             volumeMounts:
             - name: zap-data
               mountPath: /zap/reports
