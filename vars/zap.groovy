@@ -28,18 +28,22 @@ def call() {
             tty: true
             livenessProbe:
               httpGet:
-                path: /
+                path: / 
                 port: 8080
               initialDelaySeconds: 10
               periodSeconds: 30
               failureThreshold: 3
             readinessProbe:
               httpGet:
-                path: /
+                path: / 
                 port: 8080
               initialDelaySeconds: 5
               periodSeconds: 15
               failureThreshold: 3
+            command:
+              - "/bin/bash"
+              - "-c"
+              - "zap.sh -daemon -port 8080"
           volumes:
           - name: zap-data
             emptyDir: {}
@@ -48,6 +52,5 @@ def call() {
           - name: zap-wrk
             emptyDir: {}
           restartPolicy: Always
-
   """
 }
