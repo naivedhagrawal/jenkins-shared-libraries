@@ -7,7 +7,7 @@ def call() {
         spec:
           containers:
           - name: zap
-            image: naivedh/owasp-zap:latest
+            image: zaproxy/zap-stable:latest
             securityContext:
               runAsUser: 1000
               readOnlyRootFilesystem: false
