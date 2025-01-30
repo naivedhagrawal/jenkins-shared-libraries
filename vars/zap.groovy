@@ -8,7 +8,7 @@ def call() {
           initContainers:
           - name: init-chown
             image: busybox
-            command: ["sh", "-c", "chown -R 1000:1000 /zap"]
+            command: ["sh", "-c", "mkdir -p /zap/wrk && touch /zap/wrk/zap.yaml && chown -R 1000:1000 /zap"]
             volumeMounts:
             - name: zap-data
               mountPath: /zap/reports
