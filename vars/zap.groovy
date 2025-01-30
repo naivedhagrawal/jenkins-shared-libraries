@@ -16,9 +16,11 @@ def call() {
             - name: zap-data
               mountPath: /zap/reports
               subPath: reports
+              readOnly: false
             - name: zap-home
               mountPath: /home/zap/custom_data  # `/home/zap` को प्रभावित किए बिना अलग डायरेक्टरी माउंट करें
               subPath: custom_data
+              readOnly: false
             tty: true
           volumes:
           - name: zap-data
