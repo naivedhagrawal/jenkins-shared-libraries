@@ -1,4 +1,4 @@
-def call(String image = 'docker:latest', boolean showRawYaml = false) {
+def call(String image = 'docker:latest') {
     return """
 apiVersion: v1
 kind: Pod
