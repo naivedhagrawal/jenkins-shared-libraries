@@ -21,7 +21,7 @@ spec:
       tty: true
 
     - name: zap
-      image: zaproxy/zap-bare:latest
+      image: zaproxy/zap-weekly:latest
       command: ['cat']
       securityContext:
         runAsUser: 1000
