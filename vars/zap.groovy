@@ -8,7 +8,7 @@ def call() {
           containers:
           - name: zap
             image: naivedh/owasp-zap:latest
-            command: ["/zap/zap.sh", "-daemon"]
+            command: ["/zap/zap.sh", "-daemon", "-host", "127.0.0.1", "-port", "8080"]
             securityContext:
               runAsUser: 1000
               readOnlyRootFilesystem: false
@@ -30,12 +30,14 @@ def call() {
               httpGet:
                 path: /
                 port: 8080
+                host: 127.0.0.1
               initialDelaySeconds: 10
               periodSeconds: 5
             readinessProbe:
               httpGet:
                 path: /
                 port: 8080
+                host: 127.0.0.1
               initialDelaySeconds: 5
               periodSeconds: 5
             tty: true
