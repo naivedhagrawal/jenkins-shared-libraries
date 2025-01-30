@@ -10,7 +10,7 @@ def call() {
           containers:
           - name: zap
             image: zaproxy/zap-bare:latest
-            command: ["/zap/zap.sh", "-daemon", "-host", "127.0.0.1", "-port", "8080"]
+            command: ["/zap/zap.sh", "-daemon", "-host", "127.0.0.1", "-port", "8080" , '-home' , '/home/zap/custom_data' ]
             securityContext:
               runAsUser: 1000
               readOnlyRootFilesystem: false
