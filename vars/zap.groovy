@@ -5,7 +5,7 @@ kind: Pod
 spec:
   containers:
     - name: zap
-      image: zaproxy/zap-stable
+      image: naivedh/owasp-zap:latest
       command: ["/bin/sh", "-c", "tail -f /dev/null"]
       securityContext:
         runAsUser: 1000
