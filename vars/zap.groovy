@@ -2,8 +2,6 @@ def call() {
     return """
 apiVersion: v1
 kind: Pod
-metadata:
-  name: zap-pod
 spec:
   containers:
     - name: zap
