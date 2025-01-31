@@ -36,8 +36,5 @@ spec:
     - name: zap-wrk
       persistentVolumeClaim:
         claimName: zap-pv-claim
-
-  restartPolicy: Always
-
 """
 }
