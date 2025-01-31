@@ -5,7 +5,7 @@ kind: Pod
 spec:
   containers:
     - name: zap
-      image: ghcr.io/zaproxy/zaproxy:weekly
+      image: zaproxy/zap-stable
       command: ['cat']
       securityContext:
         runAsUser: 1000
