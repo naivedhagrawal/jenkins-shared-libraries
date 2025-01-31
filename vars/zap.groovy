@@ -5,7 +5,7 @@ kind: Pod
 spec:
   containers:
     - name: zap
-      image: naivedh/owasp-zap:latest
+      image: zaproxy/zap-nightly
       command: ['cat']
       securityContext:
         runAsUser: 1000
