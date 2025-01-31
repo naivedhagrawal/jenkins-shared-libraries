@@ -1,4 +1,4 @@
-def call(String image = 'docker:latest') {
+def call(String name = 'docker' , String image = 'docker:latest') {
     return """
 apiVersion: v1
 kind: Pod
@@ -7,7 +7,7 @@ spec:
   - name: docker-socket
     emptyDir: {}
   containers:
-  - name: docker
+  - name: ${name}
     image: ${image}
     readinessProbe:
       exec:
