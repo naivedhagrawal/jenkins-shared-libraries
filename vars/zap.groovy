@@ -6,22 +6,8 @@ metadata:
   name: zap-pod
 spec:
   containers:
-    - name: zap-daemon
-      image: zaproxy/zap-bare:latest
-      command: ["/zap/zap.sh", "-daemon", "-host", "127.0.0.1", "-port", "8081"]
-      securityContext:
-        runAsUser: 1000
-        readOnlyRootFilesystem: false
-        fsGroup: 1000
-      volumeMounts:
-        - name: zap-home
-          mountPath: /home/zap/custom_data
-          subPath: custom_data
-          readOnly: false
-      tty: true
-
     - name: zap
-      image: naivedh/owasp-zap:latest
+      image: ghcr.io/zaproxy/zaproxy:weekly
       command: ['cat']
       securityContext:
         runAsUser: 1000
