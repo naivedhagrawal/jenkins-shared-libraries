@@ -17,6 +17,10 @@ spec:
           mountPath: /zap/wrk
           subPath: wrk
           readOnly: false
+        - name: zap-wrk
+          mountPath: /home/zap
+          subPath: zap
+          readOnly: false
       tty: true
 
   volumes:
