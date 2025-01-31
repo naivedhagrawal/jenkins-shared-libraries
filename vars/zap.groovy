@@ -19,8 +19,8 @@ spec:
           subPath: reports
           readOnly: false
         - name: zap-wrk
-          mountPath: /zap/wrk/data
-          subPath: data
+          mountPath: /zap/wrk
+          subPath: wrk
           readOnly: false
         - name: zap-home
           mountPath: /home/zap/custom_data
@@ -34,7 +34,8 @@ spec:
     - name: zap-home
       emptyDir: {}
     - name: zap-wrk
-      emptyDir: {}
+      persistentVolumeClaim:
+        claimName: zap-pv-claim
 
   restartPolicy: Always
 
