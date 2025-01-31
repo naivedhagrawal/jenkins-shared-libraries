@@ -5,10 +5,11 @@ kind: Pod
 spec:
   containers:
     - name: zap
-      image: zaproxy/zap-nightly
+      image: naivedh/owasp-zap:latest
       command: ['cat']
       securityContext:
         runAsUser: 1000
+        runAsGroup: 1000
         readOnlyRootFilesystem: false
         fsGroup: 1000
       volumeMounts:
