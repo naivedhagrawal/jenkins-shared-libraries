@@ -33,8 +33,5 @@ spec:
       emptyDir: {}
     - name: zap-wrk
       emptyDir: {}
-
-  restartPolicy: Always
-
 """
 }
