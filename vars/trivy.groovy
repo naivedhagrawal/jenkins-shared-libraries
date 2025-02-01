@@ -1,4 +1,4 @@
-def trivy() {
+def call() {
     return """
     apiVersion: v1
     kind: Pod
