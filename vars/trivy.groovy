@@ -10,9 +10,31 @@ def call() {
         image: aquasec/trivy:latest
         command: ["sleep"]
         args: ["999999"]
+        volumeMounts:
+        - name: docker-socket
+          mountPath: /var/run
       - name: docker
         image: docker:latest
         command: ["sleep"]
-        args: ["999999"]
+        args: ["99d"]
+        readinessProbe:
+          exec:
+            command: [sh, -c, "ls -S /var/run/docker.sock"]
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        volumeMounts:
+        - name: docker-socket
+          mountPath: /var/run
+      - name: docker-daemon
+        image: docker:dind
+        securityContext:
+          privileged: true
+        command: ["dockerd"]
+        volumeMounts:
+        - name: docker-socket
+          mountPath: /var/run
+      volumes:
+      - name: docker-socket
+        emptyDir: {}
     """
 }
