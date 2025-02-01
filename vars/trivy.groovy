@@ -33,7 +33,7 @@ spec:
       mountPath: /var/run
   - name: trivy
     image: aquasec/trivy:latest
-    command: ["sh", "-c"]
+    command: ["cat"]
     volumeMounts:
     - name: docker-socket
       mountPath: /var/run
