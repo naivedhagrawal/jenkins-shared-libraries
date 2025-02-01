@@ -8,6 +8,8 @@ spec:
   volumes:
   - name: docker-socket
     emptyDir: {}
+  - name: workspace
+    emptyDir: {}
   containers:
   - name: docker-daemon
     image: docker:dind
@@ -37,7 +39,5 @@ spec:
       mountPath: /var/run
     - name: workspace
       mountPath: /workspace
-  - name: workspace
-    emptyDir: {}
 """
 }
