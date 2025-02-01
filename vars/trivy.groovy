@@ -13,6 +13,8 @@ def call() {
         volumeMounts:
         - name: docker-socket
           mountPath: /var/run
+        - name: trivy-cache
+          mountPath: /root/.cache/trivy
       - name: docker
         image: docker:latest
         command: ["sleep"]
@@ -35,6 +37,8 @@ def call() {
           mountPath: /var/run
       volumes:
       - name: docker-socket
+        emptyDir: {}
+      - name: trivy-cache
         emptyDir: {}
     """
 }
