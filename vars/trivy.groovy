@@ -2,46 +2,42 @@ def call() {
     return """
 apiVersion: v1
 kind: Pod
+metadata:
+  name: trivy-scanner
 spec:
   volumes:
   - name: docker-socket
     emptyDir: {}
   containers:
-  - name: docker
-    image: docker:latest
-    readinessProbe:
-      exec:
-        command: [sh, -c, "ls -S /var/run/docker.sock"]
-      initialDelaySeconds: 5
-      periodSeconds: 5
-    command:
-    - sleep
-    args:
-    - 99d
-    volumeMounts:
-    - name: docker-socket
-      mountPath: /var/run
   - name: docker-daemon
     image: docker:dind
     securityContext:
       privileged: true
-    command: ["dockerd"]
+    command: ["dockerd", "--host", "tcp://0.0.0.0:2375", "--host", "unix:///var/run/docker.sock"]
+    volumeMounts:
+    - name: docker-socket
+      mountPath: /var/run
+  - name: docker
+    image: docker:latest
+    env:
+    - name: DOCKER_HOST
+      value: "tcp://localhost:2375"
+    command:
+    - sleep
+    args:
+    - "99d"
     volumeMounts:
     - name: docker-socket
       mountPath: /var/run
   - name: trivy
     image: aquasec/trivy:latest
-    command: ["trivy"]
-    args:
-    - "--quiet"
-    - "--no-progress"
-    - "--format"
-    - "json"
-    - "--output"
-    - "/tmp/trivy-report.json"
-    - "/var/run/docker.sock"
+    command: ["sh", "-c"]
     volumeMounts:
     - name: docker-socket
       mountPath: /var/run
+    - name: workspace
+      mountPath: /workspace
+  - name: workspace
+    emptyDir: {}
 """
 }
