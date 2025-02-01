@@ -34,6 +34,7 @@ spec:
   - name: trivy
     image: aquasec/trivy:latest
     command: ["cat"]
+    tty: true
     volumeMounts:
     - name: docker-socket
       mountPath: /var/run
