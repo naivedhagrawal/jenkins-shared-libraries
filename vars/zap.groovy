@@ -7,7 +7,7 @@ metadata:
 spec:
   containers:
     - name: zap
-      image: naivedh/owasp-zap:latest
+      image: zaproxy/zap-weekly:latest
       command: ['cat']
       securityContext:
         runAsUser: 1000
