@@ -1,3 +1,5 @@
+@Library('k8s-shared-lib') _
+
 pipeline {
     agent none
     environment {
