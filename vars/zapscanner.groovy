@@ -19,7 +19,7 @@ def call() {
                 steps {
                     container('zap') {
                         sh """
-                            zap-full-scan.py -t $TARGET_URL -J $ZAP_REPORT -l WARN -I
+                            zap-baseline.py -t $TARGET_URL -J $ZAP_REPORT -l WARN -I
                             mv /zap/wrk/${ZAP_REPORT} .
                         """
                         archiveArtifacts artifacts: "${env.ZAP_REPORT}"
