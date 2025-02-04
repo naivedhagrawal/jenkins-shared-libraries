@@ -31,7 +31,11 @@ API Scan - Scans APIs using OpenAPI, SOAP, or GraphQL definitions''',
                     container('zap') {
                         script {
                             if (params.target_URL.trim() == '') {
-                            error('Target URL cannot be empty.') }
+                                error('Target URL cannot be empty.')
+                            }
+                            if (params.scanType.trim() == 'api-scan' && params.apiDefinition == null) {
+                                error('API definition file is required for API scan.')
+                            }
                             if (params.scanType.trim() == 'full-scan') {
                                 sh 'zap-full-scan.py -t $TARGET_URL -J $ZAP_REPORT -l WARN -I'
                             }
