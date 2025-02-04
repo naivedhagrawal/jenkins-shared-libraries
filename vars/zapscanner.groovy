@@ -1,10 +1,9 @@
-def call() {    
+def call(String url = '') {    
     pipeline {
         agent none
         environment {
             ZAP_REPORT = 'zap-out.json'
             ZAP_SARIF = 'zap_report.sarif'
-            TARGET_URL = 'https://juice-shop.herokuapp.com/'
         }
 
         stages {
@@ -18,7 +17,7 @@ def call() {
                 steps {
                     container('zap') {
                         sh """
-                            zap-full-scan.py -t $TARGET_URL -J $ZAP_REPORT -l WARN -I
+                            zap-full-scan.py -t ${url} -J $ZAP_REPORT -l WARN -I
                             mv /zap/wrk/${ZAP_REPORT} .
                         """
                         archiveArtifacts artifacts: "${env.ZAP_REPORT}"
