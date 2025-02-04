@@ -23,7 +23,7 @@ def call() {
                             if (params.targetURL.trim() == '') {
                             error('Target URL cannot be empty.') }
                             echo "Target URL: ${params.targetURL}"
-                            sh 'zap-full-scan.py -t ${params.targetURL} -J $ZAP_REPORT -l WARN -I'
+                            sh 'zap-full-scan.py -t '${params.targetURL}' -J $ZAP_REPORT -l WARN -I'
                             sh 'mv /zap/wrk/${ZAP_REPORT} .'
                         }
                         archiveArtifacts artifacts: "${env.ZAP_REPORT}"
