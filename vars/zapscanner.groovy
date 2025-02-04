@@ -2,7 +2,7 @@ def call() {
     pipeline {
         agent none
         parameters {
-        string(name: 'targetURL', description: 'Target URL for ZAP scan')
+        string(name: 'targetURL', description: 'Target URL for DAST scan')
         }
         environment {
             ZAP_REPORT = 'zap-out.json'
@@ -23,7 +23,6 @@ def call() {
                         script {
                             if (params.targetURL.trim() == '') {
                             error('Target URL cannot be empty.') }
-                            echo "Target URL: ${params.targetURL}"
                             sh 'zap-full-scan.py -t $TARGET_URL -J $ZAP_REPORT -l WARN -I'
                             sh 'mv /zap/wrk/${ZAP_REPORT} .'
                         }
