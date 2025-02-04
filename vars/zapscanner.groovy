@@ -16,7 +16,7 @@ API Scan - Scans APIs using OpenAPI, SOAP, or GraphQL definitions''',
             ZAP_REPORT = 'zap-out.json'
             ZAP_SARIF = 'zap_report.sarif'
             TARGET_URL = "${params.target_URL?.trim()}"
-            API_FILE_PATH = "${params.apiDefinition}"
+            API_FILE = "${params.apiDefinition}"
         }
 
         stages {
@@ -26,7 +26,7 @@ API Scan - Scans APIs using OpenAPI, SOAP, or GraphQL definitions''',
                         if (!TARGET_URL || TARGET_URL == '') {
                             error('ERROR: Target URL cannot be empty.')
                         }
-                        if (params.scanType == 'api-scan' && (!API_FILE_PATH || API_FILE_PATH == '')) {
+                        if (params.scanType == 'api-scan' && (!API_FILE || API_FILE == '')) {
                             error('ERROR: API definition file is required for API scan.')
                         }
                     }
@@ -51,12 +51,17 @@ API Scan - Scans APIs using OpenAPI, SOAP, or GraphQL definitions''',
                                     sh "zap-baseline.py -t $TARGET_URL -J $ZAP_REPORT -l WARN -I"
                                     break
                                 case 'api-scan':
-                                    sh "zap-api-scan.py -t $TARGET_URL -f $API_FILE_PATH -J $ZAP_REPORT -l WARN -I"
+                                    sh "zap-api-scan.py -t $TARGET_URL -f $API_FILE -J $ZAP_REPORT -l WARN -I"
                                     break
                             }
                             sh 'mv /zap/wrk/${ZAP_REPORT} .' 
                         }
                         archiveArtifacts artifacts: "${ZAP_REPORT}"
+                        script {
+                            if (params.scanType == 'api-scan') {
+                                archiveArtifacts artifacts: "${API_FILE}"
+                            }
+                        }
                     }
                 }
             }
