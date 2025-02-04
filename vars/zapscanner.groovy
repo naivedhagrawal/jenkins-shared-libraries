@@ -7,7 +7,7 @@ def call(String url = '') {
         }
 
         stages {
-            stage('Owasp zap') {
+            stage('DAST SCANNING USING OWASP-ZAP') {
                 agent {
                     kubernetes {
                         yaml zap()
@@ -27,7 +27,7 @@ def call(String url = '') {
                         script {
                             def jsonToSarif = libraryResource('zap_json_to_sarif.py')
                             writeFile file: 'zap_json_to_sarif.py', text: jsonToSarif
-                            sh 'python3 zap_json_to_sarif.py ${inputJson} ${outputSarif}'
+                            sh 'python3 zap_json_to_sarif.py'
                         }
                         archiveArtifacts artifacts: "${env.ZAP_SARIF}"
                         recordIssues(
