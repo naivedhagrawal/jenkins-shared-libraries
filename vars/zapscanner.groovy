@@ -21,7 +21,7 @@ def call(String url = '') {
                     container('zap') {
                         script {
                             if (params.targetURL.trim() == '') {
-                            error('Target URL cannot be empty.')
+                            error('Target URL cannot be empty.') }
                             sh 'zap-full-scan.py -t ${params.targetURL} -J $ZAP_REPORT -l WARN -I'
                             sh 'mv /zap/wrk/${ZAP_REPORT} .'
                         }
