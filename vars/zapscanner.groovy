@@ -16,7 +16,6 @@ API Scan - Scans APIs using OpenAPI, SOAP, or GraphQL definitions''',
             ZAP_REPORT = 'zap-out.json'
             ZAP_SARIF = 'zap_report.sarif'
             TARGET_URL = "${params.target_URL?.trim()}"
-            API_FILE = "${params.apiDefinition}"
         }
 
         stages {
@@ -26,6 +25,7 @@ API Scan - Scans APIs using OpenAPI, SOAP, or GraphQL definitions''',
                         if ((params.scanType == 'full-scan' || params.scanType == 'baseline' ) && (!TARGET_URL || TARGET_URL == '')) {
                             error('ERROR: Target URL cannot be empty.')
                         }
+                        def API_FILE = params.apiDefinition
                         if (params.scanType == 'api-scan' && !new File(API_FILE).exists()) {
                             error('ERROR: API definition file is required for API scan.')
                         }
@@ -43,6 +43,7 @@ API Scan - Scans APIs using OpenAPI, SOAP, or GraphQL definitions''',
                 steps {
                     container('zap') {
                         script {
+                            def API_FILE = params.apiDefinition
                             switch (params.scanType) {
                                 case 'full-scan':
                                     sh "zap-full-scan.py -t $TARGET_URL -J $ZAP_REPORT -I"
