@@ -6,8 +6,8 @@ def call() {
             choice(
             name: 'scanType',
             description: '''Full Scan - Full scan including active attacks
-                            Baseline Scan - Passive scan without attacking the application
-                            API Scan - Scans APIs using OpenAPI, SOAP, or GraphQL definitions''',
+Baseline Scan - Passive scan without attacking the application
+API Scan - Scans APIs using OpenAPI, SOAP, or GraphQL definitions''',
             choices: ['full-scan','baseline','api-scan']
             )
             file(name: 'apiDefinition', description: 'API definition file for API scanning (OpenAPI/SOAP/GraphQL)')
