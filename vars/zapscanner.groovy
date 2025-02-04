@@ -3,7 +3,7 @@ def call() {
         agent none
         parameters {
         string(name: 'targetURL', description: 'Target URL for DAST scan')
-        string(name: 'ScanType', description: 'API Scan
+        string(name: 'ScanType', description: '''API Scan
                                                 Scans APIs using OpenAPI, SOAP, or GraphQL definitions
                                                 Active
 
@@ -13,7 +13,7 @@ def call() {
 
                                                 Full Scan
                                                 Full scan including active attacks
-                                                Passive + Active')
+                                                Passive + Active''')
         }
         environment {
             ZAP_REPORT = 'zap-out.json'
