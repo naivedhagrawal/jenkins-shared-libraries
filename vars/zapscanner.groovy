@@ -1,6 +1,9 @@
 def call(String url = '') {    
     pipeline {
         agent none
+        parameters {
+        string(name: 'targetURL')
+        }
         environment {
             ZAP_REPORT = 'zap-out.json'
             ZAP_SARIF = 'zap_report.sarif'
@@ -17,7 +20,7 @@ def call(String url = '') {
                 steps {
                     container('zap') {
                         sh """
-                            zap-full-scan.py -t ${url} -J $ZAP_REPORT -l WARN -I
+                            zap-full-scan.py -t ${params.targetURL} -J $ZAP_REPORT -l WARN -I
                             mv /zap/wrk/${ZAP_REPORT} .
                         """
                         archiveArtifacts artifacts: "${env.ZAP_REPORT}"
