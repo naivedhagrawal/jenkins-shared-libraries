@@ -63,17 +63,6 @@ API Scan - Scans APIs using OpenAPI, SOAP, or GraphQL definitions''',
                             }
                         }
                     }
-                }
-            }
-            
-            stage('Convert and Archive Report') {
-                agent {
-                    kubernetes {
-                        yaml python()
-                        showRawYaml false
-                    }
-                }
-                steps {
                     container('python') {
                         script {
                             def jsonToSarif = libraryResource('zap_json_to_sarif.py')
