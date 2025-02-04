@@ -27,7 +27,10 @@ spec:
           subPath: custom_data
           readOnly: false
       tty: true
-
+    - name: python
+      image: pyhton:latest
+      command: ['cat']
+      tty: true
   volumes:
     - name: zap-data
       emptyDir: {}
