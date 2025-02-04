@@ -1,8 +1,8 @@
-def call(String url = '') {    
+def call() {    
     pipeline {
         agent none
         parameters {
-        string(name: 'targetURL')
+        string(name: 'targetURL', description: 'Target URL for ZAP scan')
         }
         environment {
             ZAP_REPORT = 'zap-out.json'
