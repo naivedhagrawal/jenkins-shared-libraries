@@ -51,7 +51,7 @@ API Scan - Scans APIs using OpenAPI, SOAP, or GraphQL definitions''',
                                     sh "zap-baseline.py -t $TARGET_URL -J $ZAP_REPORT -l WARN -I"
                                     break
                                 case 'api-scan':
-                                    sh "zap-api-scan.py -t $TARGET_URL -f $API_FILE -J $ZAP_REPORT -l WARN -I"
+                                    sh "zap-api-scan.py -f $API_FILE -J $ZAP_REPORT -l WARN -I"
                                     break
                             }
                             sh 'mv /zap/wrk/${ZAP_REPORT} .' 
