@@ -25,8 +25,7 @@ API Scan - Scans APIs using OpenAPI, SOAP, or GraphQL definitions''',
                         if ((params.scanType == 'full-scan' || params.scanType == 'baseline' ) && (!TARGET_URL || TARGET_URL == '')) {
                             error('ERROR: Target URL cannot be empty.')
                         }
-                        def API_FILE = params.apiDefinition
-                        if (params.scanType == 'api-scan' && !new File(API_FILE).exists()) {
+                        if (params.scanType == 'api-scan' && (params.apiDefinition == null || params.apiDefinition.trim() == '')) {
                             error('ERROR: API definition file is required for API scan.')
                         }
                     }
@@ -46,13 +45,13 @@ API Scan - Scans APIs using OpenAPI, SOAP, or GraphQL definitions''',
                             def API_FILE = params.apiDefinition
                             switch (params.scanType) {
                                 case 'full-scan':
-                                    sh "zap-full-scan.py -t $TARGET_URL -J $ZAP_REPORT -I"
+                                    sh "zap-full-scan.py -t '$TARGET_URL' -J '$ZAP_REPORT' -I"
                                     break
                                 case 'baseline':
-                                    sh "zap-baseline.py -t $TARGET_URL -J $ZAP_REPORT -I"
+                                    sh "zap-baseline.py -t '$TARGET_URL' -J '$ZAP_REPORT' -I"
                                     break
                                 case 'api-scan':
-                                    sh "zap-api-scan.py -t $API_FILE -f $API_FILE -J $ZAP_REPORT -I"
+                                    sh "zap-api-scan.py -t '${API_FILE}' -f '${API_FILE}' -J '$ZAP_REPORT' -I"
                                     break
                             }
                             sh 'mv /zap/wrk/${ZAP_REPORT} .' 
