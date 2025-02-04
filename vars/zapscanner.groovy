@@ -1,5 +1,4 @@
 def call() {
-
     pipeline {
         agent none
         environment {
@@ -19,11 +18,12 @@ def call() {
                 steps {
                     container('zap') {
                         sh """
-                            zap-baseline.py -t $TARGET_URL -J $ZAP_REPORT -l WARN -I
-                            mv /zap/wrk/${ZAP_REPORT} .
+                            zap-full-scan.py -t $TARGET_URL -J $ZAP_REPORT -l WARN -I
+                            mv /zap/wrk/${ZAP_REPORT} .  # Move the generated report to the workspace
                         """
                         archiveArtifacts artifacts: "${env.ZAP_REPORT}"
                     }
+
                     container('python') {
                         sh """
                             cat << 'EOF' > zap_to_sarif.py
@@ -37,7 +37,7 @@ def call() {
                                 # Function to remove <p> tags from a string
                                 def remove_p_tags(obj):
                                     if isinstance(obj, str):
-                                        return re.sub(r'<p>.*?</p>', '', obj)
+                                        return re.sub(r'<p>.*?</p>', '', obj)  # Removing <p> tags from strings
                                     elif isinstance(obj, list):
                                         return [remove_p_tags(item) for item in obj]
                                     elif isinstance(obj, dict):
@@ -52,7 +52,7 @@ def call() {
                                 # Convert to SARIF format
                                 sarif_report = {
                                     "version": "2.1.0",
-                                    "\$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+                                    "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
                                     "runs": [{
                                         "tool": {
                                             "driver": {
@@ -66,7 +66,7 @@ def call() {
                                     }]
                                 }
 
-                                alerts = zap_data.get("site", [])[0].get("alerts", [])
+                                alerts = zap_data.get("site", [])[0].get("alerts", [])  # Assuming alerts are in the first site (http://juice-shop.herokuapp.com)
                                 severity_map = {"High": "error", "Medium": "warning", "Low": "note", "Informational": "none"}
 
                                 # Add alerts to the SARIF report
@@ -106,14 +106,16 @@ def call() {
                                     json.dump(sarif_report, sarif_file, indent=4)
 
                                 print(f"SARIF report generated and cleaned: {SARIF_FILE}")
-                                EOF
+                            EOF
 
-                                python3 zap_to_sarif.py
-                                """
+                            python3 zap_to_sarif.py  # Execute the Python script
+                        """
 
+                        // Archive both the SARIF report and Python script
                         archiveArtifacts artifacts: "${env.ZAP_SARIF}"
                         archiveArtifacts artifacts: "zap_to_sarif.py"
 
+                        // Record issues from the SARIF report
                         recordIssues(
                             enabledForFailure: true,
                             tool: sarif(pattern: "${env.ZAP_SARIF}", id: "zap-SARIF", name: "DAST Report")
