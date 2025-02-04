@@ -37,7 +37,7 @@ API Scan - Scans APIs using OpenAPI, SOAP, or GraphQL definitions''',
                                 error('API definition file is required for API scan.')
                             }
                             if (params.scanType.trim() == 'full-scan') {
-                                sh 'zap-full-scan.py -t $TARGET_URL -J $ZAP_REPORT -l WARN -I'
+                                sh 'zap-full-scan.py -t "${params.target_URL}" -J $ZAP_REPORT -l WARN -I'
                             }
                             if (params.scanType.trim() == 'baseline') {
                                 sh 'zap-baseline.py -t $TARGET_URL -J $ZAP_REPORT -l WARN -I'
