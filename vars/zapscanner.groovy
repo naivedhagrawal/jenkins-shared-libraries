@@ -7,7 +7,7 @@ def call() {
         environment {
             ZAP_REPORT = 'zap-out.json'
             ZAP_SARIF = 'zap_report.sarif'
-            TARGET_URL = '${params.targetURL}'
+            TARGET_URL = ${params.targetURL}
         }
 
         stages {
