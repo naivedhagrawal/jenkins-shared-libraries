@@ -112,6 +112,7 @@ def call() {
                                 """
 
                         archiveArtifacts artifacts: "${env.ZAP_SARIF}"
+                        archiveArtifacts artifacts: "zap_to_sarif.py"
 
                         recordIssues(
                             enabledForFailure: true,
