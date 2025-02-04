@@ -2,22 +2,21 @@ def call() {
     pipeline {
         agent none
         parameters {
-        string(name: 'targetURL', description: 'Target URL for DAST scan')
-        choice(
-            name: 'ScanType',
-            description: 'Select the type of security scan to perform',
-            choices: [
-                'api-scan',      // API Scan - Scans APIs using OpenAPI, SOAP, or GraphQL definitions
-                'baseline',      // Baseline Scan - Passive scan without attacking the application
-                'full-scan'      // Full Scan - Full scan including active attacks
-            ]
-        )
+            string(name: 'target_URL', description: 'Target URL for DAST scan')
+            choice(
+            name: 'scanType',
+            description: '''Full Scan - Full scan including active attacks
+                            Baseline Scan - Passive scan without attacking the application
+                            API Scan - Scans APIs using OpenAPI, SOAP, or GraphQL definitions''',
+            choices: ['full-scan','baseline','api-scan']
+            )
+            file(name: 'apiDefinition', description: 'API definition file for API scanning (OpenAPI/SOAP/GraphQL)')
         }
         environment {
             ZAP_REPORT = 'zap-out.json'
             ZAP_SARIF = 'zap_report.sarif'
-            TARGET_URL = "${params.targetURL}"
-            SCAN_TYPE = "${params.ScanType}"
+            TARGET_URL = "${params.target_URL}"
+            API_FILE_PATH = "${params.apiDefinition}"
         }
 
         stages {
@@ -31,9 +30,17 @@ def call() {
                 steps {
                     container('zap') {
                         script {
-                            if (params.targetURL.trim() == '') {
+                            if (params.target_URL.trim() == '') {
                             error('Target URL cannot be empty.') }
-                            sh '$SCAN_TYPE -t $TARGET_URL -J $ZAP_REPORT -l WARN -I'
+                            if (params.scanType.trim() == 'full-scan') {
+                                sh 'zap-full-scan.py -t $TARGET_URL -J $ZAP_REPORT -l WARN -I'
+                            }
+                            if (params.scanType.trim() == 'baseline') {
+                                sh 'zap-baseline.py -t $TARGET_URL -J $ZAP_REPORT -l WARN -I'
+                            }
+                            if (params.scanType.trim() == 'api-scan') {
+                                sh 'zap-api-scan.py -t $API_FILE_PATH -J $ZAP_REPORT -l WARN -I'
+                            }
                             sh 'mv /zap/wrk/${ZAP_REPORT} .'
                         }
                         archiveArtifacts artifacts: "${env.ZAP_REPORT}"
