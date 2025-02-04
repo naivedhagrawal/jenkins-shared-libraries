@@ -3,11 +3,23 @@ def call() {
         agent none
         parameters {
         string(name: 'targetURL', description: 'Target URL for DAST scan')
+        string(name: 'ScanType', description: 'API Scan
+                                                Scans APIs using OpenAPI, SOAP, or GraphQL definitions
+                                                Active
+
+                                                Basline Scan
+                                                Passive scan without attacking the application
+                                                Passive
+
+                                                Full Scan
+                                                Full scan including active attacks
+                                                Passive + Active')
         }
         environment {
             ZAP_REPORT = 'zap-out.json'
             ZAP_SARIF = 'zap_report.sarif'
             TARGET_URL = "${params.targetURL}"
+            SCAN_TYPE = "${params.ScanType}"
         }
 
         stages {
@@ -23,7 +35,7 @@ def call() {
                         script {
                             if (params.targetURL.trim() == '') {
                             error('Target URL cannot be empty.') }
-                            sh 'zap-full-scan.py -t $TARGET_URL -J $ZAP_REPORT -l WARN -I'
+                            sh '$SCAN_TYPE -t $TARGET_URL -J $ZAP_REPORT -l WARN -I'
                             sh 'mv /zap/wrk/${ZAP_REPORT} .'
                         }
                         archiveArtifacts artifacts: "${env.ZAP_REPORT}"
