@@ -23,7 +23,7 @@ API Scan - Scans APIs using OpenAPI, SOAP, or GraphQL definitions''',
             stage('Validate Parameters') {
                 steps {
                     script {
-                        if (!TARGET_URL || TARGET_URL == '') {
+                        if ((params.scanType == 'full-scan' || params.scanType == 'baseline' ) && (!TARGET_URL || TARGET_URL == '')) {
                             error('ERROR: Target URL cannot be empty.')
                         }
                         if (params.scanType == 'api-scan' && (!API_FILE || API_FILE == '')) {
