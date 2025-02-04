@@ -3,17 +3,15 @@ def call() {
         agent none
         parameters {
         string(name: 'targetURL', description: 'Target URL for DAST scan')
-        string(name: 'ScanType', description: '''API Scan
-                                                Scans APIs using OpenAPI, SOAP, or GraphQL definitions
-                                                Active
-
-                                                Basline Scan
-                                                Passive scan without attacking the application
-                                                Passive
-
-                                                Full Scan
-                                                Full scan including active attacks
-                                                Passive + Active''')
+        choice(
+            name: 'ScanType',
+            description: 'Select the type of security scan to perform',
+            choices: [
+                'api-scan',      // API Scan - Scans APIs using OpenAPI, SOAP, or GraphQL definitions
+                'baseline',      // Baseline Scan - Passive scan without attacking the application
+                'full-scan'      // Full Scan - Full scan including active attacks
+            ]
+        )
         }
         environment {
             ZAP_REPORT = 'zap-out.json'
