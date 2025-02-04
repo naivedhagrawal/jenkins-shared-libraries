@@ -1,6 +1,4 @@
-def call() {
-    @Library('k8s-shared-lib') _
-    
+def call() {    
     pipeline {
         agent none
         environment {
