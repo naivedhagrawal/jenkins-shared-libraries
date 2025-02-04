@@ -28,7 +28,7 @@ spec:
           readOnly: false
       tty: true
     - name: python
-      image: pyhton:latest
+      image: python:latest
       command: ['cat']
       tty: true
   volumes:
