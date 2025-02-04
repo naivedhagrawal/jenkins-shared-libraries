@@ -19,10 +19,12 @@ def call(String url = '') {
                 }
                 steps {
                     container('zap') {
-                        sh """
-                            zap-full-scan.py -t ${params.targetURL} -J $ZAP_REPORT -l WARN -I
-                            mv /zap/wrk/${ZAP_REPORT} .
-                        """
+                        script {
+                            if (params.targetURL.trim() == '') {
+                            error('Target URL cannot be empty.')
+                            sh 'zap-full-scan.py -t ${params.targetURL} -J $ZAP_REPORT -l WARN -I'
+                            sh 'mv /zap/wrk/${ZAP_REPORT} .'
+                        }
                         archiveArtifacts artifacts: "${env.ZAP_REPORT}"
                     }
 
