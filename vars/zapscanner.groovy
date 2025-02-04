@@ -45,13 +45,13 @@ API Scan - Scans APIs using OpenAPI, SOAP, or GraphQL definitions''',
                         script {
                             switch (params.scanType) {
                                 case 'full-scan':
-                                    sh "zap-full-scan.py -t $TARGET_URL -J $ZAP_REPORT -l WARN -I"
+                                    sh "zap-full-scan.py -t $TARGET_URL -J $ZAP_REPORT -I"
                                     break
                                 case 'baseline':
-                                    sh "zap-baseline.py -t $TARGET_URL -J $ZAP_REPORT -l WARN -I"
+                                    sh "zap-baseline.py -t $TARGET_URL -J $ZAP_REPORT -I"
                                     break
                                 case 'api-scan':
-                                    sh "zap-api-scan.py -f $API_FILE -J $ZAP_REPORT -l WARN -I"
+                                    sh "zap-api-scan.py -t $API_FILE -f $API_FILE -J $ZAP_REPORT -I"
                                     break
                             }
                             sh 'mv /zap/wrk/${ZAP_REPORT} .' 
