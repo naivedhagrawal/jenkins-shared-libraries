@@ -26,7 +26,7 @@ API Scan - Scans APIs using OpenAPI, SOAP, or GraphQL definitions''',
                         if ((params.scanType == 'full-scan' || params.scanType == 'baseline' ) && (!TARGET_URL || TARGET_URL == '')) {
                             error('ERROR: Target URL cannot be empty.')
                         }
-                        if (params.scanType == 'api-scan' && (!API_FILE || API_FILE == '')) {
+                        if (params.scanType == 'api-scan' && (!API_FILE || API_FILE == null)) {
                             error('ERROR: API definition file is required for API scan.')
                         }
                     }
