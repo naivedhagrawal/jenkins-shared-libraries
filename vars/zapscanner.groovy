@@ -10,13 +10,13 @@ Baseline Scan - Passive scan without attacking the application
 API Scan - Scans APIs using OpenAPI, SOAP, or GraphQL definitions''',
                 choices: ['full-scan', 'baseline', 'api-scan']
             )
-            file(name: 'apiDefinition', description: 'API definition file for API scanning (OpenAPI/SOAP/GraphQL)', required: false)
+            file(name: 'apiDefinition', description: 'API definition file for API scanning (OpenAPI/SOAP/GraphQL)')
         }
         environment {
             ZAP_REPORT = 'zap-out.json'
             ZAP_SARIF = 'zap_report.sarif'
-            TARGET_URL = params.target_URL?.trim()
-            API_FILE_PATH = params.apiDefinition
+            TARGET_URL = "${params.target_URL?.trim()}"
+            API_FILE_PATH = "${params.apiDefinition}"
         }
 
         stages {
