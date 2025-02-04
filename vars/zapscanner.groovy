@@ -108,7 +108,7 @@ def call() {
                                 print(f"SARIF report generated and cleaned: {SARIF_FILE}")
                                 EOF
 
-                                    python3 zap_to_sarif.py
+                                python3 zap_to_sarif.py
                                 """
 
                         archiveArtifacts artifacts: "${env.ZAP_SARIF}"
