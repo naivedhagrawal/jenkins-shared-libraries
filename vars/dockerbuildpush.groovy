@@ -18,7 +18,7 @@ def call(Map params) {
     }
 
     // Fixed report file name
-    def REPORT_FILE = "trivy-report.json"
+    def REPORT_FILE = "trivy-report.sarif"
 
     pipeline {
         agent {
