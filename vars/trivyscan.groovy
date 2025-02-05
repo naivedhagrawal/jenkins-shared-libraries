@@ -36,11 +36,15 @@ def call() {
                                 sh "trivy convert --format sarif --output ${trivy_report_sarif} ${trivy_report}"
                             } else {
                                 sh "trivy repository ${params.git_URL} -f json -o ${trivy_report}"
+                                sh "trivy repository ${params.git_URL} -f table -o ${trivy_report_table}"
                                 sh "trivy convert --format sarif --output ${trivy_report_sarif} ${trivy_report}"
                             }
-                            
+                            recordIssues(
+                                enabledForFailure: true,
+                                tool: sarif(pattern: "${trivy_report_sarif}", id: "trivy-SARIF", name: "Trivy Scan Report"))
                             archiveArtifacts artifacts: trivy_report
                             archiveArtifacts artifacts: trivy_report_sarif
+                            archiveArtifacts artifacts: trivy_report_table
                         }
                     }
                 }
