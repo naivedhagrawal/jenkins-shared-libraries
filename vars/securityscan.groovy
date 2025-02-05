@@ -1,4 +1,9 @@
-def call(Boolean gitleak = true, Boolean owaspdependency = true, Boolean semgrep = true) {
+def call(Map params = [:]) {
+    // Assign default values if not provided
+    Boolean gitleak = params.get('gitleak', true)
+    Boolean owaspdependency = params.get('owaspdependency', true)
+    Boolean semgrep = params.get('semgrep', true)
+
     return {
         if (gitleak) {
             stage('Gitleaks Scan') {
