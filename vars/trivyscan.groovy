@@ -26,23 +26,19 @@ def call() {
                 steps {
                     container('trivy') {
                         script {
-                            def trivy_report = 'trivy-report.json'
-                            def trivy_report_table = 'trivy-report.table'
+                            def trivy_report_table = 'trivy-report'
                             def trivy_report_sarif = 'trivy-report.sarif'
                             
                             if (params.image_name) {
-                                sh "trivy image ${params.image_name} -f json -o ${trivy_report}"
                                 sh "trivy image ${params.image_name} -f table -o ${trivy_report_table}"
-                                sh "trivy convert --format sarif --output ${trivy_report_sarif} ${trivy_report}"
+                                sh "trivy image ${params.image_name} -f sarif -o ${trivy_report_sarif}"
                             } else {
-                                sh "trivy repository ${params.git_URL} -f json -o ${trivy_report}"
                                 sh "trivy repository ${params.git_URL} -f table -o ${trivy_report_table}"
-                                sh "trivy convert --format sarif --output ${trivy_report_sarif} ${trivy_report}"
+                                sh "trivy repository ${params.git_URL} -f sarif -o ${trivy_report_sarif}"
                             }
                             recordIssues(
                                 enabledForFailure: true,
                                 tool: sarif(pattern: "${trivy_report_sarif}", id: "trivy-SARIF", name: "Trivy Scan Report"))
-                            archiveArtifacts artifacts: trivy_report
                             archiveArtifacts artifacts: trivy_report_sarif
                             archiveArtifacts artifacts: trivy_report_table
                         }
