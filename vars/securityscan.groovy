@@ -33,6 +33,7 @@ def call(Map params = [:]) {
                                 tool: sarif(
                                     pattern: "${GITLEAKS_REPORT}",
                                     id: "gitLeaks-SARIF"
+                                    name: "Gitleak Report"
                                 )
                             )
                             archiveArtifacts artifacts: "${GITLEAKS_REPORT}"
