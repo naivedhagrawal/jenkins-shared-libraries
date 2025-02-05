@@ -30,11 +30,11 @@ def call() {
                             def trivy_report_sarif = 'trivy-report.sarif'
                             
                             if (params.image_name) {
-                                sh "trivy image ${params.image_name} -f table -o ${trivy_report_table}"
-                                sh "trivy image ${params.image_name} -f sarif -o ${trivy_report_sarif}"
+                                sh "trivy image ${params.image_name} -f table -o ${trivy_report_table} --debug"
+                                sh "trivy image ${params.image_name} -f sarif -o ${trivy_report_sarif} --debug"
                             } else {
-                                sh "trivy repository ${params.git_URL} -f table -o ${trivy_report_table}"
-                                sh "trivy repository ${params.git_URL} -f sarif -o ${trivy_report_sarif}"
+                                sh "trivy repository ${params.git_URL} -f table -o ${trivy_report_table} --debug"
+                                sh "trivy repository ${params.git_URL} -f sarif -o ${trivy_report_sarif} --debug"
                             }
                             recordIssues(
                                 enabledForFailure: true,
