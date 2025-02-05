@@ -21,7 +21,12 @@ def call(Map params) {
     def REPORT_FILE = "trivy-report.json"
 
     pipeline {
-        agent none
+        agent {
+            kubernetes {
+                yaml trivy()
+                showRawYaml false
+            }
+        }
         environment {
             IMAGE_NAME = "${IMAGE_NAME}"
             IMAGE_TAG = "${IMAGE_TAG}"
@@ -32,38 +37,12 @@ def call(Map params) {
 
         stages {
             stage('Build Docker Image') {
-                agent {
-                    kubernetes {
-                        yaml docker('docker-build', 'docker:latest')
-                        showRawYaml false
-                    }
-                }
                 steps {
-                    container('docker-build') {
+                    container('docker') {
                         script {
                             try {
                                 withCredentials([string(credentialsId: 'NVD_API_KEY', variable: 'NVD_API_KEY')]) {
-                                    sh """
-                                        docker build --build-arg NVD_API_KEY=$NVD_API_KEY -t ${IMAGE_NAME}:${IMAGE_TAG} .
-                                    """
-
-                                    // Verify image exists
-                                    sh "docker images | grep '${IMAGE_NAME}' || { echo 'Docker image not found!'; exit 1; }"
-
-                                    // Save and compress the Docker image
-                                    echo "Saving and compressing Docker image..."
-                                    sh """
-                                        docker save ${IMAGE_NAME}:${IMAGE_TAG} | gzip > "${WORKSPACE}/${IMAGE_NAME}-${IMAGE_TAG}.tar.gz"
-                                    """
-
-                                    // Verify the compressed file
-                                    sh """
-                                        ls -lh "${WORKSPACE}/${IMAGE_NAME}-${IMAGE_TAG}.tar.gz"
-                                        gunzip -t "${WORKSPACE}/${IMAGE_NAME}-${IMAGE_TAG}.tar.gz" || { echo 'Compressed file is corrupt!'; exit 1; }
-                                    """
-
-                                    // Stash the Docker image
-                                    stash name: 'docker-image', includes: "${IMAGE_NAME}-${IMAGE_TAG}.tar.gz"
+                                    sh "docker build --build-arg NVD_API_KEY=${NVD_API_KEY} -t ${IMAGE_NAME}:${IMAGE_TAG} ."
                                 }
                             } catch (Exception e) {
                                 error "Build Docker Image failed: ${e.getMessage()}"
@@ -74,27 +53,7 @@ def call(Map params) {
             }
 
             stage('Trivy Scan') {
-                agent {
-                    kubernetes {
-                        yaml trivy()
-                        showRawYaml false
-                    }
-                }
                 steps {
-                    container('docker') {
-                        script {
-                            try {
-                                // Unstash the Docker image
-                                unstash 'docker-image'
-
-                                // Decompress and load the Docker image
-                                sh "gunzip ${WORKSPACE}/${IMAGE_NAME}-${IMAGE_TAG}.tar.gz"
-                                sh "docker load -i ${WORKSPACE}/${IMAGE_NAME}-${IMAGE_TAG}.tar"
-                            } catch (Exception e) {
-                                error "Failed to load Docker image: ${e.getMessage()}"
-                            }
-                        }
-                    }
                     container('trivy') {
                         script {
                             try {
@@ -116,31 +75,17 @@ def call(Map params) {
             }
 
             stage('Push Docker Image') {
-                agent {
-                    kubernetes {
-                        yaml docker('docker-push', 'docker:latest')
-                        showRawYaml false
-                    }
-                }
                 steps {
-                    container('docker-push') {
+                    container('docker') {
                         script {
                             try {
-                                // Unstash the Docker image
-                                unstash 'docker-image'
-
-                                // Decompress and load the Docker image
-                                sh "gunzip ${WORKSPACE}/${IMAGE_NAME}-${IMAGE_TAG}.tar.gz"
-                                sh "docker load -i ${WORKSPACE}/${IMAGE_NAME}-${IMAGE_TAG}.tar"
-
-                                // Push the Docker image to Docker Hub using the username and image tag
-                                withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIALS}", usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                                withCredentials([usernamePassword(credentialsId: DOCKER_CREDENTIALS, usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                                     echo "Logging into Docker Hub..."
-                                    sh '''
-                                        echo $PASSWORD | docker login -u $USERNAME --password-stdin
+                                    sh """
+                                        echo \$PASSWORD | docker login -u \$USERNAME --password-stdin
                                         docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKER_HUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}
                                         docker push ${DOCKER_HUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}
-                                    '''
+                                    """
                                 }
                             } catch (Exception e) {
                                 error "Push Docker Image failed: ${e.getMessage()}"
