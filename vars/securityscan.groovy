@@ -1,3 +1,10 @@
+/* @Library('k8s-shared-lib') _
+securityscan(
+    gitleak: true,
+    owaspdependency: true,
+    semgrep: true
+)*/
+
 def call(Map params = [:]) {
     def GITLEAKS_REPORT = 'gitleaks-report.sarif'
     def OWASP_DEP_REPORT = 'owasp-dep-report.sarif'
