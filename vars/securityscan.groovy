@@ -7,12 +7,6 @@ def call(Map params = [:]) {
         agent none
 
         stages {
-            stage('Checkout Code') {
-                agent none
-                steps {
-                    checkout scm // This will checkout the code from the repository
-                }
-            }
             stage('Gitleak Check') {
                 when {
                     expression { params.gitleak }
@@ -26,6 +20,7 @@ def call(Map params = [:]) {
                 steps {
                     script {
                         container('gitleak') {
+                            checkout scm
                             sh """
                                 gitleaks detect \
                                     --source=. \
