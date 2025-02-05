@@ -85,7 +85,7 @@ def call(Map params = [:]) {
                 }
                 agent {
                     kubernetes {
-                        yaml pod('semgrep', 'returntocorp/semgrep')
+                        yaml pod('semgrep', 'returntocorp/semgrep:latest')
                         showRawYaml false
                     }
                 }
