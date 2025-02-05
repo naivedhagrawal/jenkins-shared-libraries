@@ -4,7 +4,7 @@ def call(Map params = [:]) {
     Boolean semgrep = params.get('semgrep', true)
 
     pipeline {
-        agent any
+        agent none
         stages {
             if (gitleak) {
                 stage('Gitleaks Scan') {
