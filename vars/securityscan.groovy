@@ -16,19 +16,19 @@ def call(Map params = [:]) {
                     sh """
                         gitleaks detect \
                             --source=. \
-                            --report-path=${env.GITLEAKS_REPORT} \
+                            --report-path=${GITLEAKS_REPORT} \
                             --report-format sarif \
                             --exit-code=0
                     """
                     recordIssues(
                         enabledForFailure: true,
                         tool: sarif(
-                            pattern: "${env.GITLEAKS_REPORT}",
+                            pattern: "${GITLEAKS_REPORT}",
                             id: "gitLeaks-SARIF",
                             name: "GitLeaks-Report"
                         )
                     )
-                    archiveArtifacts artifacts: "${env.GITLEAKS_REPORT}"
+                    archiveArtifacts artifacts: "${GITLEAKS_REPORT}"
                 }
             }
         }
@@ -38,39 +38,37 @@ def call(Map params = [:]) {
         stage('OWASP Dependency Check') {
             agent {
                 kubernetes {
-                yaml pod('owasp', 'naivedh/owasp-dependency:latest')
-                showRawYaml false
+                    yaml pod('owasp', 'naivedh/owasp-dependency:latest')
+                    showRawYaml false
                 }
             }
             steps {
-            container('owasp') {
-                withCredentials([string(credentialsId: 'NVD_API_KEY', variable: 'NVD_API_KEY')]) {
-                    sh """
-                        dependency-check --scan . \
-                            --format SARIF \
-                            --out ${OWASP_DEP_REPORT} \
-                            --nvdApiKey ${env.NVD_API_KEY}
-                    """
-                    
-                    recordIssues(
-                        enabledForFailure: true,
-                        tool: sarif(
-                            pattern: "${OWASP_DEP_REPORT}",
-                            id: "owasp-dependency-check-SARIF",
-                            name: "owasp-dependency-check-Report"
+                container('owasp') {
+                    withCredentials([string(credentialsId: 'NVD_API_KEY', variable: 'NVD_API_KEY')]) {
+                        sh """
+                            dependency-check --scan . \
+                                --format SARIF \
+                                --out ${OWASP_DEP_REPORT} \
+                                --nvdApiKey ${env.NVD_API_KEY}
+                        """
+                        recordIssues(
+                            enabledForFailure: true,
+                            tool: sarif(
+                                pattern: "${OWASP_DEP_REPORT}",
+                                id: "owasp-dependency-check-SARIF",
+                                name: "OWASP Dependency Check Report"
+                            )
                         )
-                    )
-                    
-                    archiveArtifacts artifacts: "${OWASP_DEP_REPORT}"
+                        archiveArtifacts artifacts: "${OWASP_DEP_REPORT}"
+                    }
                 }
             }
-        }
         }
     }
 
     if (params.semgrep) {
         stage('Semgrep Scan') {
-           agent {
+            agent {
                 kubernetes {
                     yaml pod('semgrep','returntocorp/semgrep')
                     showRawYaml false
@@ -79,12 +77,17 @@ def call(Map params = [:]) {
             steps {
                 container('semgrep') {
                     sh """
-                    semgrep --config=auto --sarif --output ${env.SEMGREP_REPORT} .
+                        semgrep --config=auto --sarif --output ${SEMGREP_REPORT} .
                     """
                     recordIssues(
-                            enabledForFailure: true,
-                            tool: sarif(pattern: "${env.SEMGREP_REPORT}", id: "semgrep-SARIF", name: "semgrep-Report") )
-                    archiveArtifacts artifacts: "${env.SEMGREP_REPORT}"
+                        enabledForFailure: true,
+                        tool: sarif(
+                            pattern: "${SEMGREP_REPORT}",
+                            id: "semgrep-SARIF",
+                            name: "Semgrep Report"
+                        )
+                    )
+                    archiveArtifacts artifacts: "${SEMGREP_REPORT}"
                 }
             }
         }
