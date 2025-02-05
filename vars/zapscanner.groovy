@@ -56,6 +56,7 @@ API Scan - Scans APIs using OpenAPI, SOAP, or GraphQL definitions''',
                                     break
                             }
                             sh 'mv /zap/wrk/${ZAP_REPORT} .' 
+                            sh 'mv /zap/wrk/${ZAP_REPORT_HTML} .'
                         }
                         archiveArtifacts artifacts: "${ZAP_REPORT}"
                         archiveArtifacts artifacts: "${ZAP_REPORT_HTML}"
