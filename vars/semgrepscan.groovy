@@ -1,6 +1,6 @@
 def call() {
+    return {
     def SEMGREP_REPORT = 'semgrep-report.sarif'
-    
     stage('Semgrep Scan') {
             agent {
                 kubernetes {
@@ -19,5 +19,6 @@ def call() {
                     archiveArtifacts artifacts: "${env.SEMGREP_REPORT}"
                 }
             }
-        }
+    }
+}
 }
