@@ -14,6 +14,7 @@ API Scan - Scans APIs using OpenAPI, SOAP, or GraphQL definitions''',
         }
         environment {
             ZAP_REPORT = 'zap-out.json'
+            ZAP_REPORT_HTML = 'zap-out.html'
             ZAP_SARIF = 'zap_report.sarif'
             TARGET_URL = "${params.target_URL?.trim()}"
         }
@@ -45,18 +46,19 @@ API Scan - Scans APIs using OpenAPI, SOAP, or GraphQL definitions''',
                             def API_FILE = params.apiDefinition
                             switch (params.scanType) {
                                 case 'full-scan':
-                                    sh "zap-full-scan.py -t '$TARGET_URL' -J '$ZAP_REPORT' -I"
+                                    sh "zap-full-scan.py -t '$TARGET_URL' -J '$ZAP_REPORT' -r '$ZAP_REPORT_HTML' -I"
                                     break
                                 case 'baseline':
-                                    sh "zap-baseline.py -t '$TARGET_URL' -J '$ZAP_REPORT' -I"
+                                    sh "zap-baseline.py -t '$TARGET_URL' -J '$ZAP_REPORT' -r '$ZAP_REPORT_HTML' -I"
                                     break
                                 case 'api-scan':
-                                    sh "zap-api-scan.py -t '${API_FILE}' -f '${API_FILE}' -J '$ZAP_REPORT' -I"
+                                    sh "zap-api-scan.py -t '${API_FILE}' -f '${API_FILE}' -J '$ZAP_REPORT' -r '$ZAP_REPORT_HTML' -I"
                                     break
                             }
                             sh 'mv /zap/wrk/${ZAP_REPORT} .' 
                         }
                         archiveArtifacts artifacts: "${ZAP_REPORT}"
+                        archiveArtifacts artifacts: "${ZAP_REPORT_HTML}"
                         script {
                             if (params.scanType == 'api-scan') {
                                 archiveArtifacts artifacts: "${API_FILE}"
