@@ -102,7 +102,10 @@ def call(Map params) {
                                 sh "mkdir -p /root/.cache/trivy/db"
                                 sh "trivy image --download-db-only --timeout 60m --debug"
                                 echo "Scanning image with Trivy..."
-                                sh "trivy image ${IMAGE_NAME}:${IMAGE_TAG} --timeout 30m --format json --output ${REPORT_FILE} --debug"
+                                sh "trivy image ${IMAGE_NAME}:${IMAGE_TAG} --timeout 30m --format sarif --output ${REPORT_FILE} --debug"
+                                recordIssues(
+                                    enabledForFailure: true,
+                                    tool: sarif(pattern: "${env.REPORT_FILE}", id: "TRIVY-SARIF", name: "Trivy-Report" ))
                                 archiveArtifacts artifacts: "${REPORT_FILE}", fingerprint: true
                             } catch (Exception e) {
                                 error "Trivy scan failed: ${e.getMessage()}"
