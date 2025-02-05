@@ -32,7 +32,7 @@ def call(Map params = [:]) {
                                 enabledForFailure: true,
                                 tool: sarif(
                                     pattern: "${GITLEAKS_REPORT}",
-                                    id: "gitLeaks-SARIF"
+                                    id: "gitLeaks-SARIF",
                                     name: "Gitleak Report"
                                 )
                             )
