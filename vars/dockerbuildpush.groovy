@@ -23,11 +23,11 @@ def call(Map params) {
     pipeline {
         agent none
         environment {
-            IMAGE_NAME = IMAGE_NAME
-            IMAGE_TAG = IMAGE_TAG
-            DOCKER_HUB_USERNAME = DOCKER_HUB_USERNAME
-            DOCKER_CREDENTIALS = DOCKER_CREDENTIALS
-            REPORT_FILE = REPORT_FILE
+            IMAGE_NAME = "${IMAGE_NAME}"
+            IMAGE_TAG = "${IMAGE_TAG}"
+            DOCKER_HUB_USERNAME = "${DOCKER_HUB_USERNAME}"
+            DOCKER_CREDENTIALS = "${DOCKER_CREDENTIALS}"
+            REPORT_FILE = "${REPORT_FILE}"
         }
 
         stages {
