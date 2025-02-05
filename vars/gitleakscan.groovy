@@ -1,4 +1,5 @@
 def call() {
+    return {
     def GITLEAKS_REPORT = 'gitleaks-report.sarif'
     
     stage('Gitleak Check') {
@@ -31,4 +32,5 @@ def call() {
             }
         }
     }
+}
 }
