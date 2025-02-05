@@ -20,6 +20,7 @@ def call(Map params = [:]) {
                 steps {
                     script {
                         container('gitleak') {
+                            checkout scm
                             sh """
                                 gitleaks detect \
                                     --source=. \
@@ -54,6 +55,7 @@ def call(Map params = [:]) {
                     script {
                         container('owasp') {
                             withCredentials([string(credentialsId: 'NVD_API_KEY', variable: 'NVD_API_KEY')]) {
+                                checkout scm
                                 sh """
                                     dependency-check --scan . \
                                         --format SARIF \
@@ -88,6 +90,7 @@ def call(Map params = [:]) {
                 steps {
                     script {
                         container('semgrep') {
+                            checkout scm
                             sh """
                                 semgrep --config=auto --sarif --output ${SEMGREP_REPORT} .
                             """
