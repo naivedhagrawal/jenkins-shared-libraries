@@ -1,5 +1,4 @@
 def call() {
-    return {
     def SEMGREP_REPORT = 'semgrep-report.sarif'
     stage('Semgrep Scan') {
             agent {
@@ -20,5 +19,4 @@ def call() {
                 }
             }
     }
-}
 }

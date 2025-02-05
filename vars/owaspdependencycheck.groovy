@@ -1,5 +1,4 @@
 def call() {
-    return {
     def OWASP_DEP_REPORT = 'owasp-dep-report.sarif'
     stage('Owasp Dependency Check') {
         agent {
@@ -32,5 +31,4 @@ def call() {
             }
         }
     }
-}
 }
