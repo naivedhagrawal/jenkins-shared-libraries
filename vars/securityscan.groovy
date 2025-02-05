@@ -1,33 +1,28 @@
 def call(Map params = [:]) {
-    Boolean gitleak = params.get('gitleak', true)
-    Boolean owaspdependency = params.get('owaspdependency', true)
-    Boolean semgrep = params.get('semgrep', true)
-
     pipeline {
         agent none
         stages {
-            if (gitleak) {
-                stage('Gitleaks Scan') {
-                    steps {
-                        echo 'Running Gitleaks scan...'
-                        gitleakscan()
-                    }
+            stage('Gitleaks Scan') {
+                when { expression { params.get('gitleak', true) } }
+                steps {
+                    echo 'Running Gitleaks scan...'
+                    gitleakscan()
                 }
             }
-            if (owaspdependency) {
-                stage('OWASP Dependency Check') {
-                    steps {
-                        echo 'Running OWASP Dependency scan...'
-                        owaspdependencycheck()
-                    }
+
+            stage('OWASP Dependency Check') {
+                when { expression { params.get('owaspdependency', true) } }
+                steps {
+                    echo 'Running OWASP Dependency scan...'
+                    owaspdependencycheck()
                 }
             }
-            if (semgrep) {
-                stage('Semgrep Scan') {
-                    steps {
-                        echo 'Running Semgrep scan...'
-                        semgrepscan()
-                    }
+
+            stage('Semgrep Scan') {
+                when { expression { params.get('semgrep', true) } }
+                steps {
+                    echo 'Running Semgrep scan...'
+                    semgrepscan()
                 }
             }
         }
