@@ -1,6 +1,3 @@
-
-
-
 def call() {
     pipeline {
         agent {
@@ -31,7 +28,7 @@ def call() {
                         }
                         recordIssues(
                             enabledForFailure: true,
-                            tool: sarif(pattern: "${ZAP_SARIF}", id: "zap-SARIF", name: "DAST Report")}
+                            tool: sarif(pattern: "${ZAP_SARIF}", id: "zap-SARIF", name: "DAST Report"))
                         archiveArtifacts artifacts: "${TRIVY_REPORT}"
                         archiveArtifacts artifacts: "${TRIVY_REPORT_HTML}"
                     }
@@ -39,4 +36,3 @@ def call() {
             }
         }
     }
-}
