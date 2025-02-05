@@ -27,10 +27,12 @@ def call() {
                     container('trivy') {
                         script {
                             def trivy_report = 'trivy-report.json'
+                            def trivy_report_table = 'trivy-report.table'
                             def trivy_report_sarif = 'trivy-report.sarif'
                             
                             if (params.image_name) {
                                 sh "trivy image ${params.image_name} -f json -o ${trivy_report}"
+                                sh "trivy image ${params.image_name} -f table -o ${trivy_report_table}"
                                 sh "trivy convert --format sarif --output ${trivy_report_sarif} ${trivy_report}"
                             } else {
                                 sh "trivy repository ${params.git_URL} -f json -o ${trivy_report}"
@@ -38,7 +40,7 @@ def call() {
                             }
                             
                             archiveArtifacts artifacts: trivy_report
-                            archiveArtifacts artifacts: trivy_report_html
+                            archiveArtifacts artifacts: trivy_report_sarif
                         }
                     }
                 }
