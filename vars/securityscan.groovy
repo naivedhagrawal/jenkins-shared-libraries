@@ -60,6 +60,7 @@ def call(Map params = [:]) {
                                 sh """
                                     dependency-check --scan . \
                                         --format SARIF \
+                                        --exclude "**/*.zip" \
                                         --out ${OWASP_DEP_REPORT} \
                                         --nvdApiKey ${env.NVD_API_KEY}
                                 """
