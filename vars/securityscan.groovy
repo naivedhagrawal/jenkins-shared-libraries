@@ -137,7 +137,8 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                             withCredentials([string(credentialsId: 'SNYK_TOKEN', variable: 'SNYK_TOKEN')]) {
                                 checkout scm
                                 sh """
-                                    snyk test --all-projects --sarif --output=${SNYK_REPORT}
+                                    snyk --version
+                                    snyk test --all-projects --sarif --output=${SNYK_REPORT} -d
                                 """
                                 recordIssues(
                                     enabledForFailure: true,
