@@ -21,9 +21,11 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                     expression { params.gitleak }
                 }
                 agent {
-                    kubernetes {
-                        yaml pod('gitleak', 'zricethezav/gitleaks')
-                        showRawYaml false
+                    expression { 
+                        params.gitleak ? kubernetes { 
+                            yaml pod('gitleak', 'zricethezav/gitleaks') 
+                            showRawYaml false
+                        } : none 
                     }
                 }
                 steps {
@@ -56,9 +58,11 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                     expression { params.owaspdependency }
                 }
                 agent {
-                    kubernetes {
-                        yaml pod('owasp', 'naivedh/owasp-dependency:latest')
-                        showRawYaml false
+                    expression {
+                        params.owaspdependency ? kubernetes {
+                            yaml pod('owasp', 'naivedh/owasp-dependency:latest')
+                            showRawYaml false 
+                        } : none
                     }
                 }
                 steps {
@@ -93,9 +97,11 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                     expression { params.semgrep }
                 }
                 agent {
-                    kubernetes {
-                        yaml pod('semgrep', 'returntocorp/semgrep:latest')
-                        showRawYaml false
+                    expression {
+                        params.owaspdependency ? kubernetes {
+                            yaml pod('semgrep', 'returntocorp/semgrep:latest')
+                            showRawYaml false 
+                        } : none
                     }
                 }
                 steps {
@@ -124,9 +130,11 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                     expression { params.checkov }
                 }
                 agent {
-                    kubernetes {
-                        yaml pod('checkov', 'bridgecrew/checkov:latest')
-                        showRawYaml false
+                    expression {
+                        params.owaspdependency ? kubernetes {
+                            yaml pod('checkov', 'bridgecrew/checkov:latest')
+                            showRawYaml false
+                        } : none
                     }
                 }
                 steps {
