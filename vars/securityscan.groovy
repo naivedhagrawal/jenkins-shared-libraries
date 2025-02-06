@@ -65,7 +65,7 @@ def call(Map params = [:]) {
                             withCredentials([string(credentialsId: 'NVD_API_KEY', variable: 'NVD_API_KEY')]) {
                                 checkout scm
                                 sh """
-                                    dependency-check --scan . \
+                                    dependency-check.sh --scan . \
                                         --format SARIF \
                                         --exclude "**/*.zip" \
                                         --out ${OWASP_DEP_REPORT} \
