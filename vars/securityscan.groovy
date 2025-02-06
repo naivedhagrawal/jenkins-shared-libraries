@@ -6,7 +6,7 @@ securityscan(
     checkov: true
 )*/
 
-def call(Map params = [:]) {
+def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, checkov: true]) {
     def GITLEAKS_REPORT = 'gitleaks-report.sarif'
     def OWASP_DEP_REPORT = 'owasp-dep-report.sarif'
     def SEMGREP_REPORT = 'semgrep-report.sarif'
