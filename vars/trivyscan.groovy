@@ -26,7 +26,7 @@ def call() {
                 steps {
                     container('trivy') {
                         script {
-                            def trivy_report_table = 'trivy-report'
+                            def trivy_report_table = 'trivy-report.txt'
                             def trivy_report_sarif = 'trivy-report.sarif'
                             
                             if (params.image_name) {
