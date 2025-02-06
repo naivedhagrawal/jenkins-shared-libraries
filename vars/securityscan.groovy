@@ -23,9 +23,11 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                     }
     }
                 agent {
+                    if (params.gitleak) {
                     kubernetes {
                         yaml pod('gitleak', 'zricethezav/gitleaks')
                         showRawYaml false
+                    }
                     }
                 }
                 steps {
