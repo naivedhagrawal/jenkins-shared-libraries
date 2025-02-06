@@ -127,7 +127,7 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                 }
                 agent {
                     kubernetes {
-                        yaml pod('snyk', 'snyk/snyk-cli')
+                        yaml pod('snyk', 'snyk/snyk-cli:docker')
                         showRawYaml false
                     }
                 }
