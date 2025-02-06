@@ -10,7 +10,7 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
     def GITLEAKS_REPORT = 'gitleaks-report.sarif'
     def OWASP_DEP_REPORT = 'owasp-dep-report.sarif'
     def SEMGREP_REPORT = 'semgrep-report.sarif'
-    def CHECKOV_REPORT = 'checkov-report.sarif'
+    def CHECKOV_REPORT = 'results.sarif'
 
     pipeline {
         agent none
@@ -134,10 +134,8 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                         container('checkov') {
                             checkout scm
                             sh """
-                                checkov --directory . --output sarif --output-file-path ${CHECKOV_REPORT} || true
+                                checkov --directory . --output sarif || true
                                 ls -lrt
-                                ls -l /home/jenkins/agent/workspace/DEVSECOPS_TOOLS/checkov-report.sarif
-
                             """
                             recordIssues(
                                 enabledForFailure: true,
@@ -147,7 +145,7 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                                     name: "Checkov Report"
                                 )
                             )
-                            //archiveArtifacts artifacts: "${CHECKOV_REPORT}"
+                            archiveArtifacts artifacts: "${CHECKOV_REPORT}"
                         }
                     }
                 }
@@ -158,7 +156,7 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
 
 /*
 
-
+ --output-file-path ${CHECKOV_REPORT} 
 
 
  */
