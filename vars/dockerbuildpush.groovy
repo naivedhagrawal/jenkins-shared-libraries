@@ -4,7 +4,8 @@ myPipeline(
     IMAGE_TAG: 'v1.0',
     DOCKER_HUB_USERNAME: 'mydockerhubusername',
     DOCKER_CREDENTIALS: 'docker_cred_id',
-    API_KEY: 'your_API_KEY' // Now passed as a parameter
+    API_TYPE: 'NVD_API_KEY',
+    API_VALUE: 'your_api_key' // Now passed as a parameter
 )*/
 
 def call(Map params) {
@@ -13,7 +14,8 @@ def call(Map params) {
     def IMAGE_TAG = params.IMAGE_TAG
     def DOCKER_HUB_USERNAME = params.DOCKER_HUB_USERNAME
     def DOCKER_CREDENTIALS = params.DOCKER_CREDENTIALS
-    def API_KEY = params.API_KEY
+    def API_TYPE = params.API_TYPE
+    def API_VALUE = params.API_VALUE
 
     if (!IMAGE_NAME || !IMAGE_TAG || !DOCKER_HUB_USERNAME || !DOCKER_CREDENTIALS) {
         error "Missing required parameters!"
@@ -34,7 +36,6 @@ def call(Map params) {
             IMAGE_TAG = "${IMAGE_TAG}"
             DOCKER_HUB_USERNAME = "${DOCKER_HUB_USERNAME}"
             DOCKER_CREDENTIALS = "${DOCKER_CREDENTIALS}"
-            API_KEY = "${API_KEY}"
             REPORT_FILE = "${REPORT_FILE}"
         }
 
@@ -44,7 +45,12 @@ def call(Map params) {
                     container('docker') {
                         script {
                             try {
-                                sh "docker build --build-arg API_KEY=${API_KEY} -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+                                echo "Building ${IMAGE_NAME}"
+                                def buildCommand = "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+                                if (API_TYPE && API_VALUE) {
+                                    buildCommand = "docker build --build-arg ${API_TYPE}=${API_VALUE} -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+                                }
+                                sh buildCommand
                             } catch (Exception e) {
                                 error "Build Docker Image failed: ${e.getMessage()}"
                             }
@@ -58,7 +64,6 @@ def call(Map params) {
                     container('trivy') {
                         script {
                             try {
-                                // Scan the Docker image with Trivy
                                 sh "mkdir -p /root/.cache/trivy/db"
                                 sh "trivy image --download-db-only --timeout 60m --debug"
                                 echo "Scanning image with Trivy..."
