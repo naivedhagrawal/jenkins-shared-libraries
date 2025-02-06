@@ -19,7 +19,7 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
             stage('Gitleak Check') {
                 when {
                     expression { params.gitleak }
-                
+                }
                 agent {
                     kubernetes {
                         yaml pod('gitleak', 'zricethezav/gitleaks')
@@ -49,7 +49,7 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                         }
                     }
                 }
-            }}
+            }
 
             stage('OWASP Dependency Check') {
                 when {
