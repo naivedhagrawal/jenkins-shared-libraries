@@ -10,7 +10,7 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
     def GITLEAKS_REPORT = 'gitleaks-report.sarif'
     def OWASP_DEP_REPORT = 'owasp-dep-report.sarif'
     def SEMGREP_REPORT = 'semgrep-report.sarif'
-    def CHECKOV_REPORT = './checkov-report.sarif'
+    def CHECKOV_REPORT = 'checkov-report.sarif'
 
     pipeline {
         agent none
