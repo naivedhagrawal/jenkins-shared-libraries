@@ -156,7 +156,5 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
 
 /*
 
- --output-file-path ${CHECKOV_REPORT} 
-
 
  */
