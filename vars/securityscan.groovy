@@ -2,13 +2,15 @@
 securityscan(
     gitleak: true,
     owaspdependency: true,
-    semgrep: true
+    semgrep: true,
+    checkov: true
 )*/
 
 def call(Map params = [:]) {
     def GITLEAKS_REPORT = 'gitleaks-report.sarif'
     def OWASP_DEP_REPORT = 'owasp-dep-report.sarif'
     def SEMGREP_REPORT = 'semgrep-report.sarif'
+    def CHECKOV_REPORT = 'checkov-report.sarif'
 
     pipeline {
         agent none
@@ -112,6 +114,37 @@ def call(Map params = [:]) {
                                 )
                             )
                             archiveArtifacts artifacts: "${SEMGREP_REPORT}"
+                        }
+                    }
+                }
+            }
+
+            stage('Checkov Scan') {
+                when {
+                    expression { params.checkov }
+                }
+                agent {
+                    kubernetes {
+                        yaml pod('checkov', 'bridgecrew/checkov:latest')
+                        showRawYaml false
+                    }
+                }
+                steps {
+                    script {
+                        container('checkov') {
+                            checkout scm
+                            sh """
+                                checkov --directory . --output sarif --output-file-path ${CHECKOV_REPORT}
+                            """
+                            recordIssues(
+                                enabledForFailure: true,
+                                tool: sarif(
+                                    pattern: "${CHECKOV_REPORT}",
+                                    id: "checkov-SARIF",
+                                    name: "Checkov Report"
+                                )
+                            )
+                            archiveArtifacts artifacts: "${CHECKOV_REPORT}"
                         }
                     }
                 }
