@@ -134,7 +134,7 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                         container('checkov') {
                             checkout scm
                             sh """
-                                checkov --directory . --output sarif || true
+                                checkov --directory . --output sarif --output-file-path ${CHECKOV_REPORT} || true
                                 ls -lrt
                             """
                             recordIssues(
@@ -154,7 +154,7 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
     }
 }
 
-/*--output-file-path ${CHECKOV_REPORT}
+/*
 
 
 
