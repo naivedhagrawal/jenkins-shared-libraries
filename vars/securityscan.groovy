@@ -136,6 +136,8 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                             sh """
                                 checkov --directory . --output sarif --output-file-path ${CHECKOV_REPORT} || true
                                 ls -lrt
+                                ls -l /home/jenkins/agent/workspace/DEVSECOPS_TOOLS/checkov-report.sarif
+
                             """
                             recordIssues(
                                 enabledForFailure: true,
