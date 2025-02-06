@@ -3,7 +3,8 @@ securityscan(
     gitleak: true,
     owaspdependency: true,
     semgrep: true,
-    checkov: true
+    checkov: true,
+    snyk: true
 )*/
 
 def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, checkov: true]) {
@@ -125,7 +126,7 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                 }
                 agent {
                     kubernetes {
-                        yaml pod('snyk', 'snyk/snyk-cli:latest')
+                        yaml pod('snyk', 'snyk/snyk')
                         showRawYaml false
                     }
                 }
