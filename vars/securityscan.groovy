@@ -119,6 +119,39 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                 }
             }
 
+            stage('Snyk Scan') {
+                when {
+                    expression { params.snyk }
+                }
+                agent {
+                    kubernetes {
+                        yaml pod('snyk', 'snyk/snyk-cli:latest')
+                        showRawYaml false
+                    }
+                }
+                steps {
+                    script {
+                        container('snyk') {
+                            withCredentials([string(credentialsId: 'SNYK_TOKEN', variable: 'SNYK_TOKEN')]) {
+                                checkout scm
+                                sh """
+                                    snyk test --all-projects --sarif --output=${SNYK_REPORT}
+                                """
+                                recordIssues(
+                                    enabledForFailure: true,
+                                    tool: sarif(
+                                        pattern: "${SNYK_REPORT}",
+                                        id: "snyk-SARIF",
+                                        name: "Snyk Security Scan Report"
+                                    )
+                                )
+                                archiveArtifacts artifacts: "${SNYK_REPORT}"
+                            }
+                        }
+                    }
+                }
+            }
+
             stage('Checkov Scan') {
                 when {
                     expression { params.checkov }
