@@ -2,8 +2,9 @@
 myPipeline(
     IMAGE_NAME: 'my-custom-image',
     IMAGE_TAG: 'v1.0',
-    DOCKER_HUB_USERNAME: 'mydockerhubusername',  // This is your Docker Hub username
-    DOCKER_CREDENTIALS: 'docker_cred_id'
+    DOCKER_HUB_USERNAME: 'mydockerhubusername',
+    DOCKER_CREDENTIALS: 'docker_cred_id',
+    API_KEY: 'your_API_KEY' // Now passed as a parameter
 )*/
 
 def call(Map params) {
@@ -12,6 +13,7 @@ def call(Map params) {
     def IMAGE_TAG = params.IMAGE_TAG
     def DOCKER_HUB_USERNAME = params.DOCKER_HUB_USERNAME
     def DOCKER_CREDENTIALS = params.DOCKER_CREDENTIALS
+    def API_KEY = params.API_KEY
 
     if (!IMAGE_NAME || !IMAGE_TAG || !DOCKER_HUB_USERNAME || !DOCKER_CREDENTIALS) {
         error "Missing required parameters!"
@@ -32,6 +34,7 @@ def call(Map params) {
             IMAGE_TAG = "${IMAGE_TAG}"
             DOCKER_HUB_USERNAME = "${DOCKER_HUB_USERNAME}"
             DOCKER_CREDENTIALS = "${DOCKER_CREDENTIALS}"
+            API_KEY = "${API_KEY}"
             REPORT_FILE = "${REPORT_FILE}"
         }
 
@@ -41,9 +44,7 @@ def call(Map params) {
                     container('docker') {
                         script {
                             try {
-                                withCredentials([string(credentialsId: 'NVD_API_KEY', variable: 'NVD_API_KEY')]) {
-                                    sh "docker build --build-arg NVD_API_KEY=${NVD_API_KEY} -t ${IMAGE_NAME}:${IMAGE_TAG} ."
-                                }
+                                sh "docker build --build-arg API_KEY=${API_KEY} -t ${IMAGE_NAME}:${IMAGE_TAG} ."
                             } catch (Exception e) {
                                 error "Build Docker Image failed: ${e.getMessage()}"
                             }
