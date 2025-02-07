@@ -44,18 +44,18 @@ def call(Map params) {
                 steps {
                     container('docker') {
                         script {
-                            try {
-                                echo "Building ${IMAGE_NAME}"
-                                def buildCommand = "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
-                                if (API_TYPE && API_VALUE) {
-                                    buildCommand = "docker build --build-arg ${API_TYPE}=${API_VALUE} -t ${IMAGE_NAME}:${IMAGE_TAG} ."
-                                }
-                                sh buildCommand
-                            } catch (Exception e) {
-                                error "Build Docker Image failed: ${e.getMessage()}"
+                        try {
+                            echo "Building ${IMAGE_NAME}"
+                            def buildCommand = "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+                            if (API_TYPE && API_VALUE) {
+                                buildCommand = "docker build --build-arg ${API_TYPE}=${API_VALUE} -t ${IMAGE_NAME}:${IMAGE_TAG} ."
                             }
+                            sh buildCommand
+                        } catch (Exception e) {
+                            error "Build Docker Image failed: ${e.getMessage()}"
                         }
                     }
+                }
                 }
             }
 
