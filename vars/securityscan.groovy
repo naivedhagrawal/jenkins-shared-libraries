@@ -19,9 +19,7 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
 
         stages {
             stage('Gitleak Check') {
-                when {
-                    expression { params.gitleak }
-                }
+                when { expression { params.gitleak } }
                 agent {
                     kubernetes {
                         yaml pod('gitleak', 'zricethezav/gitleaks')
@@ -54,9 +52,7 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
             }
 
             stage('OWASP Dependency Check') {
-                when {
-                    expression { params.owaspdependency }
-                }
+                when { expression { params.owaspdependency } }
                 agent {
                     kubernetes {
                         yaml pod('owasp', 'naivedh/owasp-dependency:latest')
@@ -91,9 +87,7 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
             }
 
             stage('Semgrep Scan') {
-                when {
-                    expression { params.semgrep }
-                }
+                when { expression { params.semgrep } }
                 agent {
                     kubernetes {
                         yaml pod('semgrep', 'returntocorp/semgrep:latest')
@@ -104,27 +98,26 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                     script {
                         container('semgrep') {
                             checkout scm
-                            sh """
-                                semgrep --config=auto --sarif --output ${SEMGREP_REPORT} .
-                            """
-                            recordIssues(
-                                enabledForFailure: true,
-                                tool: sarif(
-                                    pattern: "${SEMGREP_REPORT}",
-                                    id: "semgrep-SARIF",
-                                    name: "Semgrep Report"
+                            withCredentials([string(credentialsId: 'semgrep_api_key', variable: 'SEMGREP_KEY')]) {
+                                sh "SEMGREP_APP_TOKEN=${SEMGREP_KEY} semgrep login"
+                                sh "semgrep --config=auto --output ${SEMGREP_REPORT} ."
+                                archiveArtifacts artifacts: "${SEMGREP_REPORT}"
+                                recordIssues(
+                                    enabledForFailure: true,
+                                    tool: sarif(
+                                        pattern: "${SEMGREP_REPORT}",
+                                        id: "SEMGREP",
+                                        name: "Semgrep Report"
+                                    )
                                 )
-                            )
-                            archiveArtifacts artifacts: "${SEMGREP_REPORT}"
+                            }
                         }
                     }
                 }
             }
 
             stage('Snyk Scan') {
-                when {
-                    expression { params.snyk }
-                }
+                when { expression { params.snyk } }
                 agent {
                     kubernetes {
                         yaml pod('snyk', 'naivedh/snyk:latest')
@@ -157,9 +150,7 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
             }
 
             stage('Checkov Scan') {
-                when {
-                    expression { params.checkov }
-                }
+                when { expression { params.checkov } }
                 agent {
                     kubernetes {
                         yaml pod('checkov', 'bridgecrew/checkov:latest')
@@ -190,8 +181,3 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
         }
     }
 }
-
-/*
-
-
- */
