@@ -14,8 +14,8 @@ def call(Map params) {
     def IMAGE_TAG = params.IMAGE_TAG
     def DOCKER_HUB_USERNAME = params.DOCKER_HUB_USERNAME
     def DOCKER_CREDENTIALS = params.DOCKER_CREDENTIALS
-    def API_TYPE = params.API_TYPE
-    def API_VALUE = params.API_VALUE
+    def API_TYPE = 'params.API_TYPE'
+    def API_VALUE = 'params.API_VALUE'
 
     if (!IMAGE_NAME || !IMAGE_TAG || !DOCKER_HUB_USERNAME || !DOCKER_CREDENTIALS) {
         error "Missing required parameters!"
@@ -45,7 +45,6 @@ def call(Map params) {
                     container('docker') {
                         script {
                         try {
-                            sh 'export NVD_API_KEY="${API_VALUE}"'
                             echo "Building ${IMAGE_NAME}"
                             def buildCommand = "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
                             if (API_TYPE && API_VALUE) {
