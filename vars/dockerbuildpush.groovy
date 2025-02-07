@@ -3,9 +3,7 @@ dockerbuildpush(
     IMAGE_NAME: 'owasp-dependency',
     IMAGE_TAG: 'latest',
     DOCKER_HUB_USERNAME: 'naivedh',  // This is your Docker Hub username
-    DOCKER_CREDENTIALS: 'docker_hub_up',
-    API_TYPE: 'NVD_API_KEY',
-    API_VALUE: 'NVD_API_KEY'
+    DOCKER_CREDENTIALS: 'docker_hub_up'
 )*/
 
 def call(Map params) {
@@ -14,8 +12,6 @@ def call(Map params) {
     def IMAGE_TAG = params.IMAGE_TAG
     def DOCKER_HUB_USERNAME = params.DOCKER_HUB_USERNAME
     def DOCKER_CREDENTIALS = params.DOCKER_CREDENTIALS
-    def API_TYPE = params.API_TYPE
-    def API_VALUE = params.API_VALUE
 
     if (!IMAGE_NAME || !IMAGE_TAG || !DOCKER_HUB_USERNAME || !DOCKER_CREDENTIALS) {
         error "Missing required parameters!"
@@ -44,18 +40,14 @@ def call(Map params) {
                 steps {
                     container('docker') {
                         script {
-                        try {
-                            echo "Building ${IMAGE_NAME}"
-                            def buildCommand = "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
-                            if (API_TYPE && API_VALUE) {
-                                buildCommand = "docker build --build-arg ${API_TYPE}=${API_VALUE} -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+                            try {
+                                echo "Building ${IMAGE_NAME}"
+                                sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+                            } catch (Exception e) {
+                                error "Build Docker Image failed: ${e.getMessage()}"
                             }
-                            sh buildCommand
-                        } catch (Exception e) {
-                            error "Build Docker Image failed: ${e.getMessage()}"
                         }
                     }
-                }
                 }
             }
 
