@@ -45,7 +45,7 @@ def call(Map params) {
                     container('docker') {
                         script {
                         try {
-                            export NVD_API_KEY="${API_VALUE}"
+                            sh 'export NVD_API_KEY="${API_VALUE}"'
                             echo "Building ${IMAGE_NAME}"
                             def buildCommand = "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
                             if (API_TYPE && API_VALUE) {
