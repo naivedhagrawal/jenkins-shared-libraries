@@ -1,11 +1,11 @@
 /* @Library('k8s-shared-lib') _
-myPipeline(
-    IMAGE_NAME: 'my-custom-image',
-    IMAGE_TAG: 'v1.0',
-    DOCKER_HUB_USERNAME: 'mydockerhubusername',
-    DOCKER_CREDENTIALS: 'docker_cred_id',
+dockerbuildpush(
+    IMAGE_NAME: 'owasp-dependency',
+    IMAGE_TAG: 'latest',
+    DOCKER_HUB_USERNAME: 'naivedh',  // This is your Docker Hub username
+    DOCKER_CREDENTIALS: 'docker_hub_up',
     API_TYPE: 'NVD_API_KEY',
-    API_VALUE: 'your_api_key' // Now passed as a parameter
+    API_VALUE: 'NVD_API_KEY'
 )*/
 
 def call(Map params) {
@@ -14,8 +14,8 @@ def call(Map params) {
     def IMAGE_TAG = params.IMAGE_TAG
     def DOCKER_HUB_USERNAME = params.DOCKER_HUB_USERNAME
     def DOCKER_CREDENTIALS = params.DOCKER_CREDENTIALS
-    def API_TYPE = 'params.API_TYPE'
-    def API_VALUE = 'params.API_VALUE'
+    def API_TYPE = params.API_TYPE
+    def API_VALUE = params.API_VALUE
 
     if (!IMAGE_NAME || !IMAGE_TAG || !DOCKER_HUB_USERNAME || !DOCKER_CREDENTIALS) {
         error "Missing required parameters!"
