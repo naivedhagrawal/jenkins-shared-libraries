@@ -4,7 +4,6 @@ securityscan(
     owaspdependency: true,
     semgrep: true,
     checkov: true,
-    snyk: true
 )*/
 
 def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, checkov: true]) {
@@ -12,7 +11,6 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
     def OWASP_DEP_REPORT = 'owasp-dep-report.sarif'
     def SEMGREP_REPORT = 'semgrep-report.sarif'
     def CHECKOV_REPORT = 'results.sarif'
-    def SNYK_REPORT = 'snyk-report.sarif'
 
     pipeline {
         agent none
@@ -110,39 +108,6 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                                         name: "Semgrep Report"
                                     )
                                 )
-                            }
-                        }
-                    }
-                }
-            }
-
-            stage('Snyk Scan') {
-                when { expression { params.snyk } }
-                agent {
-                    kubernetes {
-                        yaml pod('snyk', 'naivedh/snyk:latest')
-                        showRawYaml false
-                    }
-                }
-                steps {
-                    script {
-                        container('snyk') {
-                            withCredentials([string(credentialsId: 'SNYK_TOKEN', variable: 'SNYK_TOKEN')]) {
-                                checkout scm
-                                sh """
-                                    snyk --version
-                                    snyk auth $SNYK_TOKEN
-                                    snyk test --sarif --output=${SNYK_REPORT} -d
-                                """
-                                recordIssues(
-                                    enabledForFailure: true,
-                                    tool: sarif(
-                                        pattern: "${SNYK_REPORT}",
-                                        id: "snyk-SARIF",
-                                        name: "Snyk Security Scan Report"
-                                    )
-                                )
-                                archiveArtifacts artifacts: "${SNYK_REPORT}"
                             }
                         }
                     }
