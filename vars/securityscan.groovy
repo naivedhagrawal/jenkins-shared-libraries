@@ -69,7 +69,7 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                             withCredentials([string(credentialsId: 'NVD_API_KEY', variable: 'NVD_API_KEY')]) {
                                 checkout scm
                                 sh """
-                                    /usr/share/dependency-check/bin/dependency-check.sh --scan . \
+                                    dependency-check --scan . \
                                         --format SARIF \
                                         --exclude "**/*.zip" \
                                         --out ${OWASP_DEP_REPORT} \
