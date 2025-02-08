@@ -9,7 +9,6 @@ securityscan(
 def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, checkov: true]) {
     def GITLEAKS_REPORT = 'gitleaks-report.sarif'
     def OWASP_DEP_REPORT = 'owasp-dep-report.sarif'
-    def SEMGREP_REPORT_JSON = 'semgrep-report.json'
     def SEMGREP_REPORT = 'semgrep-report.sarif'
     def CHECKOV_REPORT = 'results.sarif'
 
@@ -99,13 +98,7 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                             checkout scm
                             withCredentials([string(credentialsId: 'SEMGREP_KEY', variable: 'SEMGREP_KEY')]) {
                                 sh "SEMGREP_APP_TOKEN=${SEMGREP_KEY} semgrep login"
-                                sh "semgrep --config=auto --output ${SEMGREP_REPORT_JSON} ."
-                                sh 'which python3'
-                                sh 'python3 --version'
-                                def scriptContent = libraryResource('zap_json_to_sarif.py')
-                                writeFile file: 'zap_json_to_sarif.py', text: scriptContent
-                                sh 'chmod +x zap_json_to_sarif.py'
-                                sh "python3 zap_json_to_sarif.py"
+                                sh "semgrep --config=auto --output ${SEMGREP_REPORT} ."
                                 archiveArtifacts artifacts: "${SEMGREP_REPORT}"
                                 recordIssues(
                                     enabledForFailure: true,
