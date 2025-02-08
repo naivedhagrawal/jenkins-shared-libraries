@@ -30,8 +30,14 @@ IaC - Infrastructure as Code Scan''',
             }
             
             stage('Snyk Scanning') {
-                agent any
+                gent {
+                    kubernetes {
+                        yaml pod('snyk', 'snyk/snyk-cli:latest')
+                        showRawYaml false
+                    }
+                }
                 steps {
+                    container('snyk') {
                     script {
                         def selectedScans = params.scanTypes.split(',')
                         if (selectedScans.contains('sca')) {
@@ -64,6 +70,7 @@ IaC - Infrastructure as Code Scan''',
                         }
                     }
                     archiveArtifacts artifacts: "snyk-*.sarif"
+                    }
                 }
             }
         }
