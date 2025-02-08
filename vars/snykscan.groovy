@@ -20,7 +20,7 @@ def call() {
             stage('Snyk Scanning') {
                 agent {
                     kubernetes {
-                        yaml pod('snyk', 'snyk/snyk-cli:latest')
+                        yaml pod('snyk', 'snyk/snyk:alpine')
                         showRawYaml false
                     }
                 }
