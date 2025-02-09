@@ -6,11 +6,9 @@ def call() {
             choice(
                 name: 'scanType',
                 description: '''Full Scan - Full scan including active attacks
-Baseline Scan - Passive scan without attacking the application
-API Scan - Scans APIs using OpenAPI, SOAP, or GraphQL definitions''',
-                choices: ['full-scan', 'baseline', 'api-scan']
+Baseline Scan - Passive scan without attacking the application''',
+                choices: ['full-scan', 'baseline']
             )
-            file(name: 'apiDefinition', description: 'API definition file for API scanning (OpenAPI/SOAP/GraphQL)')
         }
         environment {
             ZAP_REPORT = 'zap-out.json'
@@ -23,11 +21,8 @@ API Scan - Scans APIs using OpenAPI, SOAP, or GraphQL definitions''',
             stage('Validate Parameters') {
                 steps {
                     script {
-                        if ((params.scanType == 'full-scan' || params.scanType == 'baseline' ) && (!TARGET_URL || TARGET_URL == '')) {
+                        if ((params.scanType == 'full-scan' || params.scanType == 'baseline') && (!TARGET_URL || TARGET_URL == '')) {
                             error('ERROR: Target URL cannot be empty.')
-                        }
-                        if (params.scanType == 'api-scan' && (params.apiDefinition == null || params.apiDefinition.trim() == '')) {
-                            error('ERROR: API definition file is required for API scan.')
                         }
                     }
                 }
@@ -43,7 +38,9 @@ API Scan - Scans APIs using OpenAPI, SOAP, or GraphQL definitions''',
                 steps {
                     container('zap') {
                         script {
-                            def API_FILE = params.apiDefinition
+                            // Save the TARGET_URL to a file
+                            writeFile file: 'target_url.txt', text: "Target URL: ${TARGET_URL}"
+
                             switch (params.scanType) {
                                 case 'full-scan':
                                     sh "zap-full-scan.py -t '$TARGET_URL' -J '$ZAP_REPORT' -r '$ZAP_REPORT_HTML' -I"
@@ -51,20 +48,13 @@ API Scan - Scans APIs using OpenAPI, SOAP, or GraphQL definitions''',
                                 case 'baseline':
                                     sh "zap-baseline.py -t '$TARGET_URL' -J '$ZAP_REPORT' -r '$ZAP_REPORT_HTML' -I"
                                     break
-                                case 'api-scan':
-                                    sh "zap-api-scan.py -t '${API_FILE}' -f '${API_FILE}' -J '$ZAP_REPORT' -r '$ZAP_REPORT_HTML' -I"
-                                    break
                             }
                             sh 'mv /zap/wrk/${ZAP_REPORT} .' 
                             sh 'mv /zap/wrk/${ZAP_REPORT_HTML} .'
                         }
                         archiveArtifacts artifacts: "${ZAP_REPORT}"
                         archiveArtifacts artifacts: "${ZAP_REPORT_HTML}"
-                        script {
-                            if (params.scanType == 'api-scan') {
-                                archiveArtifacts artifacts: "${API_FILE}"
-                            }
-                        }
+                        archiveArtifacts artifacts: 'target_url.txt'  // Archive the target URL details
                     }
                     container('python') {
                         script {
