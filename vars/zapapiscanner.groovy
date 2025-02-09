@@ -23,6 +23,7 @@ def call() {
                     }
                 }
                 steps {
+                    container('zap') {
                     script {
                         if (API_GIT_URL == null || API_GIT_URL.trim() == '') {
                             error('ERROR: Git URL for API definition cannot be empty.')
@@ -67,6 +68,7 @@ def call() {
                             enabledForFailure: true,
                             tool: sarif(pattern: "${ZAP_SARIF}", id: "zap-SARIF", name: "DAST Report")
                         )
+                    }
                     }
                 }
             }
