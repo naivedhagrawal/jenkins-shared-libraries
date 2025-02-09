@@ -2,7 +2,7 @@ def call() {
     pipeline {
         agent none
         parameters {
-            string(name: 'apiGitUrl', description: 'Git URL for the API definition')
+            string(name: 'apiJsonUrl', description: 'URL for the API definition JSON file')
             choice(name: 'apiFormat', choices: ['openapi', 'soap', 'graphql'], description: 'Format of the API definition')
         }
         environment {
@@ -10,7 +10,7 @@ def call() {
             ZAP_REPORT_HTML = 'zap-out.html'
             ZAP_REPORT_MD = 'zap-out.md'
             ZAP_SARIF = 'zap_report.sarif'
-            API_GIT_URL = "${params.apiGitUrl?.trim()}"
+            API_JSON_URL = "${params.apiJsonUrl?.trim()}"
             API_FORMAT = "${params.apiFormat?.trim()}"
         }
 
@@ -25,28 +25,17 @@ def call() {
                 steps {
                     container('zap') {
                         script {
-                            if (API_GIT_URL == null || API_GIT_URL.trim() == '') {
-                                error('ERROR: Git URL for API definition cannot be empty.')
+                            if (API_JSON_URL == null || API_JSON_URL.trim() == '') {
+                                error('ERROR: URL for API definition JSON file cannot be empty.')
                             }
                             if (API_FORMAT == null || API_FORMAT.trim() == '') {
                                 error('ERROR: API format must be specified (openapi, soap, graphql).')
                             }
                             
-                            // Clone the API repository inside /zap/wrk
-                            sh "git clone ${API_GIT_URL} /zap/wrk/api-definitions"
+                            writeFile file: 'api_json_url.txt', text: "API JSON URL: ${API_JSON_URL}"
                             
-                            // Set API definition file path
-                            def API_FILE = '/zap/wrk/api-definitions/api.json'
-                            
-                            if (!fileExists(API_FILE)) {
-                                error("ERROR: No valid api.json file found in /zap/wrk/api-definitions.")
-                            }
-                            
-                            echo "Found API definition file: ${API_FILE}"
-                            writeFile file: 'api_git_url.txt', text: "API Git URL: ${API_GIT_URL}"
-                            
-                            // Run ZAP API scan
-                            sh "zap-api-scan.py -t '${API_FILE}' -f '${API_FORMAT}' -J '$ZAP_REPORT' -r '$ZAP_REPORT_HTML' -w '$ZAP_REPORT_MD' -I"
+                            // Run ZAP API scan directly using the JSON file URL
+                            sh "zap-api-scan.py -t '${API_JSON_URL}' -f '${API_FORMAT}' -J '$ZAP_REPORT' -r '$ZAP_REPORT_HTML' -w '$ZAP_REPORT_MD' -I"
                             sh 'mv /zap/wrk/${ZAP_REPORT} .' 
                             sh 'mv /zap/wrk/${ZAP_REPORT_HTML} .'
                             sh 'mv /zap/wrk/${ZAP_REPORT_MD} .'
@@ -56,7 +45,7 @@ def call() {
                     archiveArtifacts artifacts: "${ZAP_REPORT}"
                     archiveArtifacts artifacts: "${ZAP_REPORT_HTML}"
                     archiveArtifacts artifacts: "${ZAP_REPORT_MD}"
-                    archiveArtifacts artifacts: 'api_git_url.txt'  // Archive the Git URL details
+                    archiveArtifacts artifacts: 'api_json_url.txt'  // Archive the API JSON URL details
                     
                     container('python') {
                         script {
