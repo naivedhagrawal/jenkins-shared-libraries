@@ -7,10 +7,6 @@ spec:
     - name: ${name}
       image: "${image}"
       imagePullPolicy: Always
-      resources:
-        limits:
-          memory: "512Mi"
-          cpu: "500m"
       command:
         - cat
       tty: true

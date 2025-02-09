@@ -16,10 +16,6 @@ spec:
       periodSeconds: 5
     command:
     - sleep
-    resources:
-      limits:
-      memory: "512Mi"
-      cpu: "500m"
     args:
     - 99d
     volumeMounts:
