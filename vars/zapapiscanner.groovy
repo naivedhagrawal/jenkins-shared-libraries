@@ -34,12 +34,11 @@ def call() {
                         // Clone the API repository
                         sh "git clone ${API_GIT_URL} api-definitions"
                         
-                        // Find API definition file
-                        def API_DIR = 'api-definitions'
-                        def API_FILE = sh(script: "find ${API_DIR} -type f -name '*.${API_FORMAT}'", returnStdout: true).trim()
-
-                        if (!API_FILE) {
-                            error("ERROR: No valid ${API_FORMAT} API definition file found in the repository.")
+                        // Find API definition file (specifically api.json in root directory)
+                        def API_FILE = 'api-definitions/api.json'
+                        
+                        if (!fileExists(API_FILE)) {
+                            error("ERROR: No valid api.json file found in the root directory of the repository.")
                         }
                         
                         echo "Found API definition file: ${API_FILE}"
