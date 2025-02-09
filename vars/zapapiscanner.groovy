@@ -2,7 +2,7 @@ def call() {
     pipeline {
         agent none
         parameters {
-            string(name: 'apiJsonUrl', description: 'URL for the API definition JSON file')
+            string(name: 'apiJsonUrl', description: 'URL for the API definition JSON file', defaultValue: '')
             choice(name: 'apiFormat', choices: ['openapi', 'soap', 'graphql'], description: 'Format of the API definition')
         }
         environment {
@@ -25,10 +25,10 @@ def call() {
                 steps {
                     container('zap') {
                         script {
-                            if (API_JSON_URL == null || API_JSON_URL.trim() == '') {
+                            if (!API_JSON_URL || API_JSON_URL.trim() == '') {
                                 error('ERROR: URL for API definition JSON file cannot be empty.')
                             }
-                            if (API_FORMAT == null || API_FORMAT.trim() == '') {
+                            if (!API_FORMAT || API_FORMAT.trim() == '') {
                                 error('ERROR: API format must be specified (openapi, soap, graphql).')
                             }
                             
