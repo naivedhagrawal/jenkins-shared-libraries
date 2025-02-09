@@ -56,6 +56,7 @@ def call() {
                     archiveArtifacts artifacts: "${ZAP_REPORT_HTML}"
                     archiveArtifacts artifacts: "${ZAP_REPORT_MD}"
                     archiveArtifacts artifacts: 'api_git_url.txt'  // Archive the Git URL details
+                    }
                     
                     container('python') {
                         script {
@@ -68,7 +69,6 @@ def call() {
                             enabledForFailure: true,
                             tool: sarif(pattern: "${ZAP_SARIF}", id: "zap-SARIF", name: "DAST Report")
                         )
-                    }
                     }
                 }
             }
