@@ -32,7 +32,14 @@ def call() {
                                 error('ERROR: API format must be specified (openapi, soap, graphql).')
                             }
                             
-                            writeFile file: 'api_json_url.txt', text: "API JSON URL: ${API_JSON_URL}"
+                            // Download API JSON file with original name
+                            sh "curl -O '${API_JSON_URL}'"
+                            
+                            // Find the downloaded JSON file
+                            def apiJsonFile = sh(script: "ls *.json | head -n 1", returnStdout: true).trim()
+                            if (!apiJsonFile) {
+                                error('ERROR: No JSON file found after download.')
+                            }
                             
                             // Run ZAP API scan directly using the JSON file URL
                             sh "zap-api-scan.py -t '${API_JSON_URL}' -f '${API_FORMAT}' -J '$ZAP_REPORT' -r '$ZAP_REPORT_HTML' -w '$ZAP_REPORT_MD' -I"
@@ -45,7 +52,7 @@ def call() {
                     archiveArtifacts artifacts: "${ZAP_REPORT}"
                     archiveArtifacts artifacts: "${ZAP_REPORT_HTML}"
                     archiveArtifacts artifacts: "${ZAP_REPORT_MD}"
-                    archiveArtifacts artifacts: 'api_json_url.txt'  // Archive the API JSON URL details
+                    archiveArtifacts artifacts: '*.json'  // Archive the downloaded API JSON file
                     
                     container('python') {
                         script {
