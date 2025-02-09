@@ -1,3 +1,4 @@
+
 /* @Library('k8s-shared-lib') _
 dockerbuildpush(
     IMAGE_NAME: 'owasp-dependency',
@@ -57,7 +58,7 @@ def call(Map params) {
                         script {
                             try {
                                 sh "mkdir -p /root/.cache/trivy/db"
-                                sh "trivy image --download-db-only --timeout 60m --debug"
+                                sh "trivy image --download-db-only --timeout 15m --debug"
                                 echo "Scanning image with Trivy..."
                                 sh "trivy image ${IMAGE_NAME}:${IMAGE_TAG} --timeout 30m --format sarif --output ${REPORT_FILE} --debug"
                                 recordIssues(
