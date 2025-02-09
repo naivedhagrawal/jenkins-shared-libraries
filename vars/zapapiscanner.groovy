@@ -21,15 +21,6 @@ def call() {
                     }
                 }
             }
-
-            stage('Clone API Definition Repository') {
-                steps {
-                    script {
-                        // Clone the API repository from the provided Git URL
-                        sh "git clone ${API_GIT_URL} api-definitions"
-                    }
-                }
-            }
             
             stage('DAST SCANNING USING OWASP-ZAP') {
                 agent {
@@ -41,6 +32,7 @@ def call() {
                 steps {
                     container('zap') {
                         script {
+                            sh "git clone ${API_GIT_URL} api-definitions"
                             def API_DIR = 'api-definitions' // Directory where the API definition is cloned
                             def API_FILE = sh(script: "find ${API_DIR} -type f -name '*.yaml' -or -name '*.json'", returnStdout: true).trim()
                             
