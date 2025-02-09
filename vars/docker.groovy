@@ -11,7 +11,7 @@ spec:
     image: ${image}
     readinessProbe:
       exec:
-        command: [sh, -c, "ls -S /var/run/docker.sock"]
+        command: [sh, -c, "ls -l /var/run/docker.sock"]
       initialDelaySeconds: 5
       periodSeconds: 5
     command:

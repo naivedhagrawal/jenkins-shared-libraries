@@ -1,5 +1,5 @@
 def call() {
-    return """
+        return """
     apiVersion: v1
     kind: Pod
     metadata:
@@ -44,5 +44,5 @@ def call() {
         emptyDir: {}
       - name: trivy-cache
         emptyDir: {}
-    """
+        """
 }
