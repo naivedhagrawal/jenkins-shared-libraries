@@ -31,6 +31,10 @@ def call() {
         image: docker:dind
         securityContext:
           privileged: true
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
         command: ["dockerd"]
         volumeMounts:
         - name: docker-socket
