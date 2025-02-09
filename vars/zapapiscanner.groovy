@@ -2,27 +2,20 @@ def call() {
     pipeline {
         agent none
         parameters {
-            string(name: 'apiGitUrl', description: 'Git URL for the API definition (OpenAPI/SOAP/GraphQL)')
+            string(name: 'apiGitUrl', description: 'Git URL for the API definition')
+            choice(name: 'apiFormat', choices: ['openapi', 'soap', 'graphql'], description: 'Format of the API definition')
         }
         environment {
             ZAP_REPORT = 'zap-out.json'
             ZAP_REPORT_HTML = 'zap-out.html'
+            ZAP_REPORT_MD = 'zap-out.md'
             ZAP_SARIF = 'zap_report.sarif'
             API_GIT_URL = "${params.apiGitUrl?.trim()}"
+            API_FORMAT = "${params.apiFormat?.trim()}"
         }
 
         stages {
-            stage('Validate Parameters') {
-                steps {
-                    script {
-                        if (API_GIT_URL == null || API_GIT_URL.trim() == '') {
-                            error('ERROR: Git URL for API definition cannot be empty.')
-                        }
-                    }
-                }
-            }
-            
-            stage('DAST SCANNING USING OWASP-ZAP') {
+            stage('DAST Scanning with OWASP-ZAP') {
                 agent {
                     kubernetes {
                         yaml zap()
@@ -30,24 +23,40 @@ def call() {
                     }
                 }
                 steps {
-                    container('zap') {
-                        script {
-                            sh "git clone ${API_GIT_URL} api-definitions"
-                            def API_DIR = 'api-definitions' // Directory where the API definition is cloned
-                            def API_FILE = sh(script: "find ${API_DIR} -type f -name '*.yaml' -or -name '*.json'", returnStdout: true).trim()
-                            
-                            // Save the Git URL to a file
-                            writeFile file: 'api_git_url.txt', text: "API Git URL: ${API_GIT_URL}"
-
-                            // Perform the API scan
-                            sh "zap-api-scan.py -t '${API_FILE}' -f '${API_FILE}' -J '$ZAP_REPORT' -r '$ZAP_REPORT_HTML' -I"
-                            sh 'mv /zap/wrk/${ZAP_REPORT} .' 
-                            sh 'mv /zap/wrk/${ZAP_REPORT_HTML} .'
+                    script {
+                        if (API_GIT_URL == null || API_GIT_URL.trim() == '') {
+                            error('ERROR: Git URL for API definition cannot be empty.')
                         }
-                        archiveArtifacts artifacts: "${ZAP_REPORT}"
-                        archiveArtifacts artifacts: "${ZAP_REPORT_HTML}"
-                        archiveArtifacts artifacts: 'api_git_url.txt'  // Archive the Git URL details
+                        if (API_FORMAT == null || API_FORMAT.trim() == '') {
+                            error('ERROR: API format must be specified (openapi, soap, graphql).')
+                        }
+                        
+                        // Clone the API repository
+                        sh "git clone ${API_GIT_URL} api-definitions"
+                        
+                        // Find API definition file
+                        def API_DIR = 'api-definitions'
+                        def API_FILE = sh(script: "find ${API_DIR} -type f -name '*.${API_FORMAT}'", returnStdout: true).trim()
+
+                        if (!API_FILE) {
+                            error("ERROR: No valid ${API_FORMAT} API definition file found in the repository.")
+                        }
+                        
+                        echo "Found API definition file: ${API_FILE}"
+                        writeFile file: 'api_git_url.txt', text: "API Git URL: ${API_GIT_URL}"
+                        
+                        // Run ZAP API scan
+                        sh "zap-api-scan.py -t '${API_FILE}' -f '${API_FORMAT}' -J '$ZAP_REPORT' -r '$ZAP_REPORT_HTML' -w '$ZAP_REPORT_MD' -I"
+                        sh 'mv /zap/wrk/${ZAP_REPORT} .' 
+                        sh 'mv /zap/wrk/${ZAP_REPORT_HTML} .'
+                        sh 'mv /zap/wrk/${ZAP_REPORT_MD} .'
                     }
+                    
+                    archiveArtifacts artifacts: "${ZAP_REPORT}"
+                    archiveArtifacts artifacts: "${ZAP_REPORT_HTML}"
+                    archiveArtifacts artifacts: "${ZAP_REPORT_MD}"
+                    archiveArtifacts artifacts: 'api_git_url.txt'  // Archive the Git URL details
+                    
                     container('python') {
                         script {
                             def jsonToSarif = libraryResource('zap_json_to_sarif.py')
