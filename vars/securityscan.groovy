@@ -39,7 +39,7 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                                 enabledForFailure: true,
                                 tool: sarif(
                                     pattern: "${GITLEAKS_REPORT}",
-                                    id: "gitLeaks-SARIF",
+                                    id: "Git Leaks",
                                     name: "Gitleak Report"
                                 )
                             )
@@ -73,7 +73,7 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                                     enabledForFailure: true,
                                     tool: sarif(
                                         pattern: "${OWASP_DEP_REPORT}",
-                                        id: "owasp-dependency-check-SARIF",
+                                        id: "OWASP Dependency Check",
                                         name: "OWASP Dependency Check Report"
                                     )
                                 )
@@ -104,7 +104,7 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                                     enabledForFailure: true,
                                     tool: sarif(
                                         pattern: "${SEMGREP_REPORT}",
-                                        id: "SEMGREP",
+                                        id: "SEMGREP SAST",
                                         name: "Semgrep Report"
                                     )
                                 )
@@ -134,7 +134,7 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                                 enabledForFailure: true,
                                 tool: sarif(
                                     pattern: "${CHECKOV_REPORT}",
-                                    id: "checkov-SARIF",
+                                    id: "Checkov IaC",
                                     name: "Checkov Report"
                                 )
                             )
