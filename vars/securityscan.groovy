@@ -26,10 +26,8 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                 }
                 steps {
                     script {
-                        container ('git') {
-                            checkout scm
-                        }
                         container('gitleak') {
+                            checkout scm
                             sh """
                                 gitleaks detect \
                                     --source=. \

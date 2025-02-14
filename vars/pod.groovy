@@ -10,8 +10,5 @@ spec:
       command:
         - cat
       tty: true
-    - name: git
-      image: alpine/git
-      command: ["sleep", "infinity"]
         """
     }
