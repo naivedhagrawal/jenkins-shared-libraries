@@ -31,6 +31,11 @@ def extract_alerts(data):
                 return result
     return []
 
+def sanitize_uri(uri):
+    if uri.startswith("http"):
+        return uri  # Keep external URLs unchanged
+    return os.path.normpath(uri)  # Normalize internal paths
+
 def main(input_file="zap-out.json", output_file="zap_report.sarif"):
     workspace = os.getenv("WORKSPACE", "./")  # Get Jenkins workspace path
     
@@ -79,9 +84,7 @@ def main(input_file="zap-out.json", output_file="zap_report.sarif"):
         })
 
         for instance in alert.get("instances", []):
-            artifact_path = instance.get("uri", "Unknown")
-            if not artifact_path.startswith("/"):
-                artifact_path = os.path.join(workspace, artifact_path)
+            artifact_path = sanitize_uri(instance.get("uri", "Unknown"))
             
             sarif_report["runs"][0]["results"].append({
                 "ruleId": rule_id,
