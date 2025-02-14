@@ -50,9 +50,7 @@ Baseline Scan - Passive scan without attacking the application''',
                                     sh "zap-baseline.py -t '$TARGET_URL' -J '$ZAP_REPORT' -r '$ZAP_REPORT_HTML' -w '$ZAP_MD' -I"
                                     break
                             }
-                            sh 'mv /zap/wrk/${ZAP_REPORT} .' 
-                            sh 'mv /zap/wrk/${ZAP_REPORT_HTML} .'
-                            sh 'mv /zap/wrk/${ZAP_MD} .'
+                            sh "mv /zap/wrk/* ."
                         }
                         archiveArtifacts artifacts: "${ZAP_REPORT}"
                         archiveArtifacts artifacts: "${ZAP_REPORT_HTML}"
