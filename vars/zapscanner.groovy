@@ -58,7 +58,7 @@ ZAP Command - Custom ZAP command execution''',
                             sh 'mv /zap/wrk/${ZAP_REPORT} .'
                             sh 'mv /zap/wrk/${ZAP_REPORT_HTML} .'
                             sh 'mv /zap/wrk/${ZAP_MD} .'
-                            sh 'mv /zap/wrk/${ZAP_CMD_REPORT} .'
+                            sh 'mv /zap/${ZAP_CMD_REPORT} .'
                         }
                         archiveArtifacts artifacts: "${ZAP_REPORT}"
                         archiveArtifacts artifacts: "${ZAP_REPORT_HTML}"
