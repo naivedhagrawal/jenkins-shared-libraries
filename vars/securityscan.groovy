@@ -66,7 +66,7 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                             sh '''
                                 # Set up a virtual environment
                                 python3 -m venv venv
-                                source venv/bin/activate
+                                . venv/bin/activate
                                 
                                 # Install detect-secrets inside venv
                                 pip install detect-secrets --quiet
