@@ -44,10 +44,10 @@ Baseline Scan - Passive scan without attacking the application''',
 
                             switch (params.scanType) {
                                 case 'full-scan':
-                                    sh "zap-full-scan.py -t '$TARGET_URL' -J '$ZAP_REPORT' -r '$ZAP_REPORT_HTML' -w '$ZAP_MD' -I"
+                                    sh '''zap-full-scan.py -t '$TARGET_URL' -J '$ZAP_REPORT' -r '$ZAP_REPORT_HTML' -w '$ZAP_MD' -I'''
                                     break
                                 case 'baseline':
-                                    sh "zap-baseline.py -t '$TARGET_URL' -J '$ZAP_REPORT' -r '$ZAP_REPORT_HTML' -w '$ZAP_MD' -I" -T "modern"
+                                    sh '''zap-baseline.py -t '$TARGET_URL' -J '$ZAP_REPORT' -r '$ZAP_REPORT_HTML' -w '$ZAP_MD' -I -T modern'''
                                     break
                             }
                             sh 'mv /zap/wrk/${ZAP_REPORT} .' 
