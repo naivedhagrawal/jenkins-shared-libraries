@@ -9,6 +9,9 @@ spec:
   - name: zap
     image: naivedh/owasp-zap:latest
     command: ['cat']
+    env:
+    - name: JAVA_OPTS
+      value: "-XX:ThreadStackSize=512"
     securityContext:
     runAsUser: 1000
     readOnlyRootFilesystem: false

@@ -14,7 +14,6 @@ ZAP Command - Custom ZAP command execution''',
         environment {
             ZAP_REPORT = 'zap-out.json'
             ZAP_REPORT_HTML = 'zap-out.html'
-            ZAP_SARIF = 'zap_report.sarif'
             ZAP_MD = 'zap-report.md'
             ZAP_CMD_REPORT = 'zap_cmd_report.html'
             TARGET_URL = "${params.target_URL?.trim()}"
