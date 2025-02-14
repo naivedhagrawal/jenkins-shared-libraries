@@ -52,9 +52,11 @@ Baseline Scan - Passive scan without attacking the application''',
                             }
                             sh 'mv /zap/wrk/${ZAP_REPORT} .' 
                             sh 'mv /zap/wrk/${ZAP_REPORT_HTML} .'
+                            sh 'mv /zap/wrk/${ZAP_MD} .'
                         }
                         archiveArtifacts artifacts: "${ZAP_REPORT}"
                         archiveArtifacts artifacts: "${ZAP_REPORT_HTML}"
+                        archiveArtifacts artifacts: "${ZAP_MD}"
                         archiveArtifacts artifacts: 'target_url.txt'  // Archive the target URL details
                     }
                     container('python') {
