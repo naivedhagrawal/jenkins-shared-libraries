@@ -39,17 +39,25 @@ Baseline Scan - Passive scan without attacking the application''',
                 steps {
                     container('zap') {
                         script {
+                            // Save the TARGET_URL to a file
                             writeFile file: 'target_url.txt', text: "Target URL: ${TARGET_URL}"
-                            sh "zap.sh -cmd -quickurl '${TARGET_URL}' -quickout ${ZAP_MD}"
-                            sh "python3 /zap/scripts/report.py -o ${ZAP_REPORT_HTML} -f modern-html"
-                            sh "python3 /zap/scripts/report.py -o ${ZAP_REPORT} -f modern-json"
-                            sh "python3 /zap/scripts/report.py -o zap_report.xml -f modern-xml"
-                            sh "python3 /zap/scripts/report.py -o zap_report.pdf -f modern-pdf"
+
+                            switch (params.scanType) {
+                                case 'full-scan':
+                                    sh "zap-full-scan.py -t '$TARGET_URL' -J '$ZAP_REPORT' -r '$ZAP_REPORT_HTML' -w '$ZAP_MD' -I"
+                                    break
+                                case 'baseline':
+                                    sh "zap-baseline.py -t '$TARGET_URL' -J '$ZAP_REPORT' -r '$ZAP_REPORT_HTML' -w '$ZAP_MD' -I"
+                                    break
+                            }
+                            sh 'mv /zap/wrk/${ZAP_REPORT} .' 
+                            sh 'mv /zap/wrk/${ZAP_REPORT_HTML} .'
+                            sh 'mv /zap/wrk/${ZAP_MD} .'
                         }
                         archiveArtifacts artifacts: "${ZAP_REPORT}"
                         archiveArtifacts artifacts: "${ZAP_REPORT_HTML}"
                         archiveArtifacts artifacts: "${ZAP_MD}"
-                        archiveArtifacts artifacts: 'target_url.txt'
+                        archiveArtifacts artifacts: 'target_url.txt'  // Archive the target URL details
                     }
                     container('python') {
                         script {
