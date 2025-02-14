@@ -3,7 +3,6 @@ import json
 import uuid
 import re
 import sys
-import os
 
 def remove_p_tags(obj):
     if isinstance(obj, str):
@@ -32,8 +31,7 @@ def extract_alerts(data):
     return []
 
 def main(input_file="zap-out.json", output_file="zap_report.sarif"):
-    workspace = os.getenv("WORKSPACE", "./")  # Get Jenkins workspace path
-    
+    # Read input JSON file
     try:
         with open(input_file, "r") as file:
             input_data = json.load(file)
@@ -43,7 +41,8 @@ def main(input_file="zap-out.json", output_file="zap_report.sarif"):
     except json.JSONDecodeError:
         print(f"Error: {input_file} is not a valid JSON file")
         exit(1)
-    
+
+    # Initialize SARIF report
     sarif_report = {
         "version": "2.1.0",
         "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
@@ -59,10 +58,12 @@ def main(input_file="zap-out.json", output_file="zap_report.sarif"):
             "results": []
         }]
     }
-    
+
+    # Extract alerts from any JSON structure
     alerts = extract_alerts(input_data)
     severity_map = {"High": "error", "Medium": "warning", "Low": "note", "Informational": "none"}
-    
+
+    # Process alerts
     for alert in alerts:
         rule_id = str(uuid.uuid4())[:8]
         risk = alert.get("riskdesc", "").split(" ")[0]
@@ -79,22 +80,19 @@ def main(input_file="zap-out.json", output_file="zap_report.sarif"):
         })
 
         for instance in alert.get("instances", []):
-            artifact_path = instance.get("uri", "Unknown")
-            if not artifact_path.startswith("/"):
-                artifact_path = os.path.join(workspace, artifact_path)
-            
             sarif_report["runs"][0]["results"].append({
                 "ruleId": rule_id,
                 "level": severity,
                 "message": {"text": alert.get("desc", "No description available.")},
                 "locations": [{
                     "physicalLocation": {
-                        "artifactLocation": {"uri": artifact_path},
+                        "artifactLocation": {"uri": instance.get("uri", "Unknown")},
                         "region": {"startLine": 1}
                     }
                 }]
             })
-    
+
+    # Clean and write the SARIF report
     sarif_report = remove_p_tags(sarif_report)
     try:
         with open(output_file, "w") as sarif_file:
