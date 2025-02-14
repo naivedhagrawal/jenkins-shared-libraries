@@ -64,9 +64,17 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                         container('detect-secrets') {
                             checkout scm
                             sh '''
+                                # Set up a virtual environment
+                                python3 -m venv venv
+                                source venv/bin/activate
+                                
+                                # Install detect-secrets inside venv
                                 pip install detect-secrets --quiet
-                                detect-secrets scan --all-files > "${DETECT_SECRETS}"
 
+                                # Run Detect-Secrets and save as SARIF report
+                                detect-secrets scan --all-files > detect-secrets-report.sarif
+
+                                # Check if secrets were detected
                                 if grep -q '"is_secret": true' detect-secrets-report.sarif; then
                                     echo "❌ Secrets detected! Failing build."
                                     exit 1
