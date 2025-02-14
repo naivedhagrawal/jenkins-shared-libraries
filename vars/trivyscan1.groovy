@@ -21,6 +21,9 @@ def call() {
                         if (!params.image_name && !params.git_URL) {
                             error('Either image_name or git_URL parameter must be provided')
                         }
+                        if (params.git_URL && !params.git_URL.startsWith('https://')) {
+                            error('git_URL must start with https://')
+                        }
                     }
                 }
             }
