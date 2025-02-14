@@ -4,7 +4,6 @@ securityscan(
     owaspdependency: true,
     semgrep: true,
     checkov: true,
-    detect_secrets: true
 )*/
 
 def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, checkov: true]) {
@@ -12,7 +11,6 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
     def OWASP_DEP_REPORT = 'owasp-dep-report.sarif'
     def SEMGREP_REPORT = 'semgrep-report.sarif'
     def CHECKOV_REPORT = 'results.sarif'
-    def DETECT_SECRETS = 'detect-secrets-report.sarif'
 
     pipeline {
         agent none
@@ -46,51 +44,6 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                                 )
                             )
                             archiveArtifacts artifacts: "${GITLEAKS_REPORT}"
-                        }
-                    }
-                }
-            }
-
-            stage('Detect Secrets') {
-                when { expression { params.detect_secrets } }
-                agent {
-                    kubernetes {
-                        yaml pod('detect-secrets', 'python:latest')
-                        showRawYaml false
-                    }
-                }
-                steps {
-                    script {
-                        container('detect-secrets') {
-                            checkout scm
-                            sh '''
-                                # Set up a virtual environment
-                                python3 -m venv venv
-                                . venv/bin/activate
-                                
-                                # Install detect-secrets inside venv
-                                pip install detect-secrets --quiet
-
-                                # Run Detect-Secrets and save as SARIF report
-                                detect-secrets scan --all-files > ${DETECT_SECRETS}
-
-                                # Check if secrets were detected
-                                if grep -q '"is_secret": true' detect-secrets-report.sarif; then
-                                    echo "❌ Secrets detected! Failing build."
-                                    exit 1
-                                else
-                                    echo "✅ No secrets found. Proceeding with build."
-                                fi
-                                '''
-                            recordIssues(
-                                enabledForFailure: true,
-                                tool: sarif(
-                                    pattern: "${DETECT_SECRETS}",
-                                    id: "Detect-Secrets",
-                                    name: "Detect Secrets Report"
-                                )
-                            )
-                            archiveArtifacts artifacts: "${DETECT_SECRETS}"
                         }
                     }
                 }
