@@ -72,7 +72,7 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                                 pip install detect-secrets --quiet
 
                                 # Run Detect-Secrets and save as SARIF report
-                                detect-secrets scan --all-files > "${DETECT_SECRETS}"
+                                detect-secrets scan --all-files > ${DETECT_SECRETS}
 
                                 # Check if secrets were detected
                                 if grep -q '"is_secret": true' detect-secrets-report.sarif; then
