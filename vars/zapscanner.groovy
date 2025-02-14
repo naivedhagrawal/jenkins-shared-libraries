@@ -14,9 +14,6 @@ Baseline Scan - Passive scan without attacking the application''',
             ZAP_REPORT = 'zap-out.json'
             ZAP_REPORT_HTML = 'zap-out.html'
             ZAP_SARIF = 'zap_report.sarif'
-            ZAP_XML = 'zap_report.xml'
-            ZAP_MD = 'zap_report.md'
-            ZAP_CSV = 'zap_report.csv'
             TARGET_URL = "${params.target_URL?.trim()}"
         }
 
@@ -46,23 +43,17 @@ Baseline Scan - Passive scan without attacking the application''',
 
                             switch (params.scanType) {
                                 case 'full-scan':
-                                    sh "zap-full-scan.py -t '$TARGET_URL' -J '$ZAP_REPORT' -r '$ZAP_REPORT_HTML' -x '$ZAP_XML' -m '$ZAP_MD' -c '$ZAP_CSV' -I"
+                                    sh "zap-full-scan.py -t '$TARGET_URL' -J '$ZAP_REPORT' -r '$ZAP_REPORT_HTML' -I"
                                     break
                                 case 'baseline':
-                                    sh "zap-baseline.py -t '$TARGET_URL' -J '$ZAP_REPORT' -r '$ZAP_REPORT_HTML' -x '$ZAP_XML' -m '$ZAP_MD' -c '$ZAP_CSV' -I"
+                                    sh "zap-baseline.py -t '$TARGET_URL' -J '$ZAP_REPORT' -r '$ZAP_REPORT_HTML' -I"
                                     break
                             }
                             sh 'mv /zap/wrk/${ZAP_REPORT} .' 
                             sh 'mv /zap/wrk/${ZAP_REPORT_HTML} .'
-                            sh 'mv /zap/wrk/${ZAP_XML} .'
-                            sh 'mv /zap/wrk/${ZAP_MD} .'
-                            sh 'mv /zap/wrk/${ZAP_CSV} .'
                         }
                         archiveArtifacts artifacts: "${ZAP_REPORT}"
                         archiveArtifacts artifacts: "${ZAP_REPORT_HTML}"
-                        archiveArtifacts artifacts: "${ZAP_XML}"
-                        archiveArtifacts artifacts: "${ZAP_MD}"
-                        archiveArtifacts artifacts: "${ZAP_CSV}"
                         archiveArtifacts artifacts: 'target_url.txt'  // Archive the target URL details
                     }
                     container('python') {
