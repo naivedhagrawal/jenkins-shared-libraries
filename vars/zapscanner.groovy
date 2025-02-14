@@ -6,8 +6,9 @@ def call() {
             choice(
                 name: 'scanType',
                 description: '''Full Scan - Full scan including active attacks
-Baseline Scan - Passive scan without attacking the application''',
-                choices: ['full-scan', 'baseline']
+Baseline Scan - Passive scan without attacking the application
+ZAP Command - Custom ZAP command execution''',
+                choices: ['full-scan', 'baseline', 'zap_cmd']
             )
         }
         environment {
@@ -15,6 +16,7 @@ Baseline Scan - Passive scan without attacking the application''',
             ZAP_REPORT_HTML = 'zap-out.html'
             ZAP_SARIF = 'zap_report.sarif'
             ZAP_MD = 'zap-report.md'
+            ZAP_CMD_REPORT = 'zap_cmd_report.html'
             TARGET_URL = "${params.target_URL?.trim()}"
         }
 
@@ -22,7 +24,7 @@ Baseline Scan - Passive scan without attacking the application''',
             stage('Validate Parameters') {
                 steps {
                     script {
-                        if ((params.scanType == 'full-scan' || params.scanType == 'baseline') && (!TARGET_URL || TARGET_URL == '')) {
+                        if ((params.scanType == 'full-scan' || params.scanType == 'baseline' || params.scanType == 'zap_cmd') && (!TARGET_URL || TARGET_URL == '')) {
                             error('ERROR: Target URL cannot be empty.')
                         }
                     }
@@ -47,17 +49,21 @@ Baseline Scan - Passive scan without attacking the application''',
                                     sh "zap-full-scan.py -t '$TARGET_URL' -J '$ZAP_REPORT' -r '$ZAP_REPORT_HTML' -w '$ZAP_MD' -I"
                                     break
                                 case 'baseline':
-                                    sh "zap.sh -cmd -quickurl '${TARGET_URL}' -quickout 'modern_report.html' -quickprogress"
                                     sh "zap-baseline.py -t '$TARGET_URL' -J '$ZAP_REPORT' -r '$ZAP_REPORT_HTML' -w '$ZAP_MD' -I -T modern"
                                     break
+                                case 'zap_cmd':
+                                    sh "zap.sh -cmd -quickurl '$TARGET_URL' -quickout '$ZAP_CMD_REPORT' -quickprogress"
+                                    break
                             }
-                            sh 'mv /zap/wrk/${ZAP_REPORT} .' 
+                            sh 'mv /zap/wrk/${ZAP_REPORT} .'
                             sh 'mv /zap/wrk/${ZAP_REPORT_HTML} .'
                             sh 'mv /zap/wrk/${ZAP_MD} .'
+                            sh 'mv /zap/wrk/${ZAP_CMD_REPORT} .'
                         }
                         archiveArtifacts artifacts: "${ZAP_REPORT}"
                         archiveArtifacts artifacts: "${ZAP_REPORT_HTML}"
                         archiveArtifacts artifacts: "${ZAP_MD}"
+                        archiveArtifacts artifacts: "${ZAP_CMD_REPORT}"
                         archiveArtifacts artifacts: 'target_url.txt'  // Archive the target URL details
                     }
                 }
