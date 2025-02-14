@@ -20,15 +20,15 @@ ZAP Command - Custom ZAP command execution''',
             ZAP_REPORT_HTML = 'zap-out.html'
             ZAP_MD = 'zap-report.md'
             ZAP_CMD_REPORT = 'zap_cmd_report.html'
-            TARGET_URL = "${params.target_URL?.trim()}"
         }
 
         stages {
             stage('Validate Parameters') {
                 steps {
                     script {
+                        def TARGET_URL = params.target_URL?.trim()
                         if ((params.scanType == 'full-scan' || params.scanType == 'baseline' || params.scanType == 'zap_cmd') && (!TARGET_URL || TARGET_URL == '')) {
-                            error('ERROR: Target URL cannot be empty.')
+                            error('ERROR: TARGET_URL is required for the selected scan type.')
                         }
                         
                         if (params.AUTH_REQUIRED == 'yes') {
