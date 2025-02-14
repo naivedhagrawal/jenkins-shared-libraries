@@ -14,6 +14,7 @@ Baseline Scan - Passive scan without attacking the application''',
             ZAP_REPORT = 'zap-out.json'
             ZAP_REPORT_HTML = 'zap-out.html'
             ZAP_SARIF = 'zap_report.sarif'
+            ZAP_MD = 'zap-report.md'
             TARGET_URL = "${params.target_URL?.trim()}"
         }
 
@@ -43,10 +44,10 @@ Baseline Scan - Passive scan without attacking the application''',
 
                             switch (params.scanType) {
                                 case 'full-scan':
-                                    sh "zap-full-scan.py -t '$TARGET_URL' -J '$ZAP_REPORT' -r '$ZAP_REPORT_HTML' -I"
+                                    sh "zap-full-scan.py -t '$TARGET_URL' -J '$ZAP_REPORT' -r '$ZAP_REPORT_HTML' -w '$ZAP_MD' -I"
                                     break
                                 case 'baseline':
-                                    sh "zap-baseline.py -t '$TARGET_URL' -J '$ZAP_REPORT' -r '$ZAP_REPORT_HTML' -I"
+                                    sh "zap-baseline.py -t '$TARGET_URL' -J '$ZAP_REPORT' -r '$ZAP_REPORT_HTML' -w '$ZAP_MD' -I"
                                     break
                             }
                             sh 'mv /zap/wrk/${ZAP_REPORT} .' 
