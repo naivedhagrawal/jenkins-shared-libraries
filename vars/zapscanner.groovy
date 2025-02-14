@@ -13,7 +13,8 @@ Baseline Scan - Passive scan without attacking the application''',
         environment {
             ZAP_REPORT = 'zap-out.json'
             ZAP_REPORT_HTML = 'zap-out.html'
-            ZAP_SARIF = 'zap_report.sarif'
+            ZAP_REPORT_XML = 'zap-out.xml'
+            ZAP_REPORT_PDF = 'zap-out.pdf'
             TARGET_URL = "${params.target_URL?.trim()}"
         }
 
@@ -43,30 +44,20 @@ Baseline Scan - Passive scan without attacking the application''',
 
                             switch (params.scanType) {
                                 case 'full-scan':
-                                    sh "zap-full-scan.py -t '$TARGET_URL' -J '$ZAP_REPORT' -r '$ZAP_REPORT_HTML' -I"
+                                    sh "zap-full-scan.py -t '$TARGET_URL' -I"
                                     break
                                 case 'baseline':
-                                    sh "zap-baseline.py -t '$TARGET_URL' -J '$ZAP_REPORT' -r '$ZAP_REPORT_HTML' -I"
+                                    sh "zap-baseline.py -t '$TARGET_URL' -I"
                                     break
                             }
-                            sh 'mv /zap/wrk/${ZAP_REPORT} .' 
-                            sh 'mv /zap/wrk/${ZAP_REPORT_HTML} .'
+
+                            // Generate modern reports using report.py
+                            sh "python3 /zap/scripts/report.py -o ${ZAP_REPORT_HTML} -f modern-html"
+                            sh "python3 /zap/scripts/report.py -o ${ZAP_REPORT_XML} -f modern-xml"
+                            sh "python3 /zap/scripts/report.py -o ${ZAP_REPORT_PDF} -f modern-pdf"
                         }
-                        archiveArtifacts artifacts: "${ZAP_REPORT}"
-                        archiveArtifacts artifacts: "${ZAP_REPORT_HTML}"
+                        archiveArtifacts artifacts: "zap-out.*"
                         archiveArtifacts artifacts: 'target_url.txt'  // Archive the target URL details
-                    }
-                    container('python') {
-                        script {
-                            def jsonToSarif = libraryResource('zap_json_to_sarif.py')
-                            writeFile file: 'zap_json_to_sarif.py', text: jsonToSarif
-                            sh 'python3 zap_json_to_sarif.py'
-                        }
-                        archiveArtifacts artifacts: "${ZAP_SARIF}"
-                        recordIssues(
-                            enabledForFailure: true,
-                            tool: sarif(pattern: "${ZAP_SARIF}", id: "zap-SARIF", name: "DAST Report")
-                        )
                     }
                 }
             }
