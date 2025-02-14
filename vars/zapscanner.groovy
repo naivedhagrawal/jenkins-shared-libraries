@@ -30,6 +30,12 @@ ZAP Command - Custom ZAP command execution''',
                         if ((params.scanType == 'full-scan' || params.scanType == 'baseline' || params.scanType == 'zap_cmd') && (!TARGET_URL || TARGET_URL == '')) {
                             error('ERROR: Target URL cannot be empty.')
                         }
+                        
+                        if (params.AUTH_REQUIRED == 'yes') {
+                            if (!params.LOGIN_URL || !params.USERNAME || !params.PASSWORD) {
+                                error('ERROR: Authentication is required but LOGIN_URL, USERNAME, or PASSWORD is missing.')
+                            }
+                        }
                     }
                 }
             }
