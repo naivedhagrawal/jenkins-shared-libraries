@@ -42,7 +42,8 @@ ZAP Command - Custom ZAP command execution''',
                         script {
                             // Set system limits before running ZAP
                             sh 'ulimit -a' // Display current limits
-                            sh 'ulimit -n 1048576 || true' // Set open file limit, ignore errors
+                            sh 'ulimit -u 100000 || true' // Set process limit
+                            sh 'ulimit -n 1048576 || true' // Set open file limit
 
                             // Save the TARGET_URL to a file
                             writeFile file: 'target_url.txt', text: "Target URL: ${TARGET_URL}"
