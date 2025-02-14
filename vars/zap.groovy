@@ -26,25 +26,7 @@ spec:
       mountPath: /home/zap/custom_data
       subPath: custom_data
       readOnly: false
-    resources:
-    limits:
-      memory: "512Mi"
-      cpu: "500m"
-    requests:
-      memory: "256Mi"
-      cpu: "250m"
     tty: true
-  - name: python
-    image: python:latest
-    command: ['cat']
-    tty: true
-    resources:
-    limits:
-      memory: "512Mi"
-      cpu: "500m"
-    requests:
-      memory: "256Mi"
-      cpu: "250m"
   volumes:
   - name: zap-data
     emptyDir: {}
