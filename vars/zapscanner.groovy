@@ -47,23 +47,29 @@ ZAP Command - Custom ZAP command execution''',
                             switch (params.scanType) {
                                 case 'full-scan':
                                     sh "zap-full-scan.py -t '$TARGET_URL' -J '$ZAP_REPORT' -r '$ZAP_REPORT_HTML' -w '$ZAP_MD' -I"
+                                    sh 'mv /zap/wrk/${ZAP_REPORT} .'
+                                    sh 'mv /zap/wrk/${ZAP_REPORT_HTML} .'
+                                    sh 'mv /zap/wrk/${ZAP_MD} .'
+                                    archiveArtifacts artifacts: "${ZAP_REPORT}"
+                                    archiveArtifacts artifacts: "${ZAP_REPORT_HTML}"
+                                    archiveArtifacts artifacts: "${ZAP_MD}"
                                     break
                                 case 'baseline':
                                     sh "zap-baseline.py -t '$TARGET_URL' -J '$ZAP_REPORT' -r '$ZAP_REPORT_HTML' -w '$ZAP_MD' -I -T modern"
+                                    sh 'mv /zap/wrk/${ZAP_REPORT} .'
+                                    sh 'mv /zap/wrk/${ZAP_REPORT_HTML} .'
+                                    sh 'mv /zap/wrk/${ZAP_MD} .'
+                                    archiveArtifacts artifacts: "${ZAP_REPORT}"
+                                    archiveArtifacts artifacts: "${ZAP_REPORT_HTML}"
+                                    archiveArtifacts artifacts: "${ZAP_MD}"
                                     break
                                 case 'zap_cmd':
-                                    sh "zap.sh -cmd -quickurl '$TARGET_URL' -quickout '$ZAP_CMD_REPORT' -quickprogress"
+                                    sh "zap.sh -cmd -quickurl '${TARGET_URL}' -quickout '${ZAP_CMD_REPORT}' -quickprogress"
+                                    sh 'mv /zap/wrk/${ZAP_CMD_REPORT} .'
+                                    archiveArtifacts artifacts: "${ZAP_CMD_REPORT}"
                                     break
                             }
-                            sh 'mv /zap/wrk/${ZAP_REPORT} .'
-                            sh 'mv /zap/wrk/${ZAP_REPORT_HTML} .'
-                            sh 'mv /zap/wrk/${ZAP_MD} .'
-                            sh 'mv /zap/${ZAP_CMD_REPORT} .'
                         }
-                        archiveArtifacts artifacts: "${ZAP_REPORT}"
-                        archiveArtifacts artifacts: "${ZAP_REPORT_HTML}"
-                        archiveArtifacts artifacts: "${ZAP_MD}"
-                        archiveArtifacts artifacts: "${ZAP_CMD_REPORT}"
                         archiveArtifacts artifacts: 'target_url.txt'  // Archive the target URL details
                     }
                 }
