@@ -40,6 +40,10 @@ ZAP Command - Custom ZAP command execution''',
                 steps {
                     container('zap') {
                         script {
+                            // Set system limits before running ZAP
+                            sh 'ulimit -u 100000'
+                            sh 'ulimit -n 1048576'
+                            
                             // Save the TARGET_URL to a file
                             writeFile file: 'target_url.txt', text: "Target URL: ${TARGET_URL}"
 
