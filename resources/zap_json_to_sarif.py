@@ -32,7 +32,7 @@ def extract_alerts(data):
     return []
 
 def sanitize_uri(uri):
-    if not uri or uri.isdigit():
+    if not uri or uri.isdigit() or re.match(r'^/\S+', uri):
         return "unknown-file"
     if uri.startswith("http"):
         return uri  # Keep external URLs unchanged
@@ -42,7 +42,7 @@ def main(input_file="zap-out.json", output_file="zap_report.sarif"):
     workspace = os.getenv("WORKSPACE", "./")  # Get Jenkins workspace path
     
     try:
-        with open(input_file, "r") as file:
+        with open(input_file, "r", encoding="utf-8") as file:
             input_data = json.load(file)
     except FileNotFoundError:
         print(f"Error: Could not find {input_file}")
@@ -87,6 +87,7 @@ def main(input_file="zap-out.json", output_file="zap_report.sarif"):
 
         for instance in alert.get("instances", []):
             artifact_path = sanitize_uri(instance.get("uri", "Unknown"))
+            print(f"Debug: Processed URI - {artifact_path}")  # Debugging log
             
             sarif_report["runs"][0]["results"].append({
                 "ruleId": rule_id,
@@ -102,7 +103,7 @@ def main(input_file="zap-out.json", output_file="zap_report.sarif"):
     
     sarif_report = remove_p_tags(sarif_report)
     try:
-        with open(output_file, "w") as sarif_file:
+        with open(output_file, "w", encoding="utf-8") as sarif_file:
             json.dump(sarif_report, sarif_file, indent=4)
         print(f"SARIF report generated and cleaned: {output_file}")
     except IOError:
