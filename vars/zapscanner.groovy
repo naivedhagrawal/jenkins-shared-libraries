@@ -47,8 +47,7 @@ Baseline Scan - Passive scan without attacking the application''',
                                     sh "zap-full-scan.py -t '$TARGET_URL' -J '$ZAP_REPORT' -r '$ZAP_REPORT_HTML' -w '$ZAP_MD' -I"
                                     break
                                 case 'baseline':
-                                    sh "zap.sh -daemon -host 0.0.0.0 -port 8080 -addonupdate"
-                                    sh "zap.sh -cmd -report "custom_report.html" -reportTemplate "modern""
+                                    sh "zap.sh -cmd -quickurl '${TARGET_URL}' -quickout 'modern_report.html' -quickprogress"
                                     sh "zap-baseline.py -t '$TARGET_URL' -J '$ZAP_REPORT' -r '$ZAP_REPORT_HTML' -w '$ZAP_MD' -I -T modern"
                                     break
                             }
