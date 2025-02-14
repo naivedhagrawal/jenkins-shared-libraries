@@ -65,7 +65,7 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                             checkout scm
                             sh '''
                                 pip install detect-secrets --quiet
-                                detect-secrets scan --all-files | jq '.' > detect-secrets-report.sarif
+                                detect-secrets scan --all-files > "${DETECT_SECRETS}"
 
                                 if grep -q '"is_secret": true' detect-secrets-report.sarif; then
                                     echo "❌ Secrets detected! Failing build."
