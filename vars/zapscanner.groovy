@@ -30,7 +30,7 @@ ZAP Command - Custom ZAP command execution''',
                         if ((params.scanType == 'full-scan' || params.scanType == 'baseline' || params.scanType == 'zap_cmd') && (!TARGET_URL || TARGET_URL == '')) {
                             error('ERROR: TARGET_URL is required for the selected scan type.')
                         }
-                        
+
                         if (!TARGET_URL.startsWith('http')) {
                             error('ERROR: Target URL must start with http or https.')
                         }
@@ -38,6 +38,9 @@ ZAP Command - Custom ZAP command execution''',
                         if (params.AUTH_REQUIRED == 'yes') {
                             if (!params.LOGIN_URL || !params.USERNAME || !params.PASSWORD) {
                                 error('ERROR: Authentication is required but LOGIN_URL, USERNAME, or PASSWORD is missing.')
+                            }
+                            if (!params.LOGIN_URL.startsWith('http')) {
+                                error('ERROR: Login URL must start with http or https.')
                             }
                         }
                     }
