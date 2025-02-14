@@ -32,6 +32,8 @@ def extract_alerts(data):
     return []
 
 def sanitize_uri(uri):
+    if not uri or uri.isdigit():
+        return "unknown-file"
     if uri.startswith("http"):
         return uri  # Keep external URLs unchanged
     return os.path.normpath(uri)  # Normalize internal paths
