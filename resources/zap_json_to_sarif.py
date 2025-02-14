@@ -32,11 +32,16 @@ def extract_alerts(data):
     return []
 
 def sanitize_uri(uri):
-    if not uri or uri.isdigit() or uri in ["/", "./"]:
+    if not uri or uri.isdigit():
         return "unknown-file"
+    if uri in ["/", "./"]:
+        return "root-directory"
     if uri.startswith("http"):
         return uri.rstrip(".")  # Remove trailing dot if exists in URL
-    return os.path.normpath(uri)  # Normalize internal paths
+    uri = os.path.normpath(uri)  # Normalize internal paths
+    if uri.startswith("/"):
+        return f"workspace{uri}"
+    return uri
 
 def main(input_file="zap-out.json", output_file="zap_report.sarif"):
     workspace = os.getenv("WORKSPACE", "./")  # Get Jenkins workspace path
