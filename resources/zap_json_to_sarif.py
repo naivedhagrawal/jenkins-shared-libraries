@@ -32,10 +32,10 @@ def extract_alerts(data):
     return []
 
 def sanitize_uri(uri):
-    if not uri or uri.isdigit() or re.match(r'^/\S+', uri):
+    if not uri or uri.isdigit() or uri in ["/", "./"]:
         return "unknown-file"
     if uri.startswith("http"):
-        return uri  # Keep external URLs unchanged
+        return uri.rstrip(".")  # Remove trailing dot if exists in URL
     return os.path.normpath(uri)  # Normalize internal paths
 
 def main(input_file="zap-out.json", output_file="zap_report.sarif"):
@@ -87,7 +87,6 @@ def main(input_file="zap-out.json", output_file="zap_report.sarif"):
 
         for instance in alert.get("instances", []):
             artifact_path = sanitize_uri(instance.get("uri", "Unknown"))
-            print(f"Debug: Processed URI - {artifact_path}")  # Debugging log
             
             sarif_report["runs"][0]["results"].append({
                 "ruleId": rule_id,
