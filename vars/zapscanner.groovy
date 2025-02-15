@@ -3,6 +3,9 @@ pipeline {
     parameters {
         string(name: 'TARGET_URL', defaultValue: 'https://example.com', description: 'Target URL for ZAP scan')
     }
+    environment {
+        ZAP_PROXY = "http://localhost:8080"
+    }
     agent {
         kubernetes {
             yaml '''
@@ -37,12 +40,11 @@ spec:
                     sleep 30
                     
                     # Health check for ZAP daemon using curl
-                    if ! curl --silent --head --fail http://localhost:8080; then
+                    if ! curl --silent --head --fail "$ZAP_PROXY"; then
                         echo "ZAP daemon failed to start"
                         exit 1
                     fi
                     
-                    export ZAP_PROXY="http://localhost:8080"
                     zap-cli --zap-url="$ZAP_PROXY" open-url "${TARGET_URL}"
                     zap-cli --zap-url="$ZAP_PROXY" spider "${TARGET_URL}"
                     zap-cli --zap-url="$ZAP_PROXY" active-scan "${TARGET_URL}"
