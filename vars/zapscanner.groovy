@@ -55,7 +55,7 @@ ZAP Command - Custom ZAP command execution''',
                     }
                 }
                 steps {
-                    container('zap-daemon') {
+                    container('zap') {
                         script {
                             // Set system limits before running ZAP
                             sh 'ulimit -a' // Display current limits
