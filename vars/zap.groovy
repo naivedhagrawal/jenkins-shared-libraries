@@ -5,7 +5,7 @@ kind: Pod
 spec:
   containers:
   - name: zap-daemon
-    image: zaproxy/zap-stable:latest
+    image: naivedh/owasp-zap:latest
     command: ["/bin/sh", "-c"]
     args:
       - "zap.sh -daemon -host 0.0.0.0 -port 8080 && tail -f /dev/null"
