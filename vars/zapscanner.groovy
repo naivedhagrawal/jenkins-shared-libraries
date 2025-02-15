@@ -4,7 +4,7 @@ pipeline {
         string(name: 'TARGET_URL', defaultValue: 'https://google-gruyere.appspot.com/', description: 'Target URL for ZAP scan')
     }
     environment {
-        ZAP_PROXY = "http://localhost:8080"
+        ZAP_PROXY = "http://127.0.0.1:8080"
     }
     agent {
         kubernetes {
@@ -61,4 +61,5 @@ spec:
         }
     }
 }
+
 }
