@@ -44,19 +44,6 @@ def call() {
                     archiveArtifacts artifacts: "${ZAP_REPORT}"
                     archiveArtifacts artifacts: "${ZAP_REPORT_HTML}"
                     archiveArtifacts artifacts: "${ZAP_REPORT_MD}"
-                    
-                    container('python') {
-                        script {
-                            def jsonToSarif = libraryResource('zap_json_to_sarif.py')
-                            writeFile file: 'zap_json_to_sarif.py', text: jsonToSarif
-                            sh 'python3 zap_json_to_sarif.py'
-                        }
-                        archiveArtifacts artifacts: "${ZAP_SARIF}"
-                        recordIssues(
-                            enabledForFailure: true,
-                            tool: sarif(pattern: "${ZAP_SARIF}", id: "zap-SARIF", name: "DAST Report")
-                        )
-                    }
                 }
             }
         }
