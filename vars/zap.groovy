@@ -6,33 +6,42 @@ metadata:
   name: zap-pod
 spec:
   containers:
-  - name: zap
+  - name: zap-daemon
     image: naivedh/owasp-zap:latest
-    command: [ "/bin/sh", "-c", "zap.sh -daemon -host 0.0.0.0 -port 8080" ]
+    command: ["/bin/sh", "-c", "zap.sh -daemon -host 0.0.0.0 -port 8080 & sleep infinity"]
     env:
     - name: JAVA_OPTS
       value: "-XX:ThreadStackSize=512"
     securityContext:
       runAsUser: 1000
-      readOnlyRootFilesystem: false
-      fsGroup: 1000
     volumeMounts:
     - name: zap-data
       mountPath: /zap/reports
       subPath: reports
-      readOnly: false
     - name: zap-wrk
       mountPath: /zap/wrk/data
       subPath: data
-      readOnly: false
     - name: zap-home
       mountPath: /home/zap/custom_data
       subPath: custom_data
-      readOnly: false
-    ports:
-    - containerPort: 8080
-      protocol: TCP
-    tty: true
+
+  - name: zap-cli
+    image: naivedh/owasp-zap:latest
+    command: ["/bin/sh", "-c", "sleep infinity"]
+    env:
+    - name: ZAP_URL
+      value: "http://localhost:8080"
+    volumeMounts:
+    - name: zap-data
+      mountPath: /zap/reports
+      subPath: reports
+    - name: zap-wrk
+      mountPath: /zap/wrk/data
+      subPath: data
+    - name: zap-home
+      mountPath: /home/zap/custom_data
+      subPath: custom_data
+
   volumes:
   - name: zap-data
     emptyDir: {}
@@ -42,5 +51,6 @@ spec:
     emptyDir: {}
 
   restartPolicy: Always
+
 """
 }
