@@ -47,8 +47,12 @@ spec:
                     
                     echo "Using ZAP Proxy: $ZAP_PROXY"
                     
-                    # Ensure zap-cli recognizes the proxy correctly
-                    zap-cli --zap-url="$ZAP_PROXY" status
+                    # Wait for ZAP to be fully initialized
+                    echo "Waiting for ZAP to be ready..."
+                    for i in {1..30}; do
+                        zap-cli --zap-url="$ZAP_PROXY" status && break
+                        sleep 2
+                    done
                     
                     zap-cli --zap-url="$ZAP_PROXY" open-url "${TARGET_URL}"
                     zap-cli --zap-url="$ZAP_PROXY" spider "${TARGET_URL}"
@@ -64,6 +68,4 @@ spec:
             }
         }
     }
-}
-
 }
