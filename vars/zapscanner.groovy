@@ -36,8 +36,8 @@ spec:
                     zap.sh -daemon -host 0.0.0.0 -port 8080 &
                     sleep 30
                     
-                    # Health check for ZAP daemon
-                    if ! nc -z localhost 8080; then
+                    # Health check for ZAP daemon using curl
+                    if ! curl --silent --head --fail http://localhost:8080; then
                         echo "ZAP daemon failed to start"
                         exit 1
                     fi
@@ -57,5 +57,4 @@ spec:
         }
     }
 }
-
 }
