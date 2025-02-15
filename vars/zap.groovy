@@ -10,7 +10,8 @@ spec:
     image: naivedh/owasp-zap:latest
     command: ["/bin/sh", "-c"]
     args:
-      - "export ZAP_CLI_API_KEY=\$(uuidgen) && echo \$ZAP_CLI_API_KEY > /zap-api-key.txt && \
+      - "export ZAP_CLI_API_KEY=\$(cat /proc/sys/kernel/random/uuid) && \
+         echo \$ZAP_CLI_API_KEY > /zap/wrk/api-key.txt && \
          export JVM_ARGS='-Xmx6g' && zap.sh -daemon -host 0.0.0.0 -port 8080 \
          -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true \
          -config api.disablekey=false -config api.key=\$ZAP_CLI_API_KEY && \
@@ -27,6 +28,10 @@ spec:
       requests:
         memory: "4Gi"
         cpu: "2"
+    securityContext:
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000
     livenessProbe:
       httpGet:
         path: /
@@ -43,7 +48,7 @@ spec:
       failureThreshold: 5
     volumeMounts:
     - name: zap-data
-      mountPath: /zap/reports
+      mountPath: /zap/wrk
       subPath: reports
 
   volumes:
