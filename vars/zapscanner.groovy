@@ -61,6 +61,8 @@ ZAP Command - Custom ZAP command execution''',
                             sh 'ulimit -a' // Display current limits
                             sh 'ulimit -u 100000 || true' // Set process limit
                             sh 'ulimit -n 1048576 || true' // Set open file limit
+                            sh 'echo $ZAP_URL'
+                            sh 'zap-cli status'
 
                             // Save the TARGET_URL and authentication details to a file
                             writeFile file: 'target_url.txt', text: "Target URL: ${TARGET_URL}\nLogin URL: ${params.LOGIN_URL}"
