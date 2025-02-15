@@ -29,9 +29,17 @@ def call() {
                         curl -s -X GET "${spiderUrl}?url=${params.TARGET_URL}"
                     """, returnStdout: true)
                     
+                    // Log the full spider response
+                    echo "Spider response: ${spiderResponse}"
+                    
                     // Extract the scan ID from the response
-                    def scanId = readJSON(text: spiderResponse).scan.toInteger()
+                    def scanId = readJSON(text: spiderResponse)?.scan?.toInteger()
                     echo "Spider scan ID: ${scanId}"
+                    
+                    // Ensure scan ID is valid
+                    if (!scanId) {
+                        error("Failed to retrieve a valid scan ID from the spider response.")
+                    }
                     
                     // Save the scan ID for later use
                     currentBuild.description = "Scan ID: ${scanId}"
@@ -57,6 +65,10 @@ def call() {
                     """, returnStdout: true)
                     
                     echo "Scan initiated, response: ${scanResponse}"
+                    
+                    // Log the response for troubleshooting
+                    def scanResult = readJSON(text: scanResponse)
+                    echo "Scan result: ${scanResult}"
                 }
             }
         }
@@ -118,6 +130,5 @@ def call() {
         }
     }
 }
-
 
 }
