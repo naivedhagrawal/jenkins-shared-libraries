@@ -55,13 +55,12 @@ ZAP Command - Custom ZAP command execution''',
                     }
                 }
                 steps {
-                    container('zap') {
+                    container('zap-daemon') {
                         script {
                             // Set system limits before running ZAP
                             sh 'ulimit -a' // Display current limits
                             sh 'ulimit -n 1048576 || true' // Set open file limit
                             sh 'echo $ZAP_URL'
-                            sh 'sleep 60'
                             sh 'zap-cli status'
 
                             // Save the TARGET_URL and authentication details to a file
