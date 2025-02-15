@@ -1,11 +1,6 @@
 def call() {
     pipeline {
-    agent {
-        kubernetes {
-            yaml zap()
-            showRawYaml false
-        }
-                }
+    agent any
     environment {
         ZAP_URL = 'http://zap.devops-tools.svc.cluster.local:8090'
         TARGET_URL = ''  // This will be populated at runtime
@@ -24,10 +19,10 @@ def call() {
                     // Triggering the ZAP scan through API
                     echo "Starting ZAP scan on target: ${params.TARGET_URL}"
 
-                    // Initiate a new scan using the ZAP API
+                    // Initiate a new scan using the ZAP API without API key
                     def scanUrl = "${ZAP_URL}/JSON/ascan/action/scan"
                     def response = sh(script: """
-                        curl -s -X GET "${scanUrl}?url=${params.TARGET_URL}&maxDepth=5&maxChildren=10&apikey=your_api_key"
+                        curl -s -X GET "${scanUrl}?url=${params.TARGET_URL}&maxDepth=5&maxChildren=10"
                     """, returnStdout: true)
 
                     echo "Scan initiated, response: ${response}"
@@ -43,7 +38,7 @@ def call() {
                     while (status < 100) {
                         echo "Checking scan progress..."
                         def response = sh(script: """
-                            curl -s -X GET "${statusUrl}?scanId=0&apikey=your_api_key"
+                            curl -s -X GET "${statusUrl}?scanId=0"
                         """, returnStdout: true)
                         
                         status = readJSON(text: response).scanStatus.toInteger()
@@ -62,7 +57,7 @@ def call() {
                     // Fetching alerts from ZAP
                     def alertUrl = "${ZAP_URL}/JSON/core/view/alerts"
                     def response = sh(script: """
-                        curl -s -X GET "${alertUrl}?baseurl=${params.TARGET_URL}&apikey=your_api_key"
+                        curl -s -X GET "${alertUrl}?baseurl=${params.TARGET_URL}"
                     """, returnStdout: true)
 
                     def alerts = readJSON(text: response)
