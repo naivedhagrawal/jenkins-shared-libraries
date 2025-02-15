@@ -1,83 +1,77 @@
 def call() {
     pipeline {
-        agent none
-        parameters {
-            string(name: 'target_URL', description: 'Target URL for DAST scan')
-            choice(
-                name: 'scanType',
-                description: '''Full Scan - Full scan including active attacks
-Baseline Scan - Passive scan without attacking the application
-ZAP Command - Custom ZAP command execution''',
-                choices: ['full-scan', 'baseline', 'zap_cmd']
-            )
-        }
-        environment {
-            ZAP_REPORT = 'zap-out.json'
-            ZAP_REPORT_HTML = 'zap-out.html'
-            ZAP_MD = 'zap-report.md'
-            ZAP_CMD_REPORT = 'zap_cmd_report.html'
-            TARGET_URL = "${params.target_URL?.trim()}"
-        }
-
-        stages {
-            stage('Validate Parameters') {
-                steps {
-                    script {
-                        if ((params.scanType == 'full-scan' || params.scanType == 'baseline' || params.scanType == 'zap_cmd') && (!TARGET_URL || TARGET_URL == '')) {
-                            error('ERROR: Target URL cannot be empty.')
-                        }
+    agent any
+    environment {
+        ZAP_URL = 'http://zap.devops-tools.svc.cluster.local:8090'
+        TARGET_URL = ''  // This will be populated at runtime
+    }
+    parameters {
+        string(name: 'TARGET_URL', defaultValue: '', description: 'Target URL for ZAP scan')
+    }
+    stages {
+        stage('Start ZAP Scan') {
+            steps {
+                script {
+                    if (!params.TARGET_URL) {
+                        error("TARGET_URL is required.")
                     }
+                    
+                    // Triggering the ZAP scan through API
+                    echo "Starting ZAP scan on target: ${params.TARGET_URL}"
+
+                    // Initiate a new scan using the ZAP API
+                    def scanUrl = "${ZAP_URL}/JSON/ascan/action/scan"
+                    def response = sh(script: """
+                        curl -s -X GET "${scanUrl}?url=${params.TARGET_URL}&maxDepth=5&maxChildren=10&apikey=your_api_key"
+                    """, returnStdout: true)
+
+                    echo "Scan initiated, response: ${response}"
                 }
             }
-            
-            stage('DAST SCANNING USING OWASP-ZAP') {
-                agent {
-                    kubernetes {
-                        yaml zap()
-                        showRawYaml false
-                    }
-                }
-                steps {
-                    container('zap') {
-                        script {
-                            // Set system limits before running ZAP
-                                sh 'ulimit -a' // Display current limits
-                                sh 'ulimit -u 100000 || true' // Set process limit
-                                sh 'ulimit -n 1048576 || true' // Set open file limit
-
-                            // Save the TARGET_URL to a file
-                            writeFile file: 'target_url.txt', text: "Target URL: ${TARGET_URL}"
-
-                            switch (params.scanType) {
-                                case 'full-scan':
-                                    sh "zap-full-scan.py -t '$TARGET_URL' -J '$ZAP_REPORT' -r '$ZAP_REPORT_HTML' -w '$ZAP_MD' -I"
-                                    sh 'mv /zap/wrk/${ZAP_REPORT} .'
-                                    sh 'mv /zap/wrk/${ZAP_REPORT_HTML} .'
-                                    sh 'mv /zap/wrk/${ZAP_MD} .'
-                                    archiveArtifacts artifacts: "${ZAP_REPORT}"
-                                    archiveArtifacts artifacts: "${ZAP_REPORT_HTML}"
-                                    archiveArtifacts artifacts: "${ZAP_MD}"
-                                    break
-                                case 'baseline':
-                                    sh "zap-baseline.py -t '$TARGET_URL' -J '$ZAP_REPORT' -r '$ZAP_REPORT_HTML' -w '$ZAP_MD' -I"
-                                    sh 'mv /zap/wrk/${ZAP_REPORT} .'
-                                    sh 'mv /zap/wrk/${ZAP_REPORT_HTML} .'
-                                    sh 'mv /zap/wrk/${ZAP_MD} .'
-                                    archiveArtifacts artifacts: "${ZAP_REPORT}"
-                                    archiveArtifacts artifacts: "${ZAP_REPORT_HTML}"
-                                    archiveArtifacts artifacts: "${ZAP_MD}"
-                                    break
-                                case 'zap_cmd':
-                                    sh "zap.sh -cmd -quickurl '${TARGET_URL}' -quickout '/zap/wrk/${ZAP_CMD_REPORT}' -quickprogress"
-                                    sh 'mv /zap/wrk/${ZAP_CMD_REPORT} .'
-                                    archiveArtifacts artifacts: "${ZAP_CMD_REPORT}"
-                                    break
-                            }
+        }
+        stage('Check Scan Status') {
+            steps {
+                script {
+                    // Checking scan status periodically
+                    def statusUrl = "${ZAP_URL}/JSON/ascan/view/status"
+                    def status = 0
+                    while (status < 100) {
+                        echo "Checking scan progress..."
+                        def response = sh(script: """
+                            curl -s -X GET "${statusUrl}?scanId=0&apikey=your_api_key"
+                        """, returnStdout: true)
+                        
+                        status = readJSON(text: response).scanStatus.toInteger()
+                        echo "Current scan status: ${status}%"
+                        if (status < 100) {
+                            sleep(time: 10, unit: 'SECONDS')
                         }
-                        archiveArtifacts artifacts: 'target_url.txt'  // Archive the target URL details
                     }
+                    echo "Scan completed."
+                }
+            }
+        }
+        stage('Get Alerts') {
+            steps {
+                script {
+                    // Fetching alerts from ZAP
+                    def alertUrl = "${ZAP_URL}/JSON/core/view/alerts"
+                    def response = sh(script: """
+                        curl -s -X GET "${alertUrl}?baseurl=${params.TARGET_URL}&apikey=your_api_key"
+                    """, returnStdout: true)
+
+                    def alerts = readJSON(text: response)
+                    echo "Found ${alerts.alerts.size()} alerts."
+                    // You can further parse alerts here and take action like sending them to a report or email.
                 }
             }
         }
     }
+    post {
+        always {
+            echo "ZAP Scan Pipeline Finished"
+        }
+    }
+}
+
 }
