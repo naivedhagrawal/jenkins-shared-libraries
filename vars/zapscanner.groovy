@@ -15,7 +15,7 @@ metadata:
 spec:
   containers:
     - name: zap
-      image: zaproxy/zap-stable
+      image: naivedh/owasp-zap:latest
       command: ["/bin/sh", "-c"]
       args: ["cat"]
       tty: true
