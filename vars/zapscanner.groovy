@@ -57,51 +57,49 @@ ZAP Command - Custom ZAP command execution''',
                 steps {
                     container('zap') {
                         script {
-                            // Set system limits before running ZAP
-                            sh 'ulimit -a' // Display current limits
-                            sh 'ulimit -n 1048576 || true' // Set open file limit
-                            sh 'curl http://localhost:8080'
-                            sh 'zap-cli --zap-url http://localhost:8080 status'
-                            sh 'zap-cli --zap-url http://127.0.0.1:8080 status'
-                            sh 'zap-cli status'
+                            // Retrieve API Key from file inside the container
+                            def zapApiKey = sh(script: "cat /zap-api-key.txt", returnStdout: true).trim()
+                            sh "echo 'Using API Key: ${zapApiKey}'"
+
+                            // Verify ZAP is running
+                            sh "curl http://localhost:8080"
+                            sh "zap-cli --zap-url http://localhost:8080 --api-key ${zapApiKey} status"
 
                             // Save the TARGET_URL and authentication details to a file
-                            writeFile file: 'target_url.txt', text: "Target URL: ${TARGET_URL}\nLogin URL: ${params.LOGIN_URL}"
+                            writeFile file: 'target_url.txt', text: "Target URL: ${params.target_URL}\nLogin URL: ${params.LOGIN_URL}"
 
                             // Configure authentication in ZAP if required
                             if (params.AUTH_REQUIRED == 'yes') {
                                 sh """
-                                    zap-cli open-url '${params.LOGIN_URL}'
-                                    zap-cli session set-context-user 'Default Context' 'auth_user'
-                                    zap-cli session set-authentication-credentials 'auth_user' username='${params.USERNAME}' password='${params.PASSWORD}'
+                                    zap-cli --zap-url http://localhost:8080 --api-key ${zapApiKey} open-url '${params.LOGIN_URL}'
+                                    zap-cli --zap-url http://localhost:8080 --api-key ${zapApiKey} session set-context-user 'Default Context' 'auth_user'
+                                    zap-cli --zap-url http://localhost:8080 --api-key ${zapApiKey} session set-authentication-credentials 'auth_user' username='${params.USERNAME}' password='${params.PASSWORD}'
                                 """
                             }
 
                             switch (params.scanType) {
                                 case 'full-scan':
-                                    sh "zap-full-scan.py -t '$TARGET_URL'" + (params.AUTH_REQUIRED == 'yes' ? " --auth-login-url '${params.LOGIN_URL}' --auth-username '${params.USERNAME}' --auth-password '${params.PASSWORD}'" : "") + " -J '$ZAP_REPORT' -r '$ZAP_REPORT_HTML' -w '$ZAP_MD' -I"
-                                    sh 'mv /zap/wrk/${ZAP_REPORT} .'
-                                    sh 'mv /zap/wrk/${ZAP_REPORT_HTML} .'
-                                    sh 'mv /zap/wrk/${ZAP_MD} .'
-                                    archiveArtifacts artifacts: "${ZAP_REPORT}"
-                                    archiveArtifacts artifacts: "${ZAP_REPORT_HTML}"
-                                    archiveArtifacts artifacts: "${ZAP_MD}"
+                                    sh "zap-full-scan.py -t '${params.target_URL}' --api-key ${zapApiKey} -J '${ZAP_REPORT}' -r '${ZAP_REPORT_HTML}' -w '${ZAP_MD}' -I"
                                     break
                                 case 'baseline':
-                                    sh "zap-baseline.py -t '$TARGET_URL'" + (params.AUTH_REQUIRED == 'yes' ? " --auth-login-url '${params.LOGIN_URL}' --auth-username '${params.USERNAME}' --auth-password '${params.PASSWORD}'" : "") + " -J '$ZAP_REPORT' -r '$ZAP_REPORT_HTML' -w '$ZAP_MD' -I"
-                                    sh 'mv /zap/wrk/${ZAP_REPORT} .'
-                                    sh 'mv /zap/wrk/${ZAP_REPORT_HTML} .'
-                                    sh 'mv /zap/wrk/${ZAP_MD} .'
-                                    archiveArtifacts artifacts: "${ZAP_REPORT}"
-                                    archiveArtifacts artifacts: "${ZAP_REPORT_HTML}"
-                                    archiveArtifacts artifacts: "${ZAP_MD}"
+                                    sh "zap-baseline.py -t '${params.target_URL}' --api-key ${zapApiKey} -J '${ZAP_REPORT}' -r '${ZAP_REPORT_HTML}' -w '${ZAP_MD}' -I"
                                     break
                                 case 'zap_cmd':
-                                    sh "zap.sh -cmd -quickurl '${TARGET_URL}' -quickout /zap/wrk/${ZAP_CMD_REPORT} -quickprogress"
-                                    sh 'mv /zap/wrk/${ZAP_CMD_REPORT} .'
-                                    archiveArtifacts artifacts: "${ZAP_CMD_REPORT}"
+                                    sh "zap.sh -cmd -quickurl '${params.target_URL}' --api-key ${zapApiKey} -quickout /zap/wrk/${ZAP_CMD_REPORT} -quickprogress"
                                     break
                             }
+
+                            // Move reports to workspace
+                            sh 'mv /zap/wrk/${ZAP_REPORT} .'
+                            sh 'mv /zap/wrk/${ZAP_REPORT_HTML} .'
+                            sh 'mv /zap/wrk/${ZAP_MD} .'
+                            sh 'mv /zap/wrk/${ZAP_CMD_REPORT} .'
+
+                            // Archive reports
+                            archiveArtifacts artifacts: "${ZAP_REPORT}"
+                            archiveArtifacts artifacts: "${ZAP_REPORT_HTML}"
+                            archiveArtifacts artifacts: "${ZAP_MD}"
+                            archiveArtifacts artifacts: "${ZAP_CMD_REPORT}"
                         }
                         archiveArtifacts artifacts: 'target_url.txt'  // Archive the target URL details
                     }
