@@ -34,7 +34,7 @@ spec:
                     ulimit -n 1048576 || true
                     
                     zap.sh -daemon -host 0.0.0.0 -port 8080 &
-                    sleep 30
+                    sleep 60
                     
                     # Health check for ZAP daemon using curl
                     if ! curl --silent --head --fail http://localhost:8080; then
