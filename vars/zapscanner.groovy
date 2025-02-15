@@ -85,7 +85,7 @@ ZAP Command - Custom ZAP command execution''',
                                     archiveArtifacts artifacts: "${ZAP_MD}"
                                     break
                                 case 'baseline':
-                                    sh "zap-baseline.py -t '$TARGET_URL'" + (params.AUTH_REQUIRED == 'yes' ? " --auth-login-url '${params.LOGIN_URL}' --auth-username '${params.USERNAME}' --auth-password '${params.PASSWORD}'" : "") + " -J '$ZAP_REPORT' -r '$ZAP_REPORT_HTML' -w '$ZAP_MD' -I -T modern"
+                                    sh "zap-baseline.py -t '$TARGET_URL'" + (params.AUTH_REQUIRED == 'yes' ? " --auth-login-url '${params.LOGIN_URL}' --auth-username '${params.USERNAME}' --auth-password '${params.PASSWORD}'" : "") + " -J '$ZAP_REPORT' -r '$ZAP_REPORT_HTML' -w '$ZAP_MD' -I"
                                     sh 'mv /zap/wrk/${ZAP_REPORT} .'
                                     sh 'mv /zap/wrk/${ZAP_REPORT_HTML} .'
                                     sh 'mv /zap/wrk/${ZAP_MD} .'
