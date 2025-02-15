@@ -24,6 +24,9 @@ ZAP Command - Custom ZAP command execution''',
                 steps {
                     container('zap') {
                         script {
+                            // Wait for ZAP to be ready
+                            sh "for i in {1..30}; do curl -s http://localhost:8080 && break || sleep 5; done"
+
                             // Get API Key from the container
                             def zapApiKey = sh(script: "cat ${ZAP_API_KEY_PATH}", returnStdout: true).trim()
                             sh "echo 'Using API Key: ${zapApiKey}'"
