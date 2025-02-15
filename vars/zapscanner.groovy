@@ -2,7 +2,7 @@ def call() {
     pipeline {
         agent none
         parameters {
-            string(name: 'target_URL', description: 'Target URL for DAST scan')
+            string(name: 'target_URL', description: 'Target URL for DAST scan', defaultValue: 'https://google-gruyere.appspot.com/')
             choice(
                 name: 'scanType',
                 description: '''Full Scan - Full scan including active attacks
