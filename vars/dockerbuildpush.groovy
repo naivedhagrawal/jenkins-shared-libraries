@@ -65,9 +65,7 @@ def call(Map params) {
                                 echo "Scanning image with Trivy..."
                                 sh "trivy image ${IMAGE_NAME}:${IMAGE_TAG} --timeout 15m --format sarif --output ${REPORT_FILE} --debug"
                                 sh "trivy image ${IMAGE_NAME}:${IMAGE_TAG} --timeout 30m --format table --output ${TABLE_REPORT_FILE} --debug"
-                                recordIssues(
-                                    enabledForFailure: true,
-                                    tool: trivy(pattern: "${env.REPORT_FILE}", id: "trivy-sarif", name: "trivyReport" ))
+                                recordIssues enabledForFailure: true, tools: [trivy(pattern: "${env.REPORT_FILE}", id: "trivy-sarif", name: "trivyReport")]
                                 archiveArtifacts artifacts: "${REPORT_FILE}", fingerprint: true
                                 archiveArtifacts artifacts: "${TABLE_REPORT_FILE}", fingerprint: true
                             } catch (Exception e) {
