@@ -56,7 +56,7 @@ spec:
                     done
                     
                     echo "Opening target URL in ZAP..."
-                    zap-cli --zap-url="$ZAP_PROXY" open-url "${TARGET_URL}" || { echo "Failed to open URL"; exit 1; }
+                    zap-cli --zap-url="$ZAP_PROXY" open-url "${TARGET_URL}" --ignore-proxy || { echo "Failed to open URL"; exit 1; }
                     
                     echo "Starting ZAP Spider Scan..."
                     zap-cli --zap-url="$ZAP_PROXY" spider "${TARGET_URL}" || { echo "Spider scan failed"; exit 1; }
