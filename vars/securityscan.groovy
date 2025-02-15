@@ -99,11 +99,12 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                             withCredentials([string(credentialsId: 'SEMGREP_KEY', variable: 'SEMGREP_KEY')]) {
                                 sh "SEMGREP_APP_TOKEN=${SEMGREP_KEY} semgrep login"
                                 sh """
-                                    semgrep --config=auto --sarif --output=${SEMGREP_REPORT}.sarif \
+                                    semgrep --config=auto \
+                                            --sarif --output=${SEMGREP_REPORT}.sarif \
                                             --json --output=${SEMGREP_REPORT}.json \
                                             --text --output=${SEMGREP_REPORT}.txt \
                                             .
-                                    """
+                                """
                                 archiveArtifacts artifacts: "${SEMGREP_REPORT}.sarif"
                                 recordIssues(
                                     enabledForFailure: true,
