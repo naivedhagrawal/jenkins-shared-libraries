@@ -105,7 +105,8 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                                             --text --output=${SEMGREP_REPORT}.txt \
                                             .
                                 """
-                                archiveArtifacts artifacts: "${SEMGREP_REPORT}.sarif"
+                                archiveArtifacts artifacts: "${SEMGREP_REPORT}.txt"
+                                archiveArtifacts artifacts: "${SEMGREP_REPORT}.json"
                                 recordIssues(
                                     enabledForFailure: true,
                                     tool: sarif(
