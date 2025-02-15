@@ -33,7 +33,7 @@ def call() {
                     container('trivy') {
                         script {
                             def trivy_report_table = 'trivy-report.txt'
-                            def trivy_report_json = 'trivy-report.json'
+                            def trivy_report_sarif = 'trivy-report.sarif'
                             def imageToScan = params.image_name
 
                             if (params.registry_type == 'private') {
@@ -43,15 +43,15 @@ def call() {
 
                             if (params.image_name) {
                                 sh "trivy image ${imageToScan} -f table -o ${trivy_report_table} --debug"
-                                sh "trivy image ${imageToScan} -f json -o ${trivy_report_json} --debug"
+                                sh "trivy image ${imageToScan} -f sarif -o ${trivy_report_sarif} --debug"
                             } else {
                                 sh "trivy repository ${params.git_URL} -f table -o ${trivy_report_table} --debug"
-                                sh "trivy repository ${params.git_URL} -f json -o ${trivy_report_json} --debug"
+                                sh "trivy repository ${params.git_URL} -f sarif -o ${trivy_report_sarif} --debug"
                             }
                             recordIssues(
                                 enabledForFailure: true,
-                                tool: trivy(pattern: "${trivy_report_json}", id: "trivy-json", name: "Trivy Scan Report"))
-                            archiveArtifacts artifacts: trivy_report_json
+                                tool: sarif(pattern: "${trivy_report_sarif}", id: "trivy-SARIF", name: "Trivy Scan Report"))
+                            archiveArtifacts artifacts: trivy_report_sarif
                             archiveArtifacts artifacts: trivy_report_table
                         }
                     }
