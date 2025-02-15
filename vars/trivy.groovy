@@ -1,5 +1,5 @@
 def call() {
-        return """
+    return """
     apiVersion: v1
     kind: Pod
     metadata:
@@ -7,7 +7,7 @@ def call() {
     spec:
       containers:
       - name: trivy
-        image: aquasec/trivy:latest
+        image: aquasec/trivy
         command: ["sleep"]
         args: ["999999"]
         volumeMounts:
