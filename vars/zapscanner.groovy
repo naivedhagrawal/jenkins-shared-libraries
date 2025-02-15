@@ -50,9 +50,16 @@ spec:
                     # Wait for ZAP to be fully initialized
                     echo "Waiting for ZAP to be ready..."
                     for i in {1..30}; do
-                        zap-cli --zap-url="$ZAP_PROXY" status && break
+                        if zap-cli --zap-url="$ZAP_PROXY" status; then
+                            break
+                        fi
                         sleep 2
                     done
+                    
+                    # Ensure correct proxy format
+                    export HTTP_PROXY="$ZAP_PROXY"
+                    export HTTPS_PROXY="$ZAP_PROXY"
+                    export no_proxy="localhost,127.0.0.1"
                     
                     zap-cli --zap-url="$ZAP_PROXY" open-url "${TARGET_URL}"
                     zap-cli --zap-url="$ZAP_PROXY" spider "${TARGET_URL}"
