@@ -7,15 +7,14 @@ metadata:
 spec:
   containers:
   - name: zap
-    image: owasp/zap2docker-stable
+    image: naivedh/owasp-zap:latest
     command: ["/bin/sh", "-c"]
     args:
       - "export ZAP_CLI_API_KEY=\$(cat /proc/sys/kernel/random/uuid) && \
          echo \$ZAP_CLI_API_KEY > /zap/wrk/api-key.txt && \
-         export JVM_ARGS='-Xmx6g' && \
-         zap.sh -daemon -host 0.0.0.0 -port 8080 \
+         export JVM_ARGS='-Xmx6g' && zap.sh -daemon -host 0.0.0.0 -port 8080 \
          -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true \
-         -config api.disablekey=true && \
+         -config api.disablekey=false -config api.key=\$ZAP_CLI_API_KEY && \
          echo 'Waiting for ZAP to start...' && \
          for i in {1..30}; do curl -s http://localhost:8080 && break || sleep 5; done && \
          tail -f /zap/.ZAP_D/logs/zap.log"
