@@ -50,7 +50,7 @@ def call() {
                             }
                             recordIssues(
                                 enabledForFailure: true,
-                                tool: sarif(pattern: "${trivy_report_sarif}", id: "trivy-SARIF", name: "Trivy Scan Report"))
+                                tool: trivy(pattern: "${trivy_report_sarif}", id: "trivy-SARIF", name: "Trivy Scan Report"))
                             archiveArtifacts artifacts: trivy_report_sarif
                             archiveArtifacts artifacts: trivy_report_table
                         }
