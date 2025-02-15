@@ -5,9 +5,9 @@ pipeline {
     }
     environment {
         ZAP_PROXY = "http://127.0.0.1:8080"
-        HTTP_PROXY = "http://127.0.0.1:8080" // May not be needed within pod
-        HTTPS_PROXY = "http://127.0.0.1:8080" // May not be needed within pod
-        NO_PROXY = "localhost,127.0.0.1"      // May not be needed within pod
+        // HTTP_PROXY and HTTPS_PROXY should NOT be set here for intra-pod ZAP communication
+        // Set them at the pod level ONLY if your TARGET_URL needs a proxy
+        // NO_PROXY also likely not needed for intra-pod communication
     }
     agent {
         kubernetes {
@@ -25,17 +25,25 @@ spec:
       command: ["/bin/sh", "-c"]
       args: ["cat"]
       tty: true
-      ports: # Explicit port definition (recommended)
+      ports:
         - containerPort: 8080
       securityContext:
-        privileged: false # Keep as false unless absolutely necessary
-      resources: # Add resource limits (recommended)
+        privileged: false
+      resources:
         limits:
           cpu: "2"
           memory: "4Gi"
         requests:
           cpu: "1"
           memory: "2Gi"
+  # Uncomment the following if your TARGET_URL needs a proxy
+  #env:
+  #  - name: HTTP_PROXY
+  #    value: "http://your-external-proxy:port"
+  #  - name: HTTPS_PROXY
+  #    value: "http://your-external-proxy:port"
+  #  - name: NO_PROXY
+  #    value: "localhost,127.0.0.1"
 '''
         }
     }
@@ -68,17 +76,16 @@ spec:
                     done
 
                     echo "Opening target URL in ZAP..."
-                    zap-cli --zap-url="\$ZAP_PROXY" open-url "\${TARGET_URL}" || { echo "Failed to open URL"; kill -9 \$ZAP_PID; exit 1; }  # Kill ZAP on failure
+                    zap-cli --zap-url="\$ZAP_PROXY" open-url "\${TARGET_URL}" || { echo "Failed to open URL"; kill -9 \$ZAP_PID; exit 1; }
 
                     echo "Starting ZAP Spider Scan..."
-                    zap-cli --zap-url="\$ZAP_PROXY" spider "\${TARGET_URL}" || { echo "Spider scan failed"; kill -9 \$ZAP_PID; exit 1; } # Kill ZAP on failure
+                    zap-cli --zap-url="\$ZAP_PROXY" spider "\${TARGET_URL}" || { echo "Spider scan failed"; kill -9 \$ZAP_PID; exit 1; }
 
                     echo "Starting ZAP Active Scan..."
-                    zap-cli --zap-url="\$ZAP_PROXY" active-scan "\${TARGET_URL}" || { echo "Active scan failed"; kill -9 \$ZAP_PID; exit 1; } # Kill ZAP on failure
+                    zap-cli --zap-url="\$ZAP_PROXY" active-scan "\${TARGET_URL}" || { echo "Active scan failed"; kill -9 \$ZAP_PID; exit 1; }
 
                     echo "Generating ZAP Report..."
-                    zap-cli --zap-url="\$ZAP_PROXY" report -o zap_report.html -f html || { echo "Report generation failed"; kill -9 \$ZAP_PID; exit 1; } # Kill ZAP on failure
-
+                    zap-cli --zap-url="\$ZAP_PROXY" report -o zap_report.html -f html || { echo "Report generation failed"; kill -9 \$ZAP_PID; exit 1; }
 
                     trap - INT TERM EXIT
                     kill -9 \$ZAP_PID
