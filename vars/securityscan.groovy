@@ -98,7 +98,14 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                             checkout scm
                             withCredentials([string(credentialsId: 'SEMGREP_KEY', variable: 'SEMGREP_KEY')]) {
                                 sh "SEMGREP_APP_TOKEN=${SEMGREP_KEY} semgrep login"
-                                sh "semgrep --config=auto --sarif --output ${SEMGREP_REPORT} ."
+                                sh """
+                                    semgrep --config=auto --sarif --output=${SEMGREP_REPORT}.sarif \
+                                            --json --output=${SEMGREP_REPORT}.json \
+                                            --yaml --output=${SEMGREP_REPORT}.yaml \
+                                            --html --output=${SEMGREP_REPORT}.html \
+                                            --text --output=${SEMGREP_REPORT}.txt \
+                                            .
+                                    """
                                 archiveArtifacts artifacts: "${SEMGREP_REPORT}"
                                 recordIssues(
                                     enabledForFailure: true,
