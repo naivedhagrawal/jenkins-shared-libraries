@@ -1,7 +1,7 @@
 def call() {
 pipeline {
     parameters {
-        string(name: 'TARGET_URL', defaultValue: 'https://example.com', description: 'Target URL for ZAP scan')
+        string(name: 'TARGET_URL', defaultValue: 'https://google-gruyere.appspot.com', description: 'Target URL for ZAP scan')
     }
     environment {
         ZAP_PROXY = "http://localhost:8080"
