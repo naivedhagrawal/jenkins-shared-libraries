@@ -46,6 +46,10 @@ spec:
                     fi
                     
                     echo "Using ZAP Proxy: $ZAP_PROXY"
+                    
+                    # Ensure zap-cli recognizes the proxy correctly
+                    zap-cli --zap-url="$ZAP_PROXY" status
+                    
                     zap-cli --zap-url="$ZAP_PROXY" open-url "${TARGET_URL}"
                     zap-cli --zap-url="$ZAP_PROXY" spider "${TARGET_URL}"
                     zap-cli --zap-url="$ZAP_PROXY" active-scan "${TARGET_URL}"
