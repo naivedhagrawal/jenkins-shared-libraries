@@ -20,6 +20,7 @@ def call(Map params) {
 
     // Fixed report file name
     def REPORT_FILE = "trivy-report.sarif"
+    def TABLE_REPORT_FILE = "trivy-report.txt"
 
     pipeline {
         agent {
@@ -61,10 +62,12 @@ def call(Map params) {
                                 sh "trivy image --download-db-only --timeout 15m --debug"
                                 echo "Scanning image with Trivy..."
                                 sh "trivy image ${IMAGE_NAME}:${IMAGE_TAG} --timeout 30m --format sarif --output ${REPORT_FILE} --debug"
+                                sh "trivy image ${IMAGE_NAME}:${IMAGE_TAG} --timeout 30m --format table --output ${TABLE_REPORT_FILE} --debug"
                                 recordIssues(
                                     enabledForFailure: true,
                                     tool: sarif(pattern: "${env.REPORT_FILE}", id: "TRIVY-SARIF", name: "Trivy-Report" ))
                                 archiveArtifacts artifacts: "${REPORT_FILE}", fingerprint: true
+                                archiveArtifacts artifacts: "${TABLE_REPORT_FILE}", fingerprint: true
                             } catch (Exception e) {
                                 error "Trivy scan failed: ${e.getMessage()}"
                             }
