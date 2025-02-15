@@ -60,7 +60,9 @@ ZAP Command - Custom ZAP command execution''',
                             // Set system limits before running ZAP
                             sh 'ulimit -a' // Display current limits
                             sh 'ulimit -n 1048576 || true' // Set open file limit
-                            sh 'echo $ZAP_URL'
+                            sh 'curl http://localhost:8080'
+                            sh 'zap-cli --zap-url http://localhost:8080 status'
+                            sh 'zap-cli --zap-url http://127.0.0.1:8080 status'
                             sh 'zap-cli status'
 
                             // Save the TARGET_URL and authentication details to a file
