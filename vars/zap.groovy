@@ -25,9 +25,9 @@ spec:
       mountPath: /home/zap/custom_data
       subPath: custom_data
 
-  - name: zap
+  - name: zap-cli
     image: naivedh/owasp-zap:latest
-    command: ["/bin/sh", "-c", "sleep infinity"]
+    command: ["/bin/sh", "-c", "export ZAP_URL=http://localhost:8080 && sleep infinity"]
     env:
     - name: ZAP_URL
       value: "http://localhost:8080"
@@ -51,6 +51,5 @@ spec:
     emptyDir: {}
 
   restartPolicy: Always
-
 """
 }
