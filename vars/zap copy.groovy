@@ -8,14 +8,14 @@ spec:
   containers:
   - name: zap
     image: naivedh/owasp-zap:latest
-    command: [ "/bin/sh", "-c", "zap.sh -daemon -host 0.0.0.0 -port 8080" ]
+    command: ['cat']
     env:
     - name: JAVA_OPTS
       value: "-XX:ThreadStackSize=512"
     securityContext:
-      runAsUser: 1000
-      readOnlyRootFilesystem: false
-      fsGroup: 1000
+    runAsUser: 1000
+    readOnlyRootFilesystem: false
+    fsGroup: 1000
     volumeMounts:
     - name: zap-data
       mountPath: /zap/reports
@@ -29,9 +29,6 @@ spec:
       mountPath: /home/zap/custom_data
       subPath: custom_data
       readOnly: false
-    ports:
-    - containerPort: 8080
-      protocol: TCP
     tty: true
   volumes:
   - name: zap-data
@@ -42,5 +39,6 @@ spec:
     emptyDir: {}
 
   restartPolicy: Always
+
 """
 }
