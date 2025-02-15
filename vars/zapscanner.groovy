@@ -40,10 +40,11 @@ spec:
                     sleep 30
                     
                     # Health check for ZAP daemon using curl
-                    if ! curl --silent --head --fail "$ZAP_PROXY"; then
-                        echo "ZAP daemon failed to start"
-                        exit 1
-                    fi
+                    echo "Checking if ZAP is running..."
+                    until curl --silent --head --fail "$ZAP_PROXY"; do
+                        echo "Waiting for ZAP daemon to start..."
+                        sleep 5
+                    done
                     
                     echo "Using ZAP Proxy: $ZAP_PROXY"
                     
@@ -59,7 +60,7 @@ spec:
                     # Ensure correct proxy format
                     export HTTP_PROXY="$ZAP_PROXY"
                     export HTTPS_PROXY="$ZAP_PROXY"
-                    export no_proxy="localhost,127.0.0.1"
+                    export NO_PROXY="localhost,127.0.0.1"
                     
                     zap-cli --zap-url="$ZAP_PROXY" open-url "${TARGET_URL}"
                     zap-cli --zap-url="$ZAP_PROXY" spider "${TARGET_URL}"
