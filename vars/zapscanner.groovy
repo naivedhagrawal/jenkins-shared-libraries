@@ -1,6 +1,11 @@
 def call() {
     pipeline {
-    agent any
+    agent {
+        kubernetes {
+            yaml zap()
+            showRawYaml false
+        }
+                }
     environment {
         ZAP_URL = 'http://zap.devops-tools.svc.cluster.local:8090'
         TARGET_URL = ''  // This will be populated at runtime
