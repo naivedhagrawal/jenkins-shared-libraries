@@ -21,13 +21,6 @@ spec:
       tty: true
       securityContext:
         privileged: true
-      resources:
-        limits:
-          memory: "2Gi"
-          cpu: "1000m"
-        requests:
-          memory: "512Mi"
-          cpu: "500m"
 '''
         }
     }
@@ -36,8 +29,19 @@ spec:
             steps {
                 container('zap') {
                     sh """
+                    ulimit -a
+                    ulimit -u 100000 || true
+                    ulimit -n 1048576 || true
+                    
                     zap.sh -daemon -host 0.0.0.0 -port 8080 &
-                    sleep 10
+                    sleep 30
+                    
+                    # Health check for ZAP daemon
+                    if ! nc -z localhost 8080; then
+                        echo "ZAP daemon failed to start"
+                        exit 1
+                    fi
+                    
                     zap-cli --zap-url http://localhost:8080 open-url ${TARGET_URL}
                     zap-cli --zap-url http://localhost:8080 spider ${TARGET_URL}
                     zap-cli --zap-url http://localhost:8080 active-scan ${TARGET_URL}
@@ -53,6 +57,5 @@ spec:
         }
     }
 }
-
 
 }
