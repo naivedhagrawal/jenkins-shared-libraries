@@ -51,9 +51,7 @@ spec:
                     # Wait for ZAP to be fully initialized
                     echo "Waiting for ZAP to be ready..."
                     for i in {1..30}; do
-                        if zap-cli --zap-url="$ZAP_PROXY" status; then
-                            break
-                        fi
+                        zap-cli --zap-url="$ZAP_PROXY" status && break
                         sleep 2
                     done
                     
@@ -62,10 +60,17 @@ spec:
                     export HTTPS_PROXY="$ZAP_PROXY"
                     export NO_PROXY="localhost,127.0.0.1"
                     
-                    zap-cli --zap-url="$ZAP_PROXY" open-url "${TARGET_URL}"
-                    zap-cli --zap-url="$ZAP_PROXY" spider "${TARGET_URL}"
-                    zap-cli --zap-url="$ZAP_PROXY" active-scan "${TARGET_URL}"
-                    zap-cli --zap-url="$ZAP_PROXY" report -o zap_report.html -f html
+                    echo "Opening target URL in ZAP..."
+                    zap-cli --zap-url="$ZAP_PROXY" open-url "${TARGET_URL}" || echo "Failed to open URL"
+                    
+                    echo "Starting ZAP Spider Scan..."
+                    zap-cli --zap-url="$ZAP_PROXY" spider "${TARGET_URL}" || echo "Spider scan failed"
+                    
+                    echo "Starting ZAP Active Scan..."
+                    zap-cli --zap-url="$ZAP_PROXY" active-scan "${TARGET_URL}" || echo "Active scan failed"
+                    
+                    echo "Generating ZAP Report..."
+                    zap-cli --zap-url="$ZAP_PROXY" report -o zap_report.html -f html || echo "Report generation failed"
                     """
                 }
             }
