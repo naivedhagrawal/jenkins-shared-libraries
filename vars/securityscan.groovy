@@ -9,7 +9,7 @@ securityscan(
 def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, checkov: true]) {
     def GITLEAKS_REPORT = 'gitleaks-report.sarif'
     def OWASP_DEP_REPORT = 'owasp-dep-report.sarif'
-    def SEMGREP_REPORT = 'semgrep-report'
+    def SEMGREP_REPORT = 'semgrep-report.sarif'
     def CHECKOV_REPORT = 'results.sarif'
 
     pipeline {
@@ -98,19 +98,12 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                             checkout scm
                             withCredentials([string(credentialsId: 'SEMGREP_KEY', variable: 'SEMGREP_KEY')]) {
                                 sh "SEMGREP_APP_TOKEN=${SEMGREP_KEY} semgrep login"
-                                sh """
-                                    semgrep --config=auto \
-                                            --sarif --output=${SEMGREP_REPORT}.sarif \
-                                            --json --output=${SEMGREP_REPORT}.json \
-                                            --text --output=${SEMGREP_REPORT}.txt \
-                                            .
-                                """
-                                archiveArtifacts artifacts: "${SEMGREP_REPORT}.txt"
-                                archiveArtifacts artifacts: "${SEMGREP_REPORT}.json"
+                                sh "semgrep --config=auto --sarif --output ${SEMGREP_REPORT} ."
+                                archiveArtifacts artifacts: "${SEMGREP_REPORT}"
                                 recordIssues(
                                     enabledForFailure: true,
                                     tool: sarif(
-                                        pattern: "${SEMGREP_REPORT}.sarif",
+                                        pattern: "${SEMGREP_REPORT}",
                                         id: "SEMGREP-SAST",
                                         name: "Semgrep Report"
                                     )
