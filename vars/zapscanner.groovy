@@ -10,7 +10,7 @@ def call() {
         TARGET_URL = ''  // This will be populated at runtime
     }
     parameters {
-        string(name: 'TARGET_URL', defaultValue: '', description: 'Target URL for ZAP scan')
+        string(name: 'TARGET_URL', defaultValue: 'https://google-gruyere.appspot.com/', description: 'Target URL for ZAP scan')
     }
     stages {
         stage('Start ZAP Spider') {
