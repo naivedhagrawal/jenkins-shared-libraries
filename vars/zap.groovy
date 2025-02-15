@@ -10,7 +10,7 @@ spec:
     image: naivedh/owasp-zap:latest
     command: ["/bin/sh", "-c"]
     args:
-      - "export JVM_ARGS='-Xmx6g' && zap.sh -daemon -host 0.0.0.0 -port 8080 && tail -f /dev/null"
+      - "export JVM_ARGS='-Xmx6g' && zap.sh -daemon -host 0.0.0.0 -port 8080 -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true -config api.disablekey=true && tail -f /dev/null"
     ports:
     - containerPort: 8080
     env:
