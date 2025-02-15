@@ -94,8 +94,7 @@ ZAP Command - Custom ZAP command execution''',
                                     archiveArtifacts artifacts: "${ZAP_MD}"
                                     break
                                 case 'zap_cmd':
-                                    sh "zap.sh -cmd -quickurl '${TARGET_URL}' -quickout '${ZAP_CMD_REPORT}' -quickprogress"
-                                    sh 'mv /zap/wrk/${ZAP_CMD_REPORT} .'
+                                    sh "zap.sh -cmd -quickurl '${TARGET_URL}' -quickout /zap/wrk/${ZAP_CMD_REPORT} -quickprogress"
                                     archiveArtifacts artifacts: "${ZAP_CMD_REPORT}"
                                     break
                             }
