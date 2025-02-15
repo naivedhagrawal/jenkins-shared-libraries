@@ -34,7 +34,7 @@ spec:
                     ulimit -n 1048576 || true
                     
                     zap.sh -daemon -host 0.0.0.0 -port 8080 &
-                    sleep 60
+                    sleep 30
                     
                     # Health check for ZAP daemon using curl
                     if ! curl --silent --head --fail http://localhost:8080; then
@@ -42,10 +42,11 @@ spec:
                         exit 1
                     fi
                     
-                    zap-cli --zap-url http://localhost:8080 open-url ${TARGET_URL}
-                    zap-cli --zap-url http://localhost:8080 spider ${TARGET_URL}
-                    zap-cli --zap-url http://localhost:8080 active-scan ${TARGET_URL}
-                    zap-cli --zap-url http://localhost:8080 report -o zap_report.html -f html
+                    export ZAP_PROXY="http://localhost:8080"
+                    zap-cli --zap-url="$ZAP_PROXY" open-url "${TARGET_URL}"
+                    zap-cli --zap-url="$ZAP_PROXY" spider "${TARGET_URL}"
+                    zap-cli --zap-url="$ZAP_PROXY" active-scan "${TARGET_URL}"
+                    zap-cli --zap-url="$ZAP_PROXY" report -o zap_report.html -f html
                     """
                 }
             }
@@ -57,4 +58,5 @@ spec:
         }
     }
 }
+
 }
