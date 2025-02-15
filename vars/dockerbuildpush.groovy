@@ -45,6 +45,7 @@ def call(Map params) {
                             try {
                                 echo "Building ${IMAGE_NAME}"
                                 sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+                                sh 'ls -lrt'
                             } catch (Exception e) {
                                 error "Build Docker Image failed: ${e.getMessage()}"
                             }
@@ -58,6 +59,7 @@ def call(Map params) {
                     container('trivy') {
                         script {
                             try {
+                                sh 'ls -lrt'
                                 sh "if [ ! -d /root/.cache/trivy/db ]; then mkdir -p /root/.cache/trivy/db; fi"
                                 sh "trivy image --download-db-only --timeout 15m --debug"
                                 echo "Scanning image with Trivy..."
