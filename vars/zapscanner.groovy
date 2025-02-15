@@ -95,6 +95,7 @@ ZAP Command - Custom ZAP command execution''',
                                     break
                                 case 'zap_cmd':
                                     sh "zap.sh -cmd -quickurl '${TARGET_URL}' -quickout /zap/wrk/${ZAP_CMD_REPORT} -quickprogress"
+                                    sh 'mv /zap/wrk/${ZAP_CMD_REPORT} .'
                                     archiveArtifacts artifacts: "${ZAP_CMD_REPORT}"
                                     break
                             }
