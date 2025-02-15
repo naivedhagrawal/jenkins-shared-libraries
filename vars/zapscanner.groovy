@@ -1,7 +1,7 @@
 def call() {
 pipeline {
     parameters {
-        string(name: 'TARGET_URL', defaultValue: 'https://google-gruyere.appspot.com', description: 'Target URL for ZAP scan')
+        string(name: 'TARGET_URL', defaultValue: 'https://google-gruyere.appspot.com/', description: 'Target URL for ZAP scan')
     }
     environment {
         ZAP_PROXY = "http://localhost:8080"
@@ -45,6 +45,7 @@ spec:
                         exit 1
                     fi
                     
+                    echo "Using ZAP Proxy: $ZAP_PROXY"
                     zap-cli --zap-url="$ZAP_PROXY" open-url "${TARGET_URL}"
                     zap-cli --zap-url="$ZAP_PROXY" spider "${TARGET_URL}"
                     zap-cli --zap-url="$ZAP_PROXY" active-scan "${TARGET_URL}"
@@ -60,5 +61,4 @@ spec:
         }
     }
 }
-
 }
