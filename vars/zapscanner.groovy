@@ -56,16 +56,16 @@ spec:
                     done
                     
                     echo "Opening target URL in ZAP..."
-                    zap-cli --zap-url="$ZAP_PROXY" --proxy="$ZAP_PROXY" open-url "${TARGET_URL}" || { echo "Failed to open URL"; exit 1; }
+                    zap-cli --zap-url="$ZAP_PROXY" open-url "${TARGET_URL}" || { echo "Failed to open URL"; exit 1; }
                     
                     echo "Starting ZAP Spider Scan..."
-                    zap-cli --zap-url="$ZAP_PROXY" --proxy="$ZAP_PROXY" spider "${TARGET_URL}" || { echo "Spider scan failed"; exit 1; }
+                    zap-cli --zap-url="$ZAP_PROXY" spider "${TARGET_URL}" || { echo "Spider scan failed"; exit 1; }
                     
                     echo "Starting ZAP Active Scan..."
-                    zap-cli --zap-url="$ZAP_PROXY" --proxy="$ZAP_PROXY" active-scan "${TARGET_URL}" || { echo "Active scan failed"; exit 1; }
+                    zap-cli --zap-url="$ZAP_PROXY" active-scan "${TARGET_URL}" || { echo "Active scan failed"; exit 1; }
                     
                     echo "Generating ZAP Report..."
-                    zap-cli --zap-url="$ZAP_PROXY" --proxy="$ZAP_PROXY" report -o zap_report.html -f html || { echo "Report generation failed"; exit 1; }
+                    zap-cli --zap-url="$ZAP_PROXY" report -o zap_report.html -f html || { echo "Report generation failed"; exit 1; }
                     """
                 }
             }
