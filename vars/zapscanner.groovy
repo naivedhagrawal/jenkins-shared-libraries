@@ -1,104 +1,83 @@
 def call() {
-pipeline {
-    parameters {
-        string(name: 'TARGET_URL', defaultValue: 'https://google-gruyere.appspot.com/', description: 'Target URL for ZAP scan')
-    }
-    environment {
-        ZAP_PROXY = "http://127.0.0.1:8080"
-        // HTTP_PROXY and HTTPS_PROXY should NOT be set here for intra-pod ZAP communication
-        // Set them at the pod level ONLY if your TARGET_URL needs a proxy
-        // NO_PROXY also likely not needed for intra-pod communication
-    }
-    agent {
-        kubernetes {
-            yaml '''
-apiVersion: v1
-kind: Pod
-metadata:
-  name: zap-agent
-  labels:
-    jenkins-agent: zap
-spec:
-  containers:
-    - name: zap
-      image: naivedh/owasp-zap:latest
-      command: ["/bin/sh", "-c"]
-      args: ["cat"]
-      tty: true
-      ports:
-        - containerPort: 8080
-      securityContext:
-        privileged: false
-      resources:
-        limits:
-          cpu: "2"
-          memory: "4Gi"
-        requests:
-          cpu: "1"
-          memory: "2Gi"
-  # Uncomment the following if your TARGET_URL needs a proxy
-  #env:
-  #  - name: HTTP_PROXY
-  #    value: "http://your-external-proxy:port"
-  #  - name: HTTPS_PROXY
-  #    value: "http://your-external-proxy:port"
-  #  - name: NO_PROXY
-  #    value: "localhost,127.0.0.1"
-'''
+    pipeline {
+        agent none
+        parameters {
+            string(name: 'target_URL', description: 'Target URL for DAST scan')
+            choice(
+                name: 'scanType',
+                description: '''Full Scan - Full scan including active attacks
+Baseline Scan - Passive scan without attacking the application
+ZAP Command - Custom ZAP command execution''',
+                choices: ['full-scan', 'baseline', 'zap_cmd']
+            )
         }
-    }
-    stages {
-        stage('Passive Scan') {
-            steps {
-                container('zap') {
-                    sh """
-                    set -e
-                    ulimit -a
-                    ulimit -u 100000 || true
-                    ulimit -n 1048576 || true
+        environment {
+            ZAP_REPORT = 'zap-out.json'
+            ZAP_REPORT_HTML = 'zap-out.html'
+            ZAP_MD = 'zap-report.md'
+            ZAP_CMD_REPORT = 'zap_cmd_report.html'
+            TARGET_URL = "${params.target_URL?.trim()}"
+        }
 
-                    zap.sh -daemon -host 0.0.0.0 -port 8080 &
-                    ZAP_PID=\$!
-
-                    trap "kill -9 \$ZAP_PID; exit 0" INT TERM EXIT
-
-                    echo "Checking if ZAP is running..."
-                    until curl --silent --head --fail "\$ZAP_PROXY"; do
-                        echo "Waiting for ZAP daemon to start..."
-                        sleep 5
-                    done
-
-                    echo "Using ZAP Proxy: \$ZAP_PROXY"
-
-                    echo "Waiting for ZAP to be ready..."
-                    for i in {1..30}; do
-                        zap-cli --zap-url="\$ZAP_PROXY" status && break || sleep 2
-                    done
-
-                    echo "Opening target URL in ZAP..."
-                    zap-cli --zap-url="\$ZAP_PROXY" open-url "\${TARGET_URL}" || { echo "Failed to open URL"; kill -9 \$ZAP_PID; exit 1; }
-
-                    echo "Starting ZAP Spider Scan..."
-                    zap-cli --zap-url="\$ZAP_PROXY" spider "\${TARGET_URL}" || { echo "Spider scan failed"; kill -9 \$ZAP_PID; exit 1; }
-
-                    echo "Starting ZAP Active Scan..."
-                    zap-cli --zap-url="\$ZAP_PROXY" active-scan "\${TARGET_URL}" || { echo "Active scan failed"; kill -9 \$ZAP_PID; exit 1; }
-
-                    echo "Generating ZAP Report..."
-                    zap-cli --zap-url="\$ZAP_PROXY" report -o zap_report.html -f html || { echo "Report generation failed"; kill -9 \$ZAP_PID; exit 1; }
-
-                    trap - INT TERM EXIT
-                    kill -9 \$ZAP_PID
-                    echo "ZAP stopped."
-                    """
+        stages {
+            stage('Validate Parameters') {
+                steps {
+                    script {
+                        if ((params.scanType == 'full-scan' || params.scanType == 'baseline' || params.scanType == 'zap_cmd') && (!TARGET_URL || TARGET_URL == '')) {
+                            error('ERROR: Target URL cannot be empty.')
+                        }
+                    }
                 }
             }
-            post {
-                always {
-                    archiveArtifacts artifacts: 'zap_report.html', fingerprint: true
+            
+            stage('DAST SCANNING USING OWASP-ZAP') {
+                agent {
+                    kubernetes {
+                        yaml zap()
+                        showRawYaml false
+                    }
+                }
+                steps {
+                    container('zap') {
+                        script {
+                            // Set system limits before running ZAP
+                                sh 'ulimit -a' // Display current limits
+                                sh 'ulimit -u 100000 || true' // Set process limit
+                                sh 'ulimit -n 1048576 || true' // Set open file limit
+
+                            // Save the TARGET_URL to a file
+                            writeFile file: 'target_url.txt', text: "Target URL: ${TARGET_URL}"
+
+                            switch (params.scanType) {
+                                case 'full-scan':
+                                    sh "zap-full-scan.py -t '$TARGET_URL' -J '$ZAP_REPORT' -r '$ZAP_REPORT_HTML' -w '$ZAP_MD' -I"
+                                    sh 'mv /zap/wrk/${ZAP_REPORT} .'
+                                    sh 'mv /zap/wrk/${ZAP_REPORT_HTML} .'
+                                    sh 'mv /zap/wrk/${ZAP_MD} .'
+                                    archiveArtifacts artifacts: "${ZAP_REPORT}"
+                                    archiveArtifacts artifacts: "${ZAP_REPORT_HTML}"
+                                    archiveArtifacts artifacts: "${ZAP_MD}"
+                                    break
+                                case 'baseline':
+                                    sh "zap-baseline.py -t '$TARGET_URL' -J '$ZAP_REPORT' -r '$ZAP_REPORT_HTML' -w '$ZAP_MD' -I"
+                                    sh 'mv /zap/wrk/${ZAP_REPORT} .'
+                                    sh 'mv /zap/wrk/${ZAP_REPORT_HTML} .'
+                                    sh 'mv /zap/wrk/${ZAP_MD} .'
+                                    archiveArtifacts artifacts: "${ZAP_REPORT}"
+                                    archiveArtifacts artifacts: "${ZAP_REPORT_HTML}"
+                                    archiveArtifacts artifacts: "${ZAP_MD}"
+                                    break
+                                case 'zap_cmd':
+                                    sh "zap.sh -cmd -quickurl '${TARGET_URL}' -quickout '/zap/wrk/${ZAP_CMD_REPORT}' -quickprogress"
+                                    sh 'mv /zap/wrk/${ZAP_CMD_REPORT} .'
+                                    archiveArtifacts artifacts: "${ZAP_CMD_REPORT}"
+                                    break
+                            }
+                        }
+                        archiveArtifacts artifacts: 'target_url.txt'  // Archive the target URL details
+                    }
                 }
             }
         }
     }
-}
 }
