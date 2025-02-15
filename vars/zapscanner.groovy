@@ -1,5 +1,8 @@
 def call() {
 pipeline {
+    parameters {
+        string(name: 'TARGET_URL', defaultValue: 'https://example.com', description: 'Target URL for ZAP scan')
+    }
     agent {
         kubernetes {
             yaml '''
@@ -35,9 +38,9 @@ spec:
                     sh """
                     zap.sh -daemon -host 0.0.0.0 -port 8080 &
                     sleep 10
-                    zap-cli --zap-url http://localhost:8080 open-url https://example.com
-                    zap-cli --zap-url http://localhost:8080 spider https://example.com
-                    zap-cli --zap-url http://localhost:8080 active-scan https://example.com
+                    zap-cli --zap-url http://localhost:8080 open-url ${TARGET_URL}
+                    zap-cli --zap-url http://localhost:8080 spider ${TARGET_URL}
+                    zap-cli --zap-url http://localhost:8080 active-scan ${TARGET_URL}
                     zap-cli --zap-url http://localhost:8080 report -o zap_report.html -f html
                     """
                 }
@@ -50,5 +53,6 @@ spec:
         }
     }
 }
+
 
 }
