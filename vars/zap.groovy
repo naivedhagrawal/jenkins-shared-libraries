@@ -10,9 +10,9 @@ spec:
     image: naivedh/owasp-zap:latest
     command: ["/bin/sh", "-c"]
     args:
-      - "export ZAP_CLI_API_KEY=\`uuidgen\` && export JVM_ARGS='-Xmx6g' && zap.sh -daemon -host 0.0.0.0 -port 8080 \
+      - "export ZAP_CLI_API_KEY=\$(uuidgen) && export JVM_ARGS='-Xmx6g' && zap.sh -daemon -host 0.0.0.0 -port 8080 \
          -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true \
-         -config api.disablekey=true -config api.key=$ZAP_CLI_API_KEY && tail -f /dev/null"
+         -config api.disablekey=true -config api.key=\$ZAP_CLI_API_KEY && tail -f /dev/null"
     ports:
     - containerPort: 8080
     env:
