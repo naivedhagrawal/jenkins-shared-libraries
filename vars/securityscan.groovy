@@ -64,6 +64,7 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                                 checkout scm
                                 sh """
                                     dependency-check --scan . \
+                                        --no-update \
                                         --format SARIF \
                                         --exclude "**/*.zip" \
                                         --out ${OWASP_DEP_REPORT} \
