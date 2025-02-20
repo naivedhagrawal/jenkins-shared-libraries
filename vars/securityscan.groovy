@@ -53,39 +53,33 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                 when { expression { params.owaspdependency } }
                 agent {
                     kubernetes {
-                        yaml pod('owasp', 'owasp/dependency-check')
+                        yaml pod('owasp', 'naivedh/owasp-dependency:latest')
                         showRawYaml false
                     }
-                }
-                environment {
-                        DC_PROJECT = "dependency-check scan: ${WORKSPACE}"
-                        DATA_DIRECTORY = "${WORKSPACE}/OWASP-Dependency-Check/data"
-                        CACHE_DIRECTORY = "${DATA_DIRECTORY}/cache"
-                        REPORT_DIRECTORY = "${WORKSPACE}/reports"
                 }
                 steps {
                     script {
                         container('owasp') {
+                            withCredentials([string(credentialsId: 'NVD_API_KEY', variable: 'NVD_API_KEY')]) {
                                 checkout scm
-                                sh "mkdir -p ${DATA_DIRECTORY}"
-                                sh "mkdir -p ${CACHE_DIRECTORY}"
-                                sh "mkdir -p ${REPORT_DIRECTORY}"
-                                sh '''
-                                    dependency-check.sh \
-                                        --scan ${WORKSPACE} \
-                                        --format "ALL" \
-                                        --project "$DC_PROJECT" \
-                                        --out ${REPORT_DIRECTORY}
-                                '''
+                                sh """
+                                    dependency-check --scan . \
+                                        --noupdate \
+                                        --format SARIF \
+                                        --exclude "**/*.zip" \
+                                        --out ${OWASP_DEP_REPORT} \
+                                        --nvdApiKey ${env.NVD_API_KEY}
+                                """
                                 recordIssues(
                                     enabledForFailure: true,
                                     tool: sarif(
-                                        pattern: "${REPORT_DIRECTORY}/**",
+                                        pattern: "${OWASP_DEP_REPORT}",
                                         id: "Owasp-Dependency-Check",
                                         name: "OWASP Dependency Check Report"
                                     )
                                 )
-                                archiveArtifacts artifacts: "${REPORT_DIRECTORY}/**", fingerprint: true
+                                archiveArtifacts artifacts: "${OWASP_DEP_REPORT}"
+                            }
                         }
                     }
                 }
