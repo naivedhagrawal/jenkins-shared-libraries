@@ -56,12 +56,12 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                         yaml pod('owasp', 'owasp/dependency-check:latest')
                         showRawYaml false
                     }
+                }
                 environment {
                         DC_PROJECT = "dependency-check scan: ${WORKSPACE}"
                         DATA_DIRECTORY = "${WORKSPACE}/OWASP-Dependency-Check/data"
                         CACHE_DIRECTORY = "${DATA_DIRECTORY}/cache"
                         REPORT_DIRECTORY = "${WORKSPACE}/reports"
-                }
                 }
                 steps {
                     script {
