@@ -31,7 +31,7 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                         container('gitguardian') {
                             checkout scm
                             sh """
-                                git config --global --add safe.directory $(pwd)
+                                git config --global --add safe.directory "$(pwd)"
                                 ggshield secret scan --all --json > ${GITGUARDIAN_REPORT}
                             """
                             recordIssues(
