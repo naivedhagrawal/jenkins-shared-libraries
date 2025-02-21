@@ -32,14 +32,23 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                             checkout scm
                             sh """
                                 git config --global --add safe.directory "\$(pwd)"
+                                
                                 if [ ! -d .git ]; then
                                     echo "Initializing Git repository..."
                                     git init
-                                    git remote add origin ${GIT_URL}
-                                    git fetch --depth=1 origin ${GIT_BRANCH}
-                                    git checkout -f ${GIT_BRANCH}
+                                    git remote add origin ${GIT_URL} || true
+                                    git fetch --depth=1 origin ${GIT_BRANCH} || true
+                                    git checkout -f ${GIT_BRANCH} || true
                                 fi
+
+                                # Check if Git is working properly
+                                if ! git rev-parse --is-inside-work-tree; then
+                                    echo "Error: Not inside a valid Git repository. Exiting."
+                                    exit 1
+                                fi
+
                                 mkdir -p "\$(dirname "${GITGUARDIAN_REPORT}")"
+
                                 if ! ggshield secret scan --all --json --path . > "${GITGUARDIAN_REPORT}"; then
                                     echo '{"errors": ["GitGuardian scan failed"]}' > "${GITGUARDIAN_REPORT}"
                                 fi
