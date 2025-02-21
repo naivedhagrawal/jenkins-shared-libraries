@@ -33,7 +33,7 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                             sh """
                                 git config --global --add safe.directory "\$(pwd)"
                                 mkdir -p "\$(dirname "${GITGUARDIAN_REPORT}")"
-                                ggshield secret scan --all --json > "${GITGUARDIAN_REPORT}" || echo '{}' > "${GITGUARDIAN_REPORT}"
+                                ggshield secret scan --all --json --path . > "${GITGUARDIAN_REPORT}" || echo '{}' > "${GITGUARDIAN_REPORT}"
                             """
                             recordIssues(
                                 enabledForFailure: true,
