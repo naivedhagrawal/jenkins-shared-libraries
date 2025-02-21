@@ -4,7 +4,6 @@ securityscan(
     owaspdependency: true,
     semgrep: true,
     checkov: true,
-    gitguardian: true,
 )*/
 
 def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, checkov: true, gitguardian: true]) {
@@ -12,60 +11,11 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
     def OWASP_DEP_REPORT = 'owasp-dep-report.sarif'
     def SEMGREP_REPORT = 'semgrep-report.sarif'
     def CHECKOV_REPORT = 'results.sarif'
-    def GITGUARDIAN_REPORT = 'gitguardian-report.sarif'
 
     pipeline {
         agent none
 
         stages {
-            stage('GitGuardian Scan') {
-                when { expression { params.gitguardian } }
-                agent {
-                    kubernetes {
-                        yaml pod('gitguardian', 'gitguardian/ggshield:latest')
-                        showRawYaml false
-                    }
-                }
-                steps {
-                    script {
-                        container('gitguardian') {
-                            checkout scm
-                            sh """
-                                git config --global --add safe.directory "\$(pwd)"
-                                
-                                if [ ! -d .git ]; then
-                                    echo "Initializing Git repository..."
-                                    git init
-                                    git remote add origin ${GIT_URL} || true
-                                    git fetch --depth=1 origin ${GIT_BRANCH} || true
-                                    git checkout -f ${GIT_BRANCH} || true
-                                fi
-
-                                # Check if Git is working properly
-                                if ! git rev-parse --is-inside-work-tree; then
-                                    echo "Error: Not inside a valid Git repository. Exiting."
-                                    exit 1
-                                fi
-
-                                mkdir -p "\$(dirname "${GITGUARDIAN_REPORT}")"
-
-                                if ! ggshield secret scan --all --json --path . > "${GITGUARDIAN_REPORT}"; then
-                                    echo '{"errors": ["GitGuardian scan failed"]}' > "${GITGUARDIAN_REPORT}"
-                                fi
-                            """
-                            recordIssues(
-                                enabledForFailure: true,
-                                tool: sarif(
-                                    pattern: "${GITGUARDIAN_REPORT}",
-                                    id: "GitGuardian-Secret-Scan",
-                                    name: "GitGuardian Secret Scan Report"
-                                )
-                            )
-                            archiveArtifacts artifacts: "${GITGUARDIAN_REPORT}"
-                        }
-                    }
-                }
-            }
             stage('Gitleak Check') {
                 when { expression { params.gitleak } }
                 agent {
