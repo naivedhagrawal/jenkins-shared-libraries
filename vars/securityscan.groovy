@@ -4,13 +4,15 @@ securityscan(
     owaspdependency: true,
     semgrep: true,
     checkov: true,
+    gitguardian: true,
 )*/
 
-def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, checkov: true]) {
+def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, checkov: true, gitguardian: true]) {
     def GITLEAKS_REPORT = 'gitleaks-report.sarif'
     def OWASP_DEP_REPORT = 'owasp-dep-report.sarif'
     def SEMGREP_REPORT = 'semgrep-report.sarif'
     def CHECKOV_REPORT = 'results.sarif'
+    def GITGUARDIAN_REPORT = 'gitguardian-report.sarif'
 
     pipeline {
         agent none
@@ -140,6 +142,35 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                                 )
                             )
                             archiveArtifacts artifacts: "${CHECKOV_REPORT}"
+                        }
+                    }
+                }
+            }
+
+            stage('GitGuardian Scan') {
+                when { expression { params.gitguardian } }
+                agent {
+                    kubernetes {
+                        yaml pod('gitguardian', 'gitguardian/ggshield:latest')
+                        showRawYaml false
+                    }
+                }
+                steps {
+                    script {
+                        container('gitguardian') {
+                            checkout scm
+                            sh """
+                                ggshield secret scan --all --json > ${GITGUARDIAN_REPORT}
+                            """
+                            recordIssues(
+                                enabledForFailure: true,
+                                tool: sarif(
+                                    pattern: "${GITGUARDIAN_REPORT}",
+                                    id: "GitGuardian-Secret-Scan",
+                                    name: "GitGuardian Secret Scan Report"
+                                )
+                            )
+                            archiveArtifacts artifacts: "${GITGUARDIAN_REPORT}"
                         }
                     }
                 }
