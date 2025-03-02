@@ -11,12 +11,13 @@ def call() {
         command: ["sleep"]
         args: ["999999"]
         resources:
-          limits:
-            cpu: "1"
-            memory: "2Gi"
           requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
             cpu: "500m"
-          volumeMounts:
+        volumeMounts:
         - name: docker-socket
           mountPath: /var/run
         - name: trivy-cache
@@ -31,10 +32,11 @@ def call() {
           initialDelaySeconds: 5
           periodSeconds: 5
         resources:
-          limits:
-            cpu: "1"
-            memory: "2Gi"
           requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
             cpu: "500m"
         volumeMounts:
         - name: docker-socket
@@ -45,11 +47,12 @@ def call() {
           privileged: true
         command: ["dockerd"]
         resources:
-          limits:
-            cpu: "1"
-            memory: "2Gi"
           requests:
-            cpu: "500m"
+            memory: "512Mi"
+            cpu: "200m"
+          limits:
+            memory: "1Gi"
+            cpu: "1"
         volumeMounts:
         - name: docker-socket
           mountPath: /var/run
