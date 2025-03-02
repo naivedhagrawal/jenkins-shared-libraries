@@ -8,7 +8,14 @@ spec:
       image: "${image}"
       imagePullPolicy: Always
       command:
-        - cat
+        - sleep
+        - infinity
       tty: true
+      resources:
+        limits:
+          cpu: "1"
+          memory: "1Gi"
+        requests:
+          cpu: "0.5"
         """
     }

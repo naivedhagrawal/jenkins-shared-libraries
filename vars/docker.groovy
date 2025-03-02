@@ -9,6 +9,11 @@ spec:
   containers:
   - name: ${name}
     image: ${image}
+    resources:
+      limits:
+        cpu: "1"
+        memory: "1Gi"
+      requests:
     readinessProbe:
       exec:
         command: [sh, -c, "ls -l /var/run/docker.sock"]
@@ -25,6 +30,11 @@ spec:
     image: docker:dind
     securityContext:
       privileged: true
+    resources:
+      limits:
+        cpu: "1"
+        memory: "1Gi"
+      requests:
     command: ["dockerd"]
     volumeMounts:
     - name: docker-socket

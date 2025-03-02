@@ -11,6 +11,12 @@ def call() {
         command: ["sleep"]
         args: ["999999"]
         volumeMounts:
+        resources:
+          limits:
+            cpu: "1"
+            ephemeral-storage: "2Gi"
+            memory: "1Gi"
+          requests:
         - name: docker-socket
           mountPath: /var/run
         - name: trivy-cache
@@ -24,6 +30,12 @@ def call() {
             command: [sh, -c, "ls -S /var/run/docker.sock"]
           initialDelaySeconds: 5
           periodSeconds: 5
+        resources:
+          limits:
+            cpu: "1"
+            ephemeral-storage: "2Gi"
+            memory: "1Gi"
+          requests:
         volumeMounts:
         - name: docker-socket
           mountPath: /var/run
@@ -32,6 +44,12 @@ def call() {
         securityContext:
           privileged: true
         command: ["dockerd"]
+        resources:
+          limits:
+            cpu: "1"
+            ephemeral-storage: "2Gi"
+            memory: "1Gi"
+          requests:
         volumeMounts:
         - name: docker-socket
           mountPath: /var/run
