@@ -1,5 +1,5 @@
 def call() {
-    return """
+        return """
     apiVersion: v1
     kind: Pod
     metadata:
@@ -7,16 +7,16 @@ def call() {
     spec:
       containers:
       - name: trivy
-        image: aquasec/trivy
+        image: aquasec/trivy:latest
         command: ["sleep"]
         args: ["999999"]
-        volumeMounts:
         resources:
           limits:
             cpu: "1"
-            ephemeral-storage: "2Gi"
-            memory: "1Gi"
+            memory: "2Gi"
           requests:
+            cpu: "500m"
+          volumeMounts:
         - name: docker-socket
           mountPath: /var/run
         - name: trivy-cache
@@ -33,9 +33,9 @@ def call() {
         resources:
           limits:
             cpu: "1"
-            ephemeral-storage: "2Gi"
-            memory: "1Gi"
+            memory: "2Gi"
           requests:
+            cpu: "500m"
         volumeMounts:
         - name: docker-socket
           mountPath: /var/run
@@ -47,9 +47,9 @@ def call() {
         resources:
           limits:
             cpu: "1"
-            ephemeral-storage: "2Gi"
-            memory: "1Gi"
+            memory: "2Gi"
           requests:
+            cpu: "500m"
         volumeMounts:
         - name: docker-socket
           mountPath: /var/run
