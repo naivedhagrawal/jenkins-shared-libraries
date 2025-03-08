@@ -10,18 +10,12 @@ def call() {
         image: aquasec/trivy:latest
         command: ["sleep"]
         args: ["999999"]
-        resources:
-          requests:
-            memory: "256Mi"
-            cpu: "100m"
-          limits:
-            memory: "512Mi"
-            cpu: "500m"
         volumeMounts:
         - name: docker-socket
           mountPath: /var/run
         - name: trivy-cache
           mountPath: /root/.cache/trivy
+
       - name: docker
         image: docker:latest
         command: ["sleep"]
@@ -31,28 +25,15 @@ def call() {
             command: [sh, -c, "ls -S /var/run/docker.sock"]
           initialDelaySeconds: 5
           periodSeconds: 5
-        resources:
-          requests:
-            memory: "256Mi"
-            cpu: "100m"
-          limits:
-            memory: "512Mi"
-            cpu: "500m"
         volumeMounts:
         - name: docker-socket
           mountPath: /var/run
+
       - name: docker-daemon
         image: docker:dind
         securityContext:
           privileged: true
         command: ["dockerd"]
-        resources:
-          requests:
-            memory: "512Mi"
-            cpu: "200m"
-          limits:
-            memory: "1Gi"
-            cpu: "1"
         volumeMounts:
         - name: docker-socket
           mountPath: /var/run
