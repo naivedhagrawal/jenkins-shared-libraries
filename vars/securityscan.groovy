@@ -8,7 +8,7 @@ securityscan(
 
 def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, checkov: true, gitguardian: true]) {
     def GITLEAKS_REPORT = 'gitleaks-report'
-    def OWASP_DEP_REPORT = 'owasp-dep-report.sarif'
+    def OWASP_DEP_REPORT = 'owasp-dep-report'
     def SEMGREP_REPORT = 'semgrep-report.sarif'
     def CHECKOV_REPORT = 'results.sarif'
 
@@ -64,6 +64,9 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                                     dependency-check --scan . \
                                         --noupdate \
                                         --format SARIF \
+                                        --format JSON \
+                                        --format CSV \
+                                        --format XML \
                                         --exclude "**/*.zip" \
                                         --out ${OWASP_DEP_REPORT} \
                                         --nvdApiKey ${env.NVD_API_KEY}
@@ -71,17 +74,18 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                                 recordIssues(
                                     enabledForFailure: true,
                                     tool: sarif(
-                                        pattern: "${OWASP_DEP_REPORT}",
+                                        pattern: "${OWASP_DEP_REPORT}.sarif",
                                         id: "Owasp-Dependency-Check",
-                                        name: "OWASP Dependency Check Report"
+                                        name: "OWASP Dependency Check Report (SARIF)"
                                     )
                                 )
-                                archiveArtifacts artifacts: "${OWASP_DEP_REPORT}"
+                                archiveArtifacts artifacts: "${OWASP_DEP_REPORT}.*"
                             }
                         }
                     }
                 }
             }
+
 
             stage('Semgrep Scan') {
                 when { expression { params.semgrep } }
