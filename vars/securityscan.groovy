@@ -48,43 +48,49 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
             }
 
             stage('OWASP Dependency Check') {
-                when { expression { params.owaspdependency } }
-                agent {
-                    kubernetes {
-                        yaml pod('owasp', 'naivedh/owasp-dependency:latest')
-                        showRawYaml false
-                    }
-                }
-                steps {
-                    script {
-                        container('owasp') {
-                            withCredentials([string(credentialsId: 'NVD_API_KEY', variable: 'NVD_API_KEY')]) {
-                                checkout scm
-                                sh """
-                                    dependency-check --scan . \
-                                        --noupdate \
-                                        --format SARIF \
-                                        --format JSON \
-                                        --format CSV \
-                                        --format XML \
-                                        --exclude "**/*.zip" \
-                                        --out ${OWASP_DEP_REPORT} \
-                                        --nvdApiKey ${env.NVD_API_KEY}
-                                """
-                                recordIssues(
-                                    enabledForFailure: true,
-                                    tool: sarif(
-                                        pattern: "${OWASP_DEP_REPORT}.sarif",
-                                        id: "Owasp-Dependency-Check",
-                                        name: "OWASP Dependency Check Report (SARIF)"
-                                    )
-                                )
-                                archiveArtifacts artifacts: "${OWASP_DEP_REPORT}.*"
-                            }
-                        }
-                    }
+    when { expression { params.owaspdependency } }
+    agent {
+        kubernetes {
+            yaml pod('owasp', 'naivedh/owasp-dependency:latest')
+            showRawYaml false
+        }
+    }
+    steps {
+        script {
+            container('owasp') {
+                withCredentials([string(credentialsId: 'NVD_API_KEY', variable: 'NVD_API_KEY')]) {
+                    checkout scm
+                    sh """
+                        mkdir -p reports
+                        dependency-check --scan . \
+                            --noupdate \
+                            --format SARIF \
+                            --format JSON \
+                            --format CSV \
+                            --format XML \
+                            --exclude "**/*.zip" \
+                            --out reports/ \
+                            --nvdApiKey "\$NVD_API_KEY"
+                        
+                        mv reports/dependency-check-report.sarif ${OWASP_DEP_REPORT}.sarif
+                        mv reports/dependency-check-report.json ${OWASP_DEP_REPORT}.json
+                        mv reports/dependency-check-report.csv ${OWASP_DEP_REPORT}.csv
+                        mv reports/dependency-check-report.xml ${OWASP_DEP_REPORT}.xml
+                    """
+                    recordIssues(
+                        enabledForFailure: true,
+                        tool: sarif(
+                            pattern: "${OWASP_DEP_REPORT}.sarif",
+                            id: "Owasp-Dependency-Check",
+                            name: "OWASP Dependency Check Report (SARIF)"
+                        )
+                    )
+                    archiveArtifacts artifacts: "${OWASP_DEP_REPORT}.*"
                 }
             }
+        }
+    }
+}
 
 
             stage('Semgrep Scan') {
