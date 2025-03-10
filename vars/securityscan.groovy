@@ -32,7 +32,6 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                                 gitleaks detect --source=. --report-path=${GITLEAKS_REPORT}.sarif --report-format sarif --exit-code=0
                                 gitleaks detect --source=. --report-path=${GITLEAKS_REPORT}.json --report-format json --exit-code=0
                                 gitleaks detect --source=. --report-path=${GITLEAKS_REPORT}.csv --report-format csv --exit-code=0
-                                gitleaks detect --source=. --report-path=${GITLEAKS_REPORT}.pretty.json --report-format json-pretty --exit-code=0
                             """
                             recordIssues(
                                 enabledForFailure: true,
