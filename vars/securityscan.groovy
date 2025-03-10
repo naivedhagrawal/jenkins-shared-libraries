@@ -93,46 +93,46 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
             }
 
 
-stage('Semgrep Scan') {
-    when { expression { params.semgrep } }
-    agent {
-        kubernetes {
-            yaml pod('semgrep', 'returntocorp/semgrep:latest')
-            showRawYaml false
-        }
-    }
-    steps {
-        script {
-            container('semgrep') {
-                checkout scm
-                withCredentials([string(credentialsId: 'SEMGREP_KEY', variable: 'SEMGREP_KEY')]) {
-                    sh """#!/bin/bash
-                        export SEMGREP_APP_TOKEN=\$SEMGREP_KEY
-                        semgrep login
-                        mkdir -p reports
-                        
-                        semgrep --config=auto --sarif --output reports/semgrep.sarif .
-                        semgrep --config=auto --json --output reports/semgrep.json .
-                        semgrep --config=auto --verbose --output reports/semgrep.txt .
-                        
-                        ls -l reports/
-                    """
-                    
-                    archiveArtifacts artifacts: "reports/semgrep.*"
-                    
-                    recordIssues(
-                        enabledForFailure: true,
-                        tool: sarif(
-                            pattern: "reports/semgrep.sarif",
-                            id: "SEMGREP-SAST",
-                            name: "SAST Report"
-                        )
-                    )
+            stage('Semgrep Scan') {
+                when { expression { params.semgrep } }
+                agent {
+                    kubernetes {
+                        yaml pod('semgrep', 'returntocorp/semgrep:latest')
+                        showRawYaml false
+                    }
+                }
+                steps {
+                    script {
+                        container('semgrep') {
+                            checkout scm
+                            withCredentials([string(credentialsId: 'SEMGREP_KEY', variable: 'SEMGREP_KEY')]) {
+                                sh """#!/bin/bash
+                                    export SEMGREP_APP_TOKEN=\$SEMGREP_KEY
+                                    semgrep login
+                                    mkdir -p reports
+                                    
+                                    semgrep --config=auto --sarif --output reports/semgrep.sarif .
+                                    semgrep --config=auto --json --output reports/semgrep.json .
+                                    semgrep --config=auto --verbose --output reports/semgrep.txt .
+                                    
+                                    ls -l reports/
+                                """
+                                
+                                archiveArtifacts artifacts: "reports/semgrep.*"
+                                
+                                recordIssues(
+                                    enabledForFailure: true,
+                                    tool: sarif(
+                                        pattern: "reports/semgrep.sarif",
+                                        id: "SEMGREP-SAST",
+                                        name: "SAST Report"
+                                    )
+                                )
+                            }
+                        }
+                    }
                 }
             }
-        }
-    }
-}
 
 
             stage('Checkov Scan') {
