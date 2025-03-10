@@ -7,7 +7,7 @@ securityscan(
 )*/
 
 def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, checkov: true, gitguardian: true]) {
-    def GITLEAKS_REPORT = 'gitleaks-report.sarif'
+    def GITLEAKS_REPORT = 'gitleaks-report'
     def OWASP_DEP_REPORT = 'owasp-dep-report.sarif'
     def SEMGREP_REPORT = 'semgrep-report.sarif'
     def CHECKOV_REPORT = 'results.sarif'
@@ -29,25 +29,25 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                         container('gitleak') {
                             checkout scm
                             sh """
-                                gitleaks detect \
-                                    --source=. \
-                                    --report-path=${GITLEAKS_REPORT} \
-                                    --report-format sarif \
-                                    --exit-code=0
+                                gitleaks detect --source=. --report-path=${GITLEAKS_REPORT}.sarif --report-format sarif --exit-code=0
+                                gitleaks detect --source=. --report-path=${GITLEAKS_REPORT}.json --report-format json --exit-code=0
+                                gitleaks detect --source=. --report-path=${GITLEAKS_REPORT}.csv --report-format csv --exit-code=0
+                                gitleaks detect --source=. --report-path=${GITLEAKS_REPORT}.md --report-format markdown --exit-code=0
                             """
                             recordIssues(
                                 enabledForFailure: true,
                                 tool: sarif(
-                                    pattern: "${GITLEAKS_REPORT}",
+                                    pattern: "${GITLEAKS_REPORT}.sarif",
                                     id: "Git-Leaks",
-                                    name: "Gitleak Report"
+                                    name: "Gitleak Report (SARIF)"
                                 )
                             )
-                            archiveArtifacts artifacts: "${GITLEAKS_REPORT}"
+                            archiveArtifacts artifacts: "${GITLEAKS_REPORT}.*"
                         }
                     }
                 }
             }
+
 
             stage('OWASP Dependency Check') {
                 when { expression { params.owaspdependency } }
