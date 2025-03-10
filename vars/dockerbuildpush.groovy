@@ -59,7 +59,6 @@ def call(Map params) {
                     container('trivy') {
                         script {
                             try {
-                                sh 'ls -lrt'
                                 sh "if [ ! -d /root/.cache/trivy/db ]; then mkdir -p /root/.cache/trivy/db; fi"
                                 sh "trivy image --download-db-only --timeout 15m --debug"
                                 echo "Scanning image with Trivy..."
@@ -67,7 +66,7 @@ def call(Map params) {
                                 sh "trivy image ${IMAGE_NAME}:${IMAGE_TAG} --timeout 30m --format table --output ${TABLE_REPORT_FILE} --debug"
                                 recordIssues(
                                     enabledForFailure: true,
-                                    tool: sarif(pattern: "${env.REPORT_FILE}", id: "trivy-sarif", name: "trivyReport" ))
+                                    tool: sarif(pattern: "${env.REPORT_FILE}", id: "trivy-sarif", name: "Image Scan Report" ))
                                 archiveArtifacts artifacts: "${REPORT_FILE}", fingerprint: true
                                 archiveArtifacts artifacts: "${TABLE_REPORT_FILE}", fingerprint: true
                             } catch (Exception e) {
