@@ -62,8 +62,8 @@ def call(Map params) {
                                 sh "if [ ! -d /root/.cache/trivy/db ]; then mkdir -p /root/.cache/trivy/db; fi"
                                 sh "trivy image --download-db-only --timeout 15m --debug"
                                 echo "Scanning image with Trivy..."
-                                sh "trivy image ${IMAGE_NAME}:${IMAGE_TAG} --timeout 15m --format sarif --output ${REPORT_FILE} --debug"
-                                sh "trivy image ${IMAGE_NAME}:${IMAGE_TAG} --timeout 30m --format table --output ${TABLE_REPORT_FILE} --debug"
+                                sh "trivy image ${IMAGE_NAME}:${IMAGE_TAG} --timeout 15m -f sarif -o ${REPORT_FILE}"
+                                sh "trivy image ${IMAGE_NAME}:${IMAGE_TAG} --timeout 15m -f table -o ${TABLE_REPORT_FILE}"
                                 recordIssues(
                                     enabledForFailure: true,
                                     tool: sarif(pattern: "${env.REPORT_FILE}", id: "trivy-sarif", name: "Image Scan Report" ))
