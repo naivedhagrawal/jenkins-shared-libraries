@@ -2,22 +2,26 @@ def call() {
 pipeline {
     agent any
     parameters {
-        string(name: 'TARGET_URL', defaultValue: 'https://google-gruyere.appspot.com/', description: 'Enter the target URL for scanning')
+        string(name: 'TARGET_URL', defaultValue: 'https://example.com', description: 'Enter the target URL for scanning')
     }
     environment {
-        ZAP_URL = "http://zap.devops-tools.svc.cluster.local:30090"
+        ZAP_URL = "http://<NodeIP>:30090"
     }
     stages {
         stage('Start ZAP Scan') {
             steps {
                 script {
                     echo "Starting ZAP Spider Scan on ${params.TARGET_URL}..."
-                    def spiderScan = sh(script: "curl -s \"${ZAP_URL}/JSON/spider/action/scan/?url=${params.TARGET_URL}\"", returnStdout: true).trim()
+                    def spiderScan = sh(script: "curl -s --fail \"${ZAP_URL}/JSON/spider/action/scan/?url=${params.TARGET_URL}\" | jq -r '.scan'", returnStdout: true).trim()
+                    if (!spiderScan.isInteger()) {
+                        error "Spider scan failed!"
+                    }
                     echo "Spider Scan ID: ${spiderScan}"
                     
                     echo "Waiting for Spider Scan to Complete..."
                     waitUntil {
                         def status = sh(script: "curl -s \"${ZAP_URL}/JSON/spider/view/status/?scanId=${spiderScan}\" | jq -r '.status'", returnStdout: true).trim()
+                        sleep 5
                         return status == "100"
                     }
                     echo "Spider Scan Completed!"
@@ -29,12 +33,16 @@ pipeline {
             steps {
                 script {
                     echo "Starting ZAP Active Scan on ${params.TARGET_URL}..."
-                    def activeScan = sh(script: "curl -s \"${ZAP_URL}/JSON/ascan/action/scan/?url=${params.TARGET_URL}\"", returnStdout: true).trim()
+                    def activeScan = sh(script: "curl -s \"${ZAP_URL}/JSON/ascan/action/scan/?url=${params.TARGET_URL}&recurse=true\" | jq -r '.scan'", returnStdout: true).trim()
+                    if (!activeScan.isInteger()) {
+                        error "Active scan failed!"
+                    }
                     echo "Active Scan ID: ${activeScan}"
                     
                     echo "Waiting for Active Scan to Complete..."
                     waitUntil {
                         def status = sh(script: "curl -s \"${ZAP_URL}/JSON/ascan/view/status/?scanId=${activeScan}\" | jq -r '.status'", returnStdout: true).trim()
+                        sleep 5
                         return status == "100"
                     }
                     echo "Active Scan Completed!"
@@ -46,7 +54,7 @@ pipeline {
             steps {
                 script {
                     echo "Generating Advanced ZAP Report..."
-                    sh "curl -s \"${ZAP_URL}/OTHER/core/other/report/?title=ZAP%20Security%20Report&template=traditional-html&reportFileName=advanced-zap-report.html&theme=corporate\" -o advanced-zap-report.html"
+                    sh "curl -s \"${ZAP_URL}/OTHER/core/other/htmlreport/?title=ZAP%20Security%20Report\" -o advanced-zap-report.html"
                 }
             }
         }
@@ -62,4 +70,5 @@ pipeline {
         }
     }
 }
+
 }
