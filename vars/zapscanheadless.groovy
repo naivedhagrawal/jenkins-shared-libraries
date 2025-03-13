@@ -2,7 +2,7 @@ def call() {
     pipeline {
         agent {
             kubernetes {
-                yaml pod('zap', 'softonic/curl-jq:3.18.3')
+                yaml pod('zap', 'cycloid/curl-jq:latest')
                 showRawYaml false
             }
         }
