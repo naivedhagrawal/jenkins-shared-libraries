@@ -23,12 +23,6 @@ def call() {
                                 error "ZAP is not responding!"
                             }
                             echo "ZAP is up and running."
-                            
-                            echo "Checking if Reporting Add-on is installed..."
-                            def addons = sh(script: "curl -s \"${ZAP_URL}/JSON/autoupdate/view/addons/\" | jq -r '.addons[].id'", returnStdout: true).trim()
-                            if (!addons.contains("reporting")) {
-                                error "ZAP Reporting Add-on is not installed. Install it manually or check network access!"
-                            }
                         }
                     }
                 }
