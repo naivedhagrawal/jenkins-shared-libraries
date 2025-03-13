@@ -10,7 +10,7 @@ def call() {
             string(name: 'TARGET_URL', defaultValue: 'https://google-gruyere.appspot.com', description: 'Enter the target URL for scanning')
         }
         environment {
-            ZAP_URL = "http://zap.devops-tools.svc.cluster.local:30090"
+            ZAP_URL = "http://zap.devops-tools.svc.cluster.local:8090"
         }
         stages {
             stage('Check ZAP Availability') {
