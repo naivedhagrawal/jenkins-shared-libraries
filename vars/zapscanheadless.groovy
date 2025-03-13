@@ -23,6 +23,8 @@ def call() {
                                 error "ZAP is not responding!"
                             }
                             echo "ZAP is up and running."
+                            curl "http://zap.devops-tools.svc.cluster.local:8090/JSON/autoupdate/action/installAddon/?id=reporting"
+                            curl "http://zap.devops-tools.svc.cluster.local:8090/JSON/autoupdate/view/addons/"
                         }
                     }
                 }
