@@ -13,6 +13,20 @@ def call() {
             ZAP_URL = "http://zap.devops-tools.svc.cluster.local:30090"
         }
         stages {
+            stage('Check ZAP Availability') {
+                steps {
+                    container ('zap') {
+                        script {
+                            echo "Checking if ZAP is responding..."
+                            def zapStatus = sh(script: "curl -s --fail ${ZAP_URL} || echo 'DOWN'", returnStdout: true).trim()
+                            if (zapStatus == 'DOWN') {
+                                error "ZAP is not responding!"
+                            }
+                            echo "ZAP is up and running."
+                        }
+                    }
+                }
+            }
             stage('ZAP Security Scan, Report Generation & Archival') {
                 steps {
                     container ('zap') {
