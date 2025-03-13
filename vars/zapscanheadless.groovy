@@ -2,7 +2,7 @@ def call() {
     pipeline {
         agent {
             kubernetes {
-                yaml pod('zap', 'gitlab-ci-utils/curl-jq')
+                yaml pod('zap', 'softonic/curl-jq')
                 showRawYaml false
             }
         }
