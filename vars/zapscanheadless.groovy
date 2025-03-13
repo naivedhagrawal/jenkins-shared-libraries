@@ -63,12 +63,14 @@ def call() {
                             }
                             echo "Active Scan Completed!"
 
-                            echo "Generating Modern ZAP Report..."
+                            echo "Generating Enhanced ZAP Reports..."
                             sh "curl -s \"${ZAP_URL}/OTHER/core/other/jsonreport/\" -o zap-report.json"
-                            sh "curl -s \"${ZAP_URL}/OTHER/core/other/htmlreport/?title=ZAP%20Security%20Report&template=modern\" -o modern-zap-report.html"
+                            sh "curl -s \"${ZAP_URL}/OTHER/core/other/htmlreport/?title=ZAP%20Security%20Report&template=traditional\" -o zap-traditional-report.html"
+                            sh "curl -s \"${ZAP_URL}/OTHER/core/other/markdownreport/\" -o zap-report.md"
+                            sh "curl -s \"${ZAP_URL}/OTHER/report/other/generate/?title=Enhanced+ZAP+Report&template=modern-dark&theme=dark\" -o zap-enhanced-report.html"
 
-                            echo "Archiving Modern ZAP Report..."
-                            archiveArtifacts artifacts: 'modern-zap-report.html, zap-report.json', fingerprint: true
+                            echo "Archiving Enhanced ZAP Reports..."
+                            archiveArtifacts artifacts: 'zap-traditional-report.html, zap-enhanced-report.html, zap-report.md, zap-report.json', fingerprint: true
                         }
                     }
                 }
