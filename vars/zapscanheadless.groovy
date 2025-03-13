@@ -2,7 +2,7 @@ def call() {
     pipeline {
         agent {
             kubernetes {
-                yaml pod('zap', 'cycloid/curl-jq:latest')
+                yaml pod('zap', 'badouralix/curl-jq')
                 showRawYaml false
             }
         }
