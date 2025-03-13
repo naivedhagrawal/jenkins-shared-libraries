@@ -1,6 +1,11 @@
 def call() {
     pipeline {
-        agent any
+        agent {
+            kubernetes {
+                yaml pod('zap', 'gitlab-ci-utils/curl-jq')
+                showRawYaml false
+            }
+        }
         parameters {
             string(name: 'TARGET_URL', defaultValue: 'https://google-gruyere.appspot.com', description: 'Enter the target URL for scanning')
         }
