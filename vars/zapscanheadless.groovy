@@ -23,8 +23,12 @@ def call() {
                                 error "ZAP is not responding!"
                             }
                             echo "ZAP is up and running."
-                            curl "http://zap.devops-tools.svc.cluster.local:8090/JSON/autoupdate/action/installAddon/?id=reporting"
-                            curl "http://zap.devops-tools.svc.cluster.local:8090/JSON/autoupdate/view/addons/"
+                            
+                            echo "Checking if Reporting Add-on is installed..."
+                            def addons = sh(script: "curl -s \"${ZAP_URL}/JSON/autoupdate/view/addons/\" | jq -r '.addons[].id'", returnStdout: true).trim()
+                            if (!addons.contains("reporting")) {
+                                error "ZAP Reporting Add-on is not installed. Install it manually or check network access!"
+                            }
                         }
                     }
                 }
@@ -35,7 +39,7 @@ def call() {
                         script {
                             echo "Starting ZAP Spider Scan on ${params.TARGET_URL}..."
                             def spiderScan = sh(script: "curl -s --fail \"${ZAP_URL}/JSON/spider/action/scan/?url=${params.TARGET_URL}\" | jq -r '.scan'", returnStdout: true).trim()
-                            if (!spiderScan.isNumber()) {
+                            if (!(spiderScan ==~ /\d+/)) {
                                 error "Spider scan failed!"
                             }
                             echo "Spider Scan ID: ${spiderScan}"
@@ -51,7 +55,7 @@ def call() {
 
                             echo "Starting ZAP Active Scan on ${params.TARGET_URL}..."
                             def activeScan = sh(script: "curl -s \"${ZAP_URL}/JSON/ascan/action/scan/?url=${params.TARGET_URL}&recurse=true\" | jq -r '.scan'", returnStdout: true).trim()
-                            if (!activeScan.isNumber()) {
+                            if (!(activeScan ==~ /\d+/)) {
                                 error "Active scan failed!"
                             }
                             echo "Active Scan ID: ${activeScan}"
@@ -67,9 +71,9 @@ def call() {
 
                             echo "Generating Enhanced ZAP Reports..."
                             sh "curl -s \"${ZAP_URL}/OTHER/core/other/jsonreport/\" -o zap-report.json"
+                            sh "curl -s \"${ZAP_URL}/OTHER/core/other/htmlreport/?title=Enhanced+ZAP+Report\" -o zap-enhanced-report.html"
                             sh "curl -s \"${ZAP_URL}/OTHER/core/other/htmlreport/?title=ZAP%20Security%20Report&template=traditional\" -o zap-traditional-report.html"
                             sh "curl -s \"${ZAP_URL}/OTHER/core/other/markdownreport/\" -o zap-report.md"
-                            sh "curl -s \"${ZAP_URL}/OTHER/report/other/generate/?title=Enhanced+ZAP+Report&template=modern-dark&theme=dark\" -o zap-enhanced-report.html"
 
                             echo "Archiving Enhanced ZAP Reports..."
                             archiveArtifacts artifacts: 'zap-traditional-report.html, zap-enhanced-report.html, zap-report.md, zap-report.json', fingerprint: true
