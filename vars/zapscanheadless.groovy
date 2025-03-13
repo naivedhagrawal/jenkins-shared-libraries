@@ -41,6 +41,7 @@ def call() {
                             echo "Waiting for Spider Scan to Complete..."
                             waitUntil {
                                 def status = sh(script: "curl -s \"${ZAP_URL}/JSON/spider/view/status/?scanId=${spiderScan}\" | jq -r '.status'", returnStdout: true).trim()
+                                echo "Spider Scan Progress: ${status}%"
                                 sleep 5
                                 return status == "100"
                             }
@@ -56,16 +57,18 @@ def call() {
                             echo "Waiting for Active Scan to Complete..."
                             waitUntil {
                                 def status = sh(script: "curl -s \"${ZAP_URL}/JSON/ascan/view/status/?scanId=${activeScan}\" | jq -r '.status'", returnStdout: true).trim()
+                                echo "Active Scan Progress: ${status}%"
                                 sleep 5
                                 return status == "100"
                             }
                             echo "Active Scan Completed!"
 
-                            echo "Generating Advanced ZAP Report..."
-                            sh "curl -s \"${ZAP_URL}/OTHER/core/other/htmlreport/?title=ZAP%20Security%20Report\" -o advanced-zap-report.html"
+                            echo "Generating Modern ZAP Report..."
+                            sh "curl -s \"${ZAP_URL}/OTHER/core/other/jsonreport/\" -o zap-report.json"
+                            sh "curl -s \"${ZAP_URL}/OTHER/core/other/htmlreport/?title=ZAP%20Security%20Report&template=modern\" -o modern-zap-report.html"
 
-                            echo "Archiving ZAP Report..."
-                            archiveArtifacts artifacts: 'advanced-zap-report.html', fingerprint: true
+                            echo "Archiving Modern ZAP Report..."
+                            archiveArtifacts artifacts: 'modern-zap-report.html, zap-report.json', fingerprint: true
                         }
                     }
                 }
