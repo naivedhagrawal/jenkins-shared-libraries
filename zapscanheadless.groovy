@@ -2,10 +2,10 @@ def call() {
 pipeline {
     agent any
     parameters {
-        string(name: 'TARGET_URL', defaultValue: 'https://example.com', description: 'Enter the target URL for scanning')
+        string(name: 'TARGET_URL', defaultValue: 'https://google-gruyere.appspot.com', description: 'Enter the target URL for scanning')
     }
     environment {
-        ZAP_URL = "http://<NodeIP>:30090"
+        ZAP_URL = "http://zap.devops-tools.svc.cluster.local:30090"
     }
     stages {
         stage('Start ZAP Scan') {
