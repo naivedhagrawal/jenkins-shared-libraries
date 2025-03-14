@@ -69,7 +69,7 @@ def call() {
                             sh "curl -s \"${ZAP_URL}/OTHER/core/other/htmlreport/?title=ZAP%20Security%20Report&template=traditional\" -o zap-traditional-report.html"
                             sh "curl -s \"${ZAP_URL}/JSON/reports/action/generate/?title=ZAP%20Security%20Report&template=modern&reportDir=/home/zap/&reportFileName=modern-report.html\""
                             sh "curl -s \"${ZAP_URL}/OTHER/core/other/file/?name=modern-report.html&context=\" -o modern-report.html"
-
+                            sh "wget -O modern-report.html \"http://$ZAP_URL:8090/home/zap/modern-report.html\""
                             sh 'ls -l'
                             echo "Archiving Enhanced ZAP Reports..."
                             archiveArtifacts artifacts: 'zap-traditional-report.html, zap-enhanced-report.html, modern-report.html, zap-report.json', fingerprint: true
