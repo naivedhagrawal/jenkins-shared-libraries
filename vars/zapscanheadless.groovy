@@ -7,7 +7,7 @@ def call() {
             }
         }
         parameters {
-            string(name: 'TARGET_URL', defaultValue: 'http://www.webscantest.com', description: 'Enter the target URL for scanning')
+            string(name: 'TARGET_URL', defaultValue: 'https://public-firing-range.appspot.com', description: 'Enter the target URL for scanning')
         }
         environment {
             ZAP_URL = "http://zap.devops-tools.svc.cluster.local:8090"
