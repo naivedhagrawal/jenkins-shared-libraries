@@ -27,7 +27,7 @@ def call() {
                     }
                 }
             }
-            stage('ZAP Security Scan, Report Generation & Archival') {
+            stage('ZAP Spider Scan') {
                 steps {
                     container ('zap') {
                         script {
@@ -46,7 +46,14 @@ def call() {
                                 return status == "100"
                             }
                             echo "Spider Scan Completed!"
-/*
+                        }
+                    }
+                }
+            }
+            stage('ZAP Active Scan') {
+                steps {
+                    container ('zap') {
+                        script {
                             echo "Starting ZAP Active Scan on ${params.TARGET_URL}..."
                             def activeScan = sh(script: "curl -s \"${ZAP_URL}/JSON/ascan/action/scan/?url=${params.TARGET_URL}&recurse=true\" | jq -r '.scan'", returnStdout: true).trim()
                             if (!(activeScan ==~ /\d+/)) {
@@ -62,16 +69,23 @@ def call() {
                                 return status == "100"
                             }
                             echo "Active Scan Completed!"
-*/
-                            echo "Generating Enhanced ZAP Reports..."
-                            sh "curl -s \"${ZAP_URL}/OTHER/core/other/jsonreport/\" -o zap-report.json"
-                            sh "curl -s \"${ZAP_URL}/OTHER/core/other/htmlreport/?title=Enhanced+ZAP+Report\" -o zap-enhanced-report.html"
-                            sh "curl -s \"${ZAP_URL}/OTHER/core/other/htmlreport/?title=ZAP%20Security%20Report&template=traditional\" -o zap-traditional-report.html"
-                            sh "curl -s \"${ZAP_URL}/JSON/reports/action/generate/?title=ZAP%20Security%20Report&template=modern&reportDir=/zap/reports/&reportFileName=modern-report.html\""
-                            sh "cp -r /zap/reports/modern-report.html /zap/reports/modern-report ."
+                        }
+                    }
+                }
+            }
+            stage('Generate & Archive ZAP Report') {
+                steps {
+                    container ('zap') {
+                        script {
+                            echo "Generating Modern ZAP Report..."
+                            def buildName = "zap-report-${env.BUILD_NUMBER}.html"
+                            sh "curl -s \"${ZAP_URL}/JSON/reports/action/generate/?title=ZAP%20Security%20Report&template=modern&reportDir=/zap/reports/&reportFileName=${buildName}\""
+                            sh "cp -r /zap/reports/${buildName} /zap/reports/modern-report ."
                             sh 'ls -l'
-                            echo "Archiving Enhanced ZAP Reports..."
-                            archiveArtifacts artifacts: 'modern-report.html, modern-report/**', fingerprint: true
+                            echo "Setting Build Name: ${buildName}"
+                            currentBuild.displayName = buildName
+                            echo "Archiving Modern ZAP Report..."
+                            archiveArtifacts artifacts: "${buildName}, modern-report/**", fingerprint: true
                         }
                     }
                 }
