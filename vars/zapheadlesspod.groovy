@@ -46,7 +46,7 @@ spec:
           mountPath: /home/zap
     - name: curl-jq
       image: curlimages/curl
-      command: ["sh", "-c", "while true; do curl -s zap:8090/JSON/core/view/version/ | jq .; sleep 30; done"]
+      command: ["sh", "-c", "while true; do curl -s http://localhost:8090/JSON/core/view/version/ | jq .; sleep 30; done"]
   volumes:
     - name: zap-home
       emptyDir: {}
