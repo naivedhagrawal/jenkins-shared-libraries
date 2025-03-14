@@ -3,7 +3,7 @@ def call() {
 apiVersion: v1
 kind: Pod
 metadata:
-  name: zap
+  name: zap-scanner
   namespace: devops-tools
   labels:
     app: zap
@@ -19,7 +19,7 @@ spec:
     - name: zap
       image: zaproxy/zap-stable
       workingDir: /home/zap
-      args: ["zap.sh", "-daemon", "-host", "0.0.0.0", "-port", "8090", "-config", "api.disablekey=true", "-config", "api.addrs.addr.name=.*", "-config", "api.addrs.addr.regex=true", "-addonupdate", "-addoninstall", "reports", "-addoninstall", "reportTemplates", "-Xmx8192m", "-config", "scanner.threadPerHost=5", "-config", "selenium.headless=false", "-config", "spider.threads=2", "-config", "ascan.threads=2"]
+      args: ["zap.sh", "-daemon", "-host", "0.0.0.0", "-port", "8090", "-config", "api.disablekey=true", "-config", "api.addrs.addr.name=.*", "-config", "api.addrs.addr.regex=true", "-addonupdate", "-addoninstall", "reports", "-addoninstall", "reportTemplates", "-Xmx8192m"]
       ports:
         - containerPort: 8090
       securityContext:
@@ -40,22 +40,13 @@ spec:
       lifecycle:
         postStart:
           exec:
-            command: ["/bin/sh", "-c", "chown -R 1000:1000 /home/zap && chmod -R 775 /home/zap && until curl -s http://localhost:8090/JSON/core/view/version/; do sleep 5; done && curl -s http://localhost:8090/JSON/autoupdate/action/installAddon/?id=reports && curl -s http://localhost:8090/JSON/autoupdate/action/installAddon/?id=reportTemplates"]
+            command: ["/bin/sh", "-c", "chown -R 1000:1000 /home/zap && chmod -R 775 /home/zap"]
       volumeMounts:
         - name: zap-home
           mountPath: /home/zap
     - name: curl-jq
-      image: badouralix/curl-jq
-      command:
-        - "/bin/sh"
-        - "-c"
-        - |
-          echo "Waiting for ZAP to start...";
-          until curl -s http://localhost:8090/JSON/core/view/version/; do
-            sleep 5;
-          done;
-          echo "ZAP is ready! Running security tests...";
-          curl -s "http://localhost:8090/JSON/ascan/action/scan/?url=http://target.com&recurse=true"
+      image: curlimages/curl
+      command: ["sh", "-c", "echo Curl-JQ container running"]
   volumes:
     - name: zap-home
       emptyDir: {}
