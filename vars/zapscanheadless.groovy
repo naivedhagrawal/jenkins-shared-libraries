@@ -50,7 +50,7 @@ def call() {
                     }
                 }
             }
-           /* stage('ZAP Active Scan') {
+            /*stage('ZAP Active Scan') {
                 steps {
                     container ('zap') {
                         script {
@@ -72,20 +72,22 @@ def call() {
                         }
                     }
                 }
-            } */
+            }*/
             stage('Generate & Archive ZAP Report') {
                 steps {
                     container ('zap') {
                         script {
                             echo "Generating Modern ZAP Report..."
                             def buildName = "zap-report-${env.BUILD_NUMBER}.html"
+                            def reportFolder = "zap-report-${env.BUILD_NUMBER}"
                             sh "curl -s \"${ZAP_URL}/JSON/reports/action/generate/?title=ZAP%20Security%20Report&template=modern&reportDir=/zap/reports/&reportFileName=${buildName}\""
-                            sh "cp -r /zap/reports/. ."
+                            sh "cp -r /zap/reports/${buildName} ."
+                            sh "cp -r /zap/reports/${reportFolder} ."
                             sh 'ls -l'
                             echo "Setting Build Name: ${buildName}"
                             currentBuild.displayName = buildName
                             echo "Archiving Modern ZAP Report..."
-                            archiveArtifacts artifacts: "zap-reports/**", fingerprint: true
+                            archiveArtifacts artifacts: "${buildName}, ${reportFolder}/**", fingerprint: true
                         }
                     }
                 }
