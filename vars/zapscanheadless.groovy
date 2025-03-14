@@ -50,7 +50,7 @@ def call() {
                     }
                 }
             }
-            /*stage('ZAP Active Scan') {
+            stage('ZAP Active Scan') {
                 steps {
                     container ('zap') {
                         script {
@@ -72,7 +72,7 @@ def call() {
                         }
                     }
                 }
-            }*/
+            }
             stage('Generate & Archive ZAP Report') {
                 steps {
                     container ('zap') {
