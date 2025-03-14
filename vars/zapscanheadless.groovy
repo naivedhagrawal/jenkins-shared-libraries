@@ -70,7 +70,7 @@ def call() {
                             sh "curl -s \"${ZAP_URL}/JSON/reports/action/generate/?title=ZAP%20Security%20Report&template=modern&reportDir=/home/zap/&reportFileName=modern-report.html\""
                             sh 'pwd'
                             sh 'ls -l'
-                            sh "cp /home/zap/modern-report.html \$(pwd)/"
+                            sh "cp -r /home/zap/. \$(pwd)/"
                             echo "Archiving Enhanced ZAP Reports..."
                             archiveArtifacts artifacts: 'zap-traditional-report.html, zap-enhanced-report.html, modern-report.html, zap-report.json', fingerprint: true
                         }
