@@ -96,7 +96,7 @@ def call() {
                     container ('zap') {
                         script {
                             try {
-                                def target = params.SCAN_TYPE == 'URL' ? params.TARGET_URL : "postman_results.json"
+                                def target = params.TARGET_URL
                                 echo "Starting ZAP Active Scan on ${target}..."
                                 def activeScan = sh(script: "curl -s \"${ZAP_URL}/JSON/ascan/action/scan/?url=${target}&recurse=true\" | jq -r '.scan'", returnStdout: true).trim()
                                 if (!(activeScan ==~ /\d+/)) {
