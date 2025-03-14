@@ -2,7 +2,7 @@ def call() {
     pipeline {
         agent {
             kubernetes {
-                yaml zapheadlesspod()
+                yaml pod('zap', 'badouralix/curl-jq')
                 showRawYaml false
             }
         }
@@ -10,12 +10,12 @@ def call() {
             string(name: 'TARGET_URL', defaultValue: 'http://demo.testfire.net', description: 'Enter the target URL for scanning')
         }
         environment {
-            ZAP_URL = "http://0.0.0.0:8090"
+            ZAP_URL = "http://zap.devops-tools.svc.cluster.local:8090"
         }
         stages {
             stage('Check ZAP Availability') {
                 steps {
-                    container ('curl-jq') {
+                    container ('zap') {
                         script {
                             echo "Checking if ZAP is responding..."
                             def zapStatus = sh(script: "curl -s --fail ${ZAP_URL} || echo 'DOWN'", returnStdout: true).trim()
@@ -29,7 +29,7 @@ def call() {
             }
             stage('ZAP Security Scan, Report Generation & Archival') {
                 steps {
-                    container ('curl-jq') {
+                    container ('zap') {
                         script {
                             echo "Starting ZAP Spider Scan on ${params.TARGET_URL}..."
                             def spiderScan = sh(script: "curl -s --fail \"${ZAP_URL}/JSON/spider/action/scan/?url=${params.TARGET_URL}\" | jq -r '.scan'", returnStdout: true).trim()
@@ -73,15 +73,9 @@ def call() {
                             echo "Archiving Enhanced ZAP Reports..."
                             archiveArtifacts artifacts: 'zap-traditional-report.html, zap-enhanced-report.html, modern-report.html, zap-report.json', fingerprint: true
                         }
-                        container ('zap') {
-                            script {
-                                sh "cp /home/zap/modern-report.html ."
-                                archiveArtifacts artifacts: 'modern-report.html', fingerprint: true
-                            }
                     }
                 }
             }
         }
     }
-}
 }
