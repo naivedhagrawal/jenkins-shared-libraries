@@ -67,14 +67,7 @@ def call() {
                             sh "curl -s \"${ZAP_URL}/OTHER/core/other/jsonreport/\" -o zap-report.json"
                             sh "curl -s \"${ZAP_URL}/OTHER/core/other/htmlreport/?title=Enhanced+ZAP+Report\" -o zap-enhanced-report.html"
                             sh "curl -s \"${ZAP_URL}/OTHER/core/other/htmlreport/?title=ZAP%20Security%20Report&template=traditional\" -o zap-traditional-report.html"
-                            sh "curl -s \"${ZAP_URL}/JSON/reports/action/generate/?title=ZAP%20Security%20Report&template=modern&reportDir=/zap/wrk/&reportFileName=modern-report.html\""
-                            
-                            waitUntil {
-                                def reportExists = sh(script: "[ -f /zap/wrk/modern-report.html ] && echo 'exists' || echo 'missing'", returnStdout: true).trim()
-                                echo "Waiting for modern report to be generated..."
-                                sleep 5
-                                return reportExists == "exists"
-                            }
+                            sh "curl -s \"${ZAP_URL}/JSON/reports/action/generate/?title=ZAP%20Security%20Report&template=modern&reportFileName=modern-report.html\""
                             
                             sh "cp /zap/wrk/modern-report.html ."
                             echo "Archiving Enhanced ZAP Reports..."
