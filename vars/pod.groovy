@@ -3,6 +3,11 @@ def call(String name = 'jnlp', String image = 'jenkins/inbound-agent:latest') {
 apiVersion: v1
 kind: Pod
 spec:
+  volumes:
+    - name: zap-reports
+      hostPath:
+        path: /home/data/zap-reports
+        type: DirectoryOrCreate
   containers:
     - name: ${name}
       image: "${image}"
@@ -11,5 +16,8 @@ spec:
         - sleep
         - infinity
       tty: true
-        """
-    }
+      volumeMounts:
+        - name: zap-reports
+          mountPath: /zap/reports
+    """
+}
