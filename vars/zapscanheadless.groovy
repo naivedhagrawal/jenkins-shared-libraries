@@ -80,12 +80,12 @@ def call() {
                             echo "Generating Modern ZAP Report..."
                             def buildName = "zap-report-${env.BUILD_NUMBER}.html"
                             sh "curl -s \"${ZAP_URL}/JSON/reports/action/generate/?title=ZAP%20Security%20Report&template=modern&reportDir=/zap/reports/&reportFileName=${buildName}\""
-                            sh "cp -r /zap/reports/${buildName} /zap/reports/modern-report ."
+                            sh "cp -r /zap/reports/. ."
                             sh 'ls -l'
                             echo "Setting Build Name: ${buildName}"
                             currentBuild.displayName = buildName
                             echo "Archiving Modern ZAP Report..."
-                            archiveArtifacts artifacts: "${buildName}, modern-report/**", fingerprint: true
+                            archiveArtifacts artifacts: "zap-reports/**", fingerprint: true
                         }
                     }
                 }
