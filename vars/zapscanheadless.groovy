@@ -10,7 +10,7 @@ def call() {
             string(name: 'TARGET_URL', defaultValue: 'http://demo.testfire.net', description: 'Enter the target URL for scanning')
         }
         environment {
-            ZAP_URL = "http://zap.devops-tools.svc.cluster.local:8090"
+            ZAP_URL = "http://localhost:8090"
         }
         stages {
             stage('Check ZAP Availability') {
