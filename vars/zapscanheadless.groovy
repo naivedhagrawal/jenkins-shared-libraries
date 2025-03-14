@@ -46,7 +46,7 @@ def call() {
                                 return status == "100"
                             }
                             echo "Spider Scan Completed!"
-
+/*
                             echo "Starting ZAP Active Scan on ${params.TARGET_URL}..."
                             def activeScan = sh(script: "curl -s \"${ZAP_URL}/JSON/ascan/action/scan/?url=${params.TARGET_URL}&recurse=true\" | jq -r '.scan'", returnStdout: true).trim()
                             if (!(activeScan ==~ /\d+/)) {
@@ -62,7 +62,7 @@ def call() {
                                 return status == "100"
                             }
                             echo "Active Scan Completed!"
-
+*/
                             echo "Generating Enhanced ZAP Reports..."
                             sh "curl -s \"${ZAP_URL}/OTHER/core/other/jsonreport/\" -o zap-report.json"
                             sh "curl -s \"${ZAP_URL}/OTHER/core/other/htmlreport/?title=Enhanced+ZAP+Report\" -o zap-enhanced-report.html"
