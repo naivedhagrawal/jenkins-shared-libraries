@@ -46,7 +46,7 @@ spec:
           mountPath: /home/zap
     - name: curl-jq
       image: curlimages/curl
-      command: ["sh", "-c", "echo Curl-JQ container running"]
+      command: ["sh", "-c", "while true; do sleep 30; done"]
   volumes:
     - name: zap-home
       emptyDir: {}
