@@ -89,6 +89,9 @@ def call() {
                 }
             }
             stage('ZAP Active Scan') {
+                when {
+                    expression { params.SCAN_TYPE == 'URL' }
+                }
                 steps {
                     container ('zap') {
                         script {
