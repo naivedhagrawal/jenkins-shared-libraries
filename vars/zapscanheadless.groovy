@@ -2,7 +2,7 @@ def call() {
     pipeline {
         agent {
             kubernetes {
-                yaml pod('zap', 'badouralix/curl-jq')
+                yaml pod('zap', 'naivedh/curl_jq_newman_pdf:latest')
                 showRawYaml false
             }
         }
