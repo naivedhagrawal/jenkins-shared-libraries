@@ -6,7 +6,7 @@ securityscan(
     checkov: true,
 )*/
 
-def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, checkov: true, trivy: true]) {
+def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, checkov: true]) {
     def GITLEAKS_REPORT = 'gitleaks-report'
     def OWASP_DEP_REPORT = 'owasp-dep-report'
     def SEMGREP_REPORT = 'semgrep-report'
@@ -117,66 +117,6 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                                     )
                                 )
                             }
-                        }
-                    }
-                }
-            }
-            stage('Trivy Scan') {
-                when { expression { params.trivy } }
-                agent {
-                    kubernetes {
-                        yaml pod('trivy', 'aquasec/trivy:latest')
-                        showRawYaml false
-                    }
-                }
-                steps {
-                    script {
-                        container('trivy') {
-                            checkout scm
-                            sh "mkdir -p reports"
-
-                            def scanTypes = ["repo", "k8s-manifest", "config", "fs"]
-                            def target = "."
-
-                            // Execute each scan
-                            scanTypes.each { scanType ->
-                                sh "echo 'Running Trivy ${scanType} scan...'"
-
-                                def reportName = "trivy-${scanType}.sarif"
-                                def scanCommand = ""
-
-                                if (scanType == 'fs') {
-                                    scanCommand = "trivy fs ${target} --format sarif --output reports/${reportName}"
-                                } else if (scanType == 'repo') {
-                                    scanCommand = "trivy repo ${target} --format sarif --output reports/${reportName}"
-                                } else if (scanType == 'k8s-manifest') {
-                                    scanCommand = "trivy k8s --scanners misconfig,vuln ${target} --format sarif --output reports/${reportName}"
-                                } else if (scanType == 'config') {
-                                    scanCommand = "trivy config ${target} --format sarif --output reports/${reportName}"
-                                }
-
-                                def status = sh(script: scanCommand, returnStatus: true)
-                                if (status != 0) {
-                                    echo "Warning: Trivy ${scanType} scan encountered issues. Check reports for details."
-                                }
-                            }
-
-                            // Always run secret scan on relevant directories
-                            def secretScanStatus = sh(script: "trivy fs ${target} --scanners secret --format sarif --output reports/trivy-secret.sarif", returnStatus: true)
-                            if (secretScanStatus != 0) {
-                                echo "Warning: Secret scan encountered issues. Check reports for details."
-                            }
-
-                            // Record all reports
-                            recordIssues(
-                                enabledForFailure: true,
-                                tool: sarif(
-                                    pattern: "reports/trivy-*.sarif",
-                                    id: "Trivy-Vulnerability-Scan",
-                                    name: "Trivy Report"
-                                )
-                            )
-                            archiveArtifacts artifacts: "reports/trivy-*.sarif"
                         }
                     }
                 }
