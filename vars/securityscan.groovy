@@ -63,7 +63,6 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                                 sh """
                                     mkdir -p reports
                                     dependency-check --scan . \
-                                        --noupdate \
                                         --format SARIF \
                                         --format JSON \
                                         --format CSV \
