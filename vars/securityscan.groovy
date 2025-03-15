@@ -17,8 +17,14 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
 
         stages {
             stage('Checkout Code') {
+                agent {
+                    kubernetes {
+                        yaml pod('git', 'alpine/git:latest')
+                        showRawYaml false
+                    }
+                }
                 steps {
-                    container('gitleak') {
+                    container('git') {
                         checkout scm
                         sh "cp -r . /workspace"
                     }
