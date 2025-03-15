@@ -51,7 +51,7 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                 when { expression { params.owaspdependency } }
                 agent {
                     kubernetes {
-                        yaml pod('owasp', 'naivedh/owasp-dependency:latest')
+                        yaml pod('owasp', 'owasp/dependency-check:latest')
                         showRawYaml false
                     }
                 }
