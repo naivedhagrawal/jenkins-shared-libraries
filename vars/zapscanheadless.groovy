@@ -88,7 +88,7 @@ def call() {
                     }
                 }
             }
-            /*stage('ZAP Active Scan') {
+            stage('ZAP Active Scan') {
                 when {
                     expression { params.SCAN_TYPE == 'URL' }
                 }
@@ -118,7 +118,7 @@ def call() {
                         }
                     }
                 }
-            }*/
+            }
             stage('Generate & Archive ZAP Report') {
                 steps {
                     container ('zap') {
