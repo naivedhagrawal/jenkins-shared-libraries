@@ -140,7 +140,7 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                                 tool: sarif(
                                     pattern: "${CHECKOV_REPORT}",
                                     id: "Checkov-IaC",
-                                    name: "Checkov Report"
+                                    name: "IAC Test Report"
                                 )
                             )
                             archiveArtifacts artifacts: "${CHECKOV_REPORT}"
