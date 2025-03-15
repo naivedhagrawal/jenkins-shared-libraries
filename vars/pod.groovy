@@ -12,10 +12,6 @@ spec:
       hostPath:
         path: /home/data/nvd-data
         type: DirectoryOrCreate
-    - name: workspace
-      hostPath:
-        path: /home/data/workspace
-        type: DirectoryOrCreate
   containers:
     - name: ${name}
       image: "${image}"
@@ -29,7 +25,5 @@ spec:
           mountPath: /zap/reports
         - name: nvd-data
           mountPath: /usr/share/dependency-check/data
-        - name: workspace
-          mountPath: /workspace
     """
 }
