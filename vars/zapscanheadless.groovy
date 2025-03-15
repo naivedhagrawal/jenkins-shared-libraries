@@ -8,7 +8,7 @@ def call() {
         }
         parameters {
             choice(name: 'SCAN_TYPE', choices: ['URL', 'API'], description: 'Select scan type: URL or API')
-            string(name: 'TARGET_URL', defaultValue: 'http://demo.testfire.net', description: 'Enter the target URL for scanning')
+            string(name: 'TARGET_URL', defaultValue: 'https://webgoat.herokuapp.com', description: 'Enter the target URL for scanning')
             string(name: 'POSTMAN_COLLECTION_URL', defaultValue: '', description: 'Enter the Git URL of the Postman collection (required for API scan)')
         }
         environment {
