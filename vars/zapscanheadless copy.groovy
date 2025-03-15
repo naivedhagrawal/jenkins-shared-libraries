@@ -58,36 +58,6 @@ def call() {
                     }
                 }
             }
-            stage('ZAP Ajax Spider Scan') {
-                when {
-                    expression { params.SCAN_TYPE == 'URL' }
-                }
-                steps {
-                    container ('zap') {
-                        script {
-                            try {
-                                echo "Starting ZAP Ajax Spider Scan on ${params.TARGET_URL}..."
-                                def ajaxScan = sh(script: "curl -s --fail \"${ZAP_URL}/JSON/ajaxSpider/action/scan/?url=${params.TARGET_URL}\" | jq -r '.scan'", returnStdout: true).trim()
-                                if (!(ajaxScan ==~ /\d+/)) {
-                                    error "Ajax Spider scan failed! Scan ID: ${ajaxScan}"
-                                }
-                                echo "Ajax Spider Scan ID: ${ajaxScan}"
-
-                                echo "Waiting for Ajax Spider Scan to Complete..."
-                                def status = ''
-                                while (status != "stopped") {
-                                    status = sh(script: "curl -s \"${ZAP_URL}/JSON/ajaxSpider/view/status\" | jq -r '.status'", returnStdout: true).trim()
-                                    echo "Ajax Spider Scan Status: ${status}"
-                                    sleep 5
-                                }
-                                echo "Ajax Spider Scan Completed!"
-                            } catch (Exception e) {
-                                error "ZAP Ajax Spider Scan failed: ${e.message}"
-                            }
-                        }
-                    }
-                }
-            }
             stage('ZAP Spider Scan') {
                 when {
                     expression { params.SCAN_TYPE == 'URL' }
@@ -165,6 +135,7 @@ def call() {
                                 echo "Archiving Modern ZAP Report..."
                                 archiveArtifacts artifacts: "${buildName}, ${reportFolder}/**", fingerprint: true
                                 
+                                // Post-scan action: Check for high-severity vulnerabilities
                                 def zapResults = sh(script: "curl -s \"${ZAP_URL}/JSON/core/view/alerts\" | jq '.alerts[] | select(.risk == \"High\")'", returnStdout: true).trim()
                                 if (zapResults) {
                                     error "High severity vulnerabilities detected. Build failed!"
