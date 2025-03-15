@@ -88,7 +88,7 @@ def call() {
                     }
                 }
             }
-            stage('ZAP Active Scan') {
+           /* stage('ZAP Active Scan') {
                 when {
                     expression { params.SCAN_TYPE == 'URL' }
                 }
@@ -118,7 +118,7 @@ def call() {
                         }
                     }
                 }
-            }
+            }*/
             stage('Generate & Archive ZAP Report') {
                 steps {
                     container ('zap') {
@@ -127,7 +127,7 @@ def call() {
                                 echo "Generating Modern ZAP Report..."
                                 def buildName = "zap-report-${env.BUILD_NUMBER}.html"
                                 def reportFolder = "zap-report-${env.BUILD_NUMBER}"
-                                sh "curl -s \"${ZAP_URL}/JSON/reports/action/generate/?title=ZAP%20Security%20Report&template=modern&reportDir=/zap/reports/&reportFileName=${buildName}\""
+                                sh "curl -s \"${ZAP_URL}/JSON/reports/action/generate/?title=ZAP%20Security%20Report&template=traditional-pdf&reportDir=/zap/reports/&reportFileName=${buildName}\""
                                 sh "cp -r /zap/reports/${buildName} ."
                                 sh "cp -r /zap/reports/${reportFolder} ."
                                 echo "Setting Build Name: ${buildName}"
