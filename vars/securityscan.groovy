@@ -62,14 +62,14 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                                 checkout scm
                                 sh """
                                     mkdir -p reports
-                                    dependency-check --scan . \
-                                        --format SARIF \
-                                        --format JSON \
-                                        --format CSV \
-                                        --format XML \
+                                    /usr/share/dependency-check/bin/dependency-check.sh --scan . \
+                                        --format "SARIF" \
+                                        --format "JSON" \
+                                        --format "CSV" \
+                                        --format "XML" \
                                         --exclude "**/*.zip" \
-                                        --out reports/ \
-                                        --nvdApiKey "\$NVD_API_KEY"
+                                        --out "reports/" \
+                                        --nvdApiKey "\${NVD_API_KEY}"
                                     
                                     mv reports/dependency-check-report.sarif ${OWASP_DEP_REPORT}.sarif
                                     mv reports/dependency-check-report.json ${OWASP_DEP_REPORT}.json
