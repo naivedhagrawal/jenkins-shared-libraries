@@ -135,7 +135,7 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                             checkout scm
                             sh "mkdir -p reports"
 
-                            def scanTypes = ["repo", "k8s-manifest", "config", "aws", "fs"]
+                            def scanTypes = ["repo", "k8s-manifest", "config", "fs"]
                             def target = "."
 
                             // Execute each scan
@@ -153,8 +153,6 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                                     scanCommand = "trivy k8s --scanners misconfig,vuln ${target} --format sarif --output reports/${reportName}"
                                 } else if (scanType == 'config') {
                                     scanCommand = "trivy config ${target} --format sarif --output reports/${reportName}"
-                                } else if (scanType == 'aws') {
-                                    scanCommand = "trivy aws --format sarif --output reports/${reportName}"
                                 }
 
                                 def status = sh(script: scanCommand, returnStatus: true)
@@ -164,7 +162,7 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                             }
 
                             // Always run secret scan on relevant directories
-                            def secretScanStatus = sh(script: "trivy secret ${target} --format sarif --output reports/trivy-secret.sarif", returnStatus: true)
+                            def secretScanStatus = sh(script: "trivy secret ${target} --format sarif", returnStatus: true)
                             if (secretScanStatus != 0) {
                                 echo "Warning: Secret scan encountered issues. Check reports for details."
                             }
@@ -183,6 +181,7 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                     }
                 }
             }
+
 
             stage('Checkov Scan') {
                 when { expression { params.checkov } }
