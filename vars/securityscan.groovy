@@ -103,8 +103,6 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                         container('semgrep') {
                             checkout scm
                             withCredentials([string(credentialsId: 'SEMGREP_KEY', variable: 'SEMGREP_KEY')]) {
-                                sh "export SEMGREP_APP_TOKEN=\$SEMGREP_KEY"
-                                sh "semgrep login"
                                 sh "mkdir -p reports"
                                 sh "semgrep --config=auto --sarif --output reports/semgrep.sarif ."
                                 /*sh "semgrep --config=auto --json --output reports/semgrep.json ."
