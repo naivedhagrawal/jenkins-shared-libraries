@@ -35,7 +35,7 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                 steps {
                     script {
                         container('gitleak') {
-                            checkout scm
+                            sh "cd /workspace"
                             sh "gitleaks detect --source=. --report-path=${GITLEAKS_REPORT}.sarif --report-format sarif --exit-code=0"
                             /*sh "gitleaks detect --source=. --report-path=${GITLEAKS_REPORT}.json --report-format json --exit-code=0"
                             sh "gitleaks detect --source=. --report-path=${GITLEAKS_REPORT}.csv --report-format csv --exit-code=0"*/
@@ -65,7 +65,7 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                     script {
                         container('owasp') {
                             withCredentials([string(credentialsId: 'NVD_API_KEY', variable: 'NVD_API_KEY')]) {
-                                checkout scm
+                                sh "cd /workspace"
                                 sh """
                                     mkdir -p reports
                                     /usr/share/dependency-check/bin/dependency-check.sh --scan . \
@@ -109,7 +109,7 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                 steps {
                     script {
                         container('semgrep') {
-                            checkout scm
+                            sh "cd /workspace"
                             withCredentials([string(credentialsId: 'SEMGREP_KEY', variable: 'SEMGREP_KEY')]) {
                                 sh "mkdir -p reports"
                                 sh "semgrep --config=auto --sarif --output reports/semgrep.sarif ."
@@ -142,7 +142,7 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                 steps {
                     script {
                         container('checkov') {
-                            checkout scm
+                            sh "cd /workspace"
                             sh "checkov --directory . --output sarif || true"
                             recordIssues(
                                 enabledForFailure: true,
