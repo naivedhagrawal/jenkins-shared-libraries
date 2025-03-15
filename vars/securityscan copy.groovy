@@ -16,14 +16,6 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
         agent none
 
         stages {
-            stage('Checkout Code') {
-                steps {
-                    container('gitleak') {
-                        checkout scm
-                        sh "cp -r . /workspace"
-                    }
-                }
-            }
             stage('Gitleak Check') {
                 when { expression { params.gitleak } }
                 agent {
