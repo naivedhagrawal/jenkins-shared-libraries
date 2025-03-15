@@ -24,6 +24,6 @@ spec:
         - name: zap-reports
           mountPath: /zap/reports
         - name: nvd-data
-          mountPath: /opt/dependency-check/data
+          mountPath: /usr/share/dependency-check/data
     """
 }
