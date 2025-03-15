@@ -121,6 +121,81 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                     }
                 }
             }
+            stage('Trivy Scan') {
+                when { expression { params.trivy } }
+                agent {
+                    kubernetes {
+                        yaml pod('trivy', 'aquasec/trivy:latest')
+                        showRawYaml false
+                    }
+                }
+                steps {
+                    script {
+                        container('trivy') {
+                            checkout scm
+                            sh "mkdir -p reports"
+
+                            def scanTypes = []
+                            def target = "."
+
+                            // Detect applicable scan types
+                            if (fileExists('Dockerfile')) {
+                                scanTypes.add("image")
+                            }
+                            if (fileExists('.git')) {
+                                scanTypes.add("repo")
+                            }
+                            if (sh(script: "find . -name '*.yaml' | grep -q .", returnStatus: true) == 0) {
+                                scanTypes.add("k8s")
+                            }
+                            if (sh(script: "find . -name '*.tf' | grep -q .", returnStatus: true) == 0) {
+                                scanTypes.add("config")
+                            }
+                            if (sh(script: "find . -name '*.aws' | grep -q .", returnStatus: true) == 0) {
+                                scanTypes.add("aws")
+                            }
+                            if (scanTypes.isEmpty()) {
+                                scanTypes.add("fs")  // Default to filesystem scan
+                            }
+
+                            // Execute each scan
+                            scanTypes.each { scanType ->
+                                sh "echo 'Running Trivy ${scanType} scan...'"
+
+                                def reportName = "trivy-${scanType}.sarif"
+
+                                if (scanType == 'fs') {
+                                    sh "trivy fs ${target} --format sarif --output reports/${reportName} || true"
+                                } else if (scanType == 'image') {
+                                    sh "trivy image mydockerimage:latest --format sarif --output reports/${reportName} || true"
+                                } else if (scanType == 'repo') {
+                                    sh "trivy repo ${target} --format sarif --output reports/${reportName} || true"
+                                } else if (scanType == 'k8s') {
+                                    sh "trivy k8s cluster --format sarif --output reports/${reportName} || true"
+                                } else if (scanType == 'config') {
+                                    sh "trivy config ${target} --format sarif --output reports/${reportName} || true"
+                                } else if (scanType == 'aws') {
+                                    sh "trivy aws --format sarif --output reports/${reportName} || true"
+                                }
+                            }
+
+                            // Always run secret scan
+                            sh "trivy secret ${target} --format sarif --output reports/trivy-secret.sarif || true"
+
+                            // Record all reports
+                            recordIssues(
+                                enabledForFailure: true,
+                                tool: sarif(
+                                    pattern: "reports/trivy-*.sarif",
+                                    id: "Trivy-Vulnerability-Scan",
+                                    name: "Trivy Report"
+                                )
+                            )
+                            archiveArtifacts artifacts: "reports/trivy-*.sarif"
+                        }
+                    }
+                }
+            }
 
 
             stage('Checkov Scan') {
