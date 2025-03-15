@@ -135,52 +135,39 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                             checkout scm
                             sh "mkdir -p reports"
 
-                            def scanTypes = []
+                            def scanTypes = ["repo", "k8s-manifest", "config", "aws", "fs"]
                             def target = "."
-
-                            // Detect applicable scan types
-                            if (fileExists('Dockerfile')) {
-                                scanTypes.add("image")
-                            }
-                            if (fileExists('.git')) {
-                                scanTypes.add("repo")
-                            }
-                            if (sh(script: "find . -name '*.yaml' | grep -q .", returnStatus: true) == 0) {
-                                scanTypes.add("k8s")
-                            }
-                            if (sh(script: "find . -name '*.tf' | grep -q .", returnStatus: true) == 0) {
-                                scanTypes.add("config")
-                            }
-                            if (sh(script: "find . -name '*.aws' | grep -q .", returnStatus: true) == 0) {
-                                scanTypes.add("aws")
-                            }
-                            if (scanTypes.isEmpty()) {
-                                scanTypes.add("fs")  // Default to filesystem scan
-                            }
 
                             // Execute each scan
                             scanTypes.each { scanType ->
                                 sh "echo 'Running Trivy ${scanType} scan...'"
 
                                 def reportName = "trivy-${scanType}.sarif"
+                                def scanCommand = ""
 
                                 if (scanType == 'fs') {
-                                    sh "trivy fs ${target} --format sarif --output reports/${reportName} || true"
-                                } else if (scanType == 'image') {
-                                    sh "trivy image mydockerimage:latest --format sarif --output reports/${reportName} || true"
+                                    scanCommand = "trivy fs ${target} --format sarif --output reports/${reportName}"
                                 } else if (scanType == 'repo') {
-                                    sh "trivy repo ${target} --format sarif --output reports/${reportName} || true"
-                                } else if (scanType == 'k8s') {
-                                    sh "trivy k8s cluster --format sarif --output reports/${reportName} || true"
+                                    scanCommand = "trivy repo ${target} --format sarif --output reports/${reportName}"
+                                } else if (scanType == 'k8s-manifest') {
+                                    scanCommand = "trivy k8s --scanners misconfig,vuln ${target} --format sarif --output reports/${reportName}"
                                 } else if (scanType == 'config') {
-                                    sh "trivy config ${target} --format sarif --output reports/${reportName} || true"
+                                    scanCommand = "trivy config ${target} --format sarif --output reports/${reportName}"
                                 } else if (scanType == 'aws') {
-                                    sh "trivy aws --format sarif --output reports/${reportName} || true"
+                                    scanCommand = "trivy aws --format sarif --output reports/${reportName}"
+                                }
+
+                                def status = sh(script: scanCommand, returnStatus: true)
+                                if (status != 0) {
+                                    echo "Warning: Trivy ${scanType} scan encountered issues. Check reports for details."
                                 }
                             }
 
-                            // Always run secret scan
-                            sh "trivy secret ${target} --format sarif --output reports/trivy-secret.sarif || true"
+                            // Always run secret scan on relevant directories
+                            def secretScanStatus = sh(script: "trivy secret ${target} --format sarif --output reports/trivy-secret.sarif", returnStatus: true)
+                            if (secretScanStatus != 0) {
+                                echo "Warning: Secret scan encountered issues. Check reports for details."
+                            }
 
                             // Record all reports
                             recordIssues(
@@ -196,7 +183,6 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                     }
                 }
             }
-
 
             stage('Checkov Scan') {
                 when { expression { params.checkov } }
