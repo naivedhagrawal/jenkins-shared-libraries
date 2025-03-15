@@ -28,9 +28,8 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                     script {
                         container('gitleak') {
                             checkout scm
+                            sh "git fetch --unshallow || true"
                             sh "gitleaks detect --source=. --report-path=${GITLEAKS_REPORT}.sarif --report-format sarif --exit-code=0"
-                            /*sh "gitleaks detect --source=. --report-path=${GITLEAKS_REPORT}.json --report-format json --exit-code=0"
-                            sh "gitleaks detect --source=. --report-path=${GITLEAKS_REPORT}.csv --report-format csv --exit-code=0"*/
                             recordIssues(
                                 enabledForFailure: true,
                                 tool: sarif(
@@ -58,6 +57,7 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                         container('owasp') {
                             withCredentials([string(credentialsId: 'NVD_API_KEY', variable: 'NVD_API_KEY')]) {
                                 checkout scm
+                                sh "git fetch --unshallow || true"
                                 sh """
                                     mkdir -p reports
                                     /usr/share/dependency-check/bin/dependency-check.sh --scan . \
@@ -89,7 +89,6 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                 }
             }
 
-
             stage('Semgrep Scan') {
                 when { expression { params.semgrep } }
                 agent {
@@ -102,11 +101,10 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                     script {
                         container('semgrep') {
                             checkout scm
+                            sh "git fetch --unshallow || true"
                             withCredentials([string(credentialsId: 'SEMGREP_KEY', variable: 'SEMGREP_KEY')]) {
                                 sh "mkdir -p reports"
                                 sh "semgrep --config=auto --sarif --output reports/semgrep.sarif ."
-                                /*sh "semgrep --config=auto --json --output reports/semgrep.json ."
-                                sh "semgrep --config=auto --verbose --output reports/semgrep.txt ."*/
                                 archiveArtifacts artifacts: "reports/semgrep.*"
                                 recordIssues(
                                     enabledForFailure: true,
@@ -122,7 +120,6 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                 }
             }
 
-
             stage('Checkov Scan') {
                 when { expression { params.checkov } }
                 agent {
@@ -135,6 +132,7 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                     script {
                         container('checkov') {
                             checkout scm
+                            sh "git fetch --unshallow || true"
                             sh "checkov --directory . --output sarif || true"
                             recordIssues(
                                 enabledForFailure: true,
