@@ -127,7 +127,7 @@ def call() {
                                 echo "Generating Modern ZAP Report..."
                                 def buildName = "zap-report-${env.BUILD_NUMBER}.html"
                                 def reportFolder = "zap-report-${env.BUILD_NUMBER}"
-                                sh "curl -s \"${ZAP_URL}/JSON/reports/action/generate/?title=ZAP%20Security%20Report&template=modern&reportDir=/zap/reports/&reportFileName=${buildName}\""
+                                sh "curl -s \"${ZAP_URL}/JSON/reports/action/generate/?title=ZAP%20Security%20Report&template=traditional-html-plus&reportDir=/zap/reports/&reportFileName=${buildName}\""
                                 sh "cp -r /zap/reports/${buildName} ."
                                 sh "cp -r /zap/reports/${reportFolder} ."
                                 echo "Setting Build Name: ${buildName}"
