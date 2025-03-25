@@ -55,34 +55,32 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                 }
                 steps {
                     script {
-                        def owaspReportName = "${OWASP_DEP_REPORT}" // Store the report name in a variable
                         container('owasp') {
                             checkout scm
                             sh """
                                 mkdir -p reports
-                                /usr/share/dependency-check/bin/dependency-check.sh --scan . \\
-                                    --format "SARIF" \\
-                                    --format "JSON" \\
-                                    --format "CSV" \\
-                                    --format "XML" \\
-                                    --exclude "**/*.zip" \\
+                                /usr/share/dependency-check/bin/dependency-check.sh --scan . \
+                                    --format "SARIF" \
+                                    --format "JSON" \
+                                    --format "CSV" \
+                                    --format "XML" \
+                                    --exclude "**/*.zip" \
                                     --out "reports/"
                                 
-                                // Rename the reports using the stored variable
-                                mv "reports/dependency-check-report.sarif" "reports/${owaspReportName}.sarif"
-                                mv "reports/dependency-check-report.json" "reports/${owaspReportName}.json"
-                                mv "reports/dependency-check-report.csv" "reports/${owaspReportName}.csv"
-                                mv "reports/dependency-check-report.xml" "reports/${owaspReportName}.xml"
+                                mv reports/dependency-check-report.sarif ${OWASP_DEP_REPORT}.sarif
+                                mv reports/dependency-check-report.json ${OWASP_DEP_REPORT}.json
+                                mv reports/dependency-check-report.csv ${OWASP_DEP_REPORT}.csv
+                                mv reports/dependency-check-report.xml ${OWASP_DEP_REPORT}.xml
                             """
                             recordIssues(
                                 enabledForFailure: true,
                                 tool: sarif(
-                                    pattern: "reports/${owaspReportName}.sarif", // Use the variable here
+                                    pattern: "${OWASP_DEP_REPORT}.sarif",
                                     id: "Owasp-Dependency-Check",
                                     name: "Dependency Check Report"
                                 )
                             )
-                            archiveArtifacts artifacts: "reports/${owaspReportName}.*" // And here
+                            archiveArtifacts artifacts: "${OWASP_DEP_REPORT}.*"
                         }
                     }
                 }
