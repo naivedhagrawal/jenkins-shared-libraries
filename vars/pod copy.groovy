@@ -12,6 +12,10 @@ spec:
       hostPath:
         path: /home/data/zap-reports
         type: DirectoryOrCreate
+    - name: nvd-data
+      hostPath:
+        path: /home/data/nvd-data
+        type: DirectoryOrCreate
   containers:
     - name: ${name}
       image: "${image}"
@@ -23,5 +27,7 @@ spec:
       volumeMounts:
         - name: zap-reports
           mountPath: /zap/reports
+        - name: nvd-data
+          mountPath: /usr/share/dependency-check/data
     """
 }
