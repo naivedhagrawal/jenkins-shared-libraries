@@ -45,7 +45,6 @@ def call(Map params) {
                             try {
                                 echo "Building ${IMAGE_NAME}"
                                 sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
-                                sh 'ls -lrt'
                             } catch (Exception e) {
                                 error "Build Docker Image failed: ${e.getMessage()}"
                             }

@@ -17,39 +17,6 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
         agent none
 
         stages {
-            
-            stage('SonarQube Scan') {
-                when { expression { params.sonarqube } }
-                agent {
-                    kubernetes {
-                        yaml pod('sonarqube', 'sonarsource/sonar-scanner-cli:latest')
-                        showRawYaml false
-                    }
-                }
-                steps {
-                    script {
-                        container('sonarqube') {
-                            checkout scm
-                            sh """
-                                sonar-scanner \
-                                -Dsonar.host.url=http://localhost:9000 \
-                                -Dsonar.projectKey=${env.JOB_NAME} \
-                                -Dsonar.sources=. \
-                                -Dsonar.qualitygate.wait=true
-                            """
-                            recordIssues(
-                                enabledForFailure: true,
-                                tool: sonarQubeScanner(
-                                    pattern: '**/sonar-report.json',
-                                    id: 'SonarQube-Analysis',
-                                    name: 'SonarQube Report'
-                                )
-                            )
-                            archiveArtifacts artifacts: '**/sonar-report.json'
-                        }
-                    }
-                }
-            }
 
             stage('Gitleak Check') {
                 when { expression { params.gitleak } }
