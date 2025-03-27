@@ -90,7 +90,7 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                 when { expression { params.sonarqube } }
                 agent {
                     kubernetes {
-                        yaml pod('sonarqube', 'sonarsource/sonar-scanner-cli:latest')
+                        yaml pod('sonarqube', 'sonarqube:community')
                         showRawYaml false
                     }
                 }
@@ -99,7 +99,11 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                         container('sonarqube') {
                             checkout scm
                             sh """
-                            sonar-scanner
+                                sonar-scanner \
+                                -Dsonar.host.url=http://sonarqube:9000 \
+                                -Dsonar.projectKey=\${env.JOB_NAME} \
+                                -Dsonar.sources=. \
+                                -Dsonar.qualitygate.wait=true
                             """
                             recordIssues(
                                 enabledForFailure: true,
