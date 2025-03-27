@@ -90,7 +90,7 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                 when { expression { params.sonarqube } }
                 agent {
                     kubernetes {
-                        yaml pod('sonarqube', 'sonarqube:community')
+                        yaml pod('sonarqube', 'sonarsource/sonar-scanner-cli:latest')
                         showRawYaml false
                     }
                 }
