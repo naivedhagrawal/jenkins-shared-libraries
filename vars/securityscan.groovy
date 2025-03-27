@@ -4,9 +4,10 @@ securityscan(
     owaspdependency: true,
     semgrep: true,
     checkov: true,
+    sonarqube: true,
 )*/
 
-def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, checkov: true]) {
+def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, checkov: true, sonarqube: true]) {
     def GITLEAKS_REPORT = 'gitleaks-report'
     def OWASP_DEP_REPORT = 'owasp-dep-report'
     def SEMGREP_REPORT = 'semgrep-report'
@@ -81,6 +82,34 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                                 )
                             )
                             archiveArtifacts artifacts: "${OWASP_DEP_REPORT}.*"
+                        }
+                    }
+                }
+            }
+            stage('SonarQube Scan') {
+                when { expression { params.sonarqube } }
+                agent {
+                    kubernetes {
+                        yaml pod('sonarqube', 'sonarsource/sonar-scanner-cli:latest')
+                        showRawYaml false
+                    }
+                }
+                steps {
+                    script {
+                        container('sonarqube') {
+                            checkout scm
+                            sh """
+                            sonar-scanner
+                            """
+                            recordIssues(
+                                enabledForFailure: true,
+                                tool: sonarQubeScanner(
+                                    pattern: '**/sonar-report.json',
+                                    id: 'SonarQube-Analysis',
+                                    name: 'SonarQube Report'
+                                )
+                            )
+                            archiveArtifacts artifacts: '**/sonar-report.json'
                         }
                     }
                 }
