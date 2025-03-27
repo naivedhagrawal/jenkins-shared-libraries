@@ -74,8 +74,8 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                             """
                             recordIssues(
                                 enabledForFailure: true,
-                                tool: owaspDependencyCheck(
-                                    pattern: "${OWASP_DEP_REPORT}.json",
+                                tool: sarif(
+                                    pattern: "${OWASP_DEP_REPORT}.sarif",
                                     id: "Owasp-Dependency-Check",
                                     name: "Dependency Check Report"
                                 )
