@@ -100,7 +100,7 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                             checkout scm
                             sh """
                                 sonar-scanner \
-                                -Dsonar.host.url=http://sonarqube:9000 \
+                                -Dsonar.host.url=http://localhost:9000 \
                                 -Dsonar.projectKey=\${env.JOB_NAME} \
                                 -Dsonar.sources=. \
                                 -Dsonar.qualitygate.wait=true
