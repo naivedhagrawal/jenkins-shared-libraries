@@ -5,7 +5,7 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
     def OWASP_DEP_REPORT = 'owasp-dep-report'
     def SEMGREP_REPORT = 'semgrep-report'
     def CHECKOV_REPORT = 'results.sarif'
-    def SEMGREP_CREDENTIALS_ID = 'semgrep-key'
+    def SEMGREP_CREDENTIALS_ID = 'SEMGREP_KEY'
     def GIT_URL = params.GIT_URL
     def GIT_BRANCH = params.GIT_BRANCH
 
