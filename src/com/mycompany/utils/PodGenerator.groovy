@@ -8,8 +8,9 @@ class PodGenerator implements Serializable {
           image: ${container.image}
           tty: true
           command:
-            - cat
-            - infinity
+            - /bin/sh
+            - -c
+            - sleep infinity
           volumeMounts:
             - name: source-code
               mountPath: /source
