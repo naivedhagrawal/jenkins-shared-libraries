@@ -9,8 +9,9 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
     def GIT_URL = params.GIT_URL
     def GIT_BRANCH = params.GIT_BRANCH
 
-    // Define the containers.  Include git, but remove the explicit declaration.
+    // Define the containers. Add git container for cloning the repository
     def containers = [
+        [name: 'git', image: 'alpine/git:latest'],
         [name: 'gitleak', image: 'zricethezav/gitleaks'],
         [name: 'owasp', image: 'owasp/dependency-check-action:latest'],
         [name: 'semgrep', image: 'returntocorp/semgrep:latest'],
@@ -18,7 +19,7 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
     ]
 
     // Generate the pod YAML by calling the function from the shared library
-    def podYaml = PodGenerator.generatePodYaml(containers, GIT_URL, GIT_BRANCH)
+    def podYaml = PodGenerator.generatePodYaml(containers)
 
     pipeline {
         agent {
@@ -28,6 +29,19 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
             }
         }
         stages {
+            stage('Git Clone') {
+                steps {
+                    container('git') {
+                        sh '''
+                            git init
+                            git remote add origin ${GIT_URL}
+                            git fetch --depth=1 origin ${GIT_BRANCH}
+                            git checkout FETCH_HEAD
+                        '''
+                    }
+                }
+            }
+
             stage('Gitleak Check') {
                 when { expression { params.gitleak } }
                 steps {

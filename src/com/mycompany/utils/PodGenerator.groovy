@@ -1,7 +1,7 @@
 package com.mycompany.utils
 
 class PodGenerator implements Serializable {
-    static String generatePodYaml(List<Map> containers, String GIT_URL, String GIT_BRANCH) {
+    static String generatePodYaml(List<Map> containers) {
         def containerYaml = containers.collect { container ->
             """
         - name: ${container.name}
@@ -19,18 +19,6 @@ class PodGenerator implements Serializable {
     spec:
       containers:
     ${containerYaml}
-      initContainers:
-        - name: git-clone
-          image: alpine/git
-          tty: true
-          command: ['sh', '-c']
-          args: ["git clone -b ${GIT_BRANCH} ${GIT_URL} /source"]
-          command:
-            - sleep
-            - infinity
-          volumeMounts:
-            - name: source-code
-              mountPath: /source
       volumes:
         - name: source-code
           emptyDir: {}
