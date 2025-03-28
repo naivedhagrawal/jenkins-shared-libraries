@@ -17,15 +17,21 @@ def call(Map params = [:]) {
     // 1. Log the entire params map at the beginning of the call method.
     echo "🔍 params at start of call: ${params}"
 
-    // 2. Retrieve parameters using params.get()
-    def GIT_URL = params?.get('GIT_URL') ?: ''
-    def GIT_BRANCH = params?.get('GIT_BRANCH') ?: ''
+    // 2. Robust parameter retrieval with explicit null and type checking.
+    String GIT_URL = ''
+    String GIT_BRANCH = ''
+    if (params instanceof Map) {
+        GIT_URL = params.get('GIT_URL') ?: ''
+        GIT_BRANCH = params.get('GIT_BRANCH') ?: ''
+    } else {
+        echo "⚠️  params is not a Map.  Defaulting to empty strings for GIT_URL and GIT_BRANCH."
+    }
 
     // 3. Log the retrieved values.
     echo "🔍 Retrieved GIT_URL: ${GIT_URL}, GIT_BRANCH: ${GIT_BRANCH}"
 
     if (!GIT_URL || !GIT_BRANCH) {
-        error "🚨 GIT_URL or GIT_BRANCH is not set! Provided values: params=${params}, GIT_URL=${GIT_URL}, GIT_BRANCH=${GIT_BRANCH}.  Please ensure these are set either as parameters to the 'securityscan' step or as environment variables in your Jenkins job configuration.  GIT_URL should be 'https://github.com/naivedhagrawal/devops_tools_kubernetes.git' and GIT_BRANCH should be 'main'."
+        error "🚨 GIT_URL or GIT_BRANCH is not set! Provided values: params=${params}, GIT_URL=${GIT_URL}, GIT_BRANCH=${GIT_BRANCH}.  Please ensure these are set either as parameters to the 'securityscan' step or as environment variables in your Jenkins job configuration. GIT_URL should be 'https://github.com/naivedhagrawal/devops_tools_kubernetes.git' and GIT_BRANCH should be 'main'."
     }
 
     def GITLEAKS_REPORT = 'gitleaks-report'
