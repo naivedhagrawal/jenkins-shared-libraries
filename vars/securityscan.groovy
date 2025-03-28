@@ -21,8 +21,8 @@ def call(Map params = [:]) {
     String GIT_URL = ''
     String GIT_BRANCH = ''
     if (params instanceof Map) {
-        GIT_URL = params.get('GIT_URL') ?: ''
-        GIT_BRANCH = params.get('GIT_BRANCH') ?: ''
+        GIT_URL = params['GIT_URL'] ?: ''
+        GIT_BRANCH = params['GIT_BRANCH'] ?: ''
     } else {
         echo "⚠️  params is not a Map.  Defaulting to empty strings for GIT_URL and GIT_BRANCH."
     }
@@ -171,3 +171,4 @@ def call(Map params = [:]) {
         }
     }
 }
+
