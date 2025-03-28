@@ -71,8 +71,8 @@ def call(Map params = [:]) {
                 steps {
                     container('gitleak') {
                         sh "gitleaks detect --source=. --report-path=${GITLEAKS_REPORT}.sarif --report-format sarif --exit-code=0"
-                        sh "gitleaks detect --source=. --report-path=${GITLEAKS_REPORT}.json --report-format json --exit-code=0"
-                        sh "gitleaks detect --source=. --report-path=${GITLEAKS_REPORT}.csv --report-format csv --exit-code=0"
+                        /*sh "gitleaks detect --source=. --report-path=${GITLEAKS_REPORT}.json --report-format json --exit-code=0"
+                        sh "gitleaks detect --source=. --report-path=${GITLEAKS_REPORT}.csv --report-format csv --exit-code=0"*/
                         recordIssues(
                                 enabledForFailure: true,
                                 tool: sarif(
@@ -122,8 +122,8 @@ def call(Map params = [:]) {
                         withCredentials([string(credentialsId: 'SEMGREP_KEY', variable: 'SEMGREP_KEY')]) {
                                 sh "mkdir -p reports"
                                 sh "semgrep --config=auto --sarif --output reports/semgrep.sarif ."
-                                sh "semgrep --config=auto --json --output reports/semgrep.json ."
-                                sh "semgrep --config=auto --verbose --output reports/semgrep.txt ."
+                                /*sh "semgrep --config=auto --json --output reports/semgrep.json ."
+                                sh "semgrep --config=auto --verbose --output reports/semgrep.txt ."*/
                                 archiveArtifacts artifacts: "reports/semgrep.*"
                                 recordIssues(
                                     enabledForFailure: true,
