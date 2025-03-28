@@ -1,11 +1,10 @@
+
 /* @Library('k8s-shared-lib') _
 dockerbuildpush(
     IMAGE_NAME: 'owasp-dependency',
     IMAGE_TAG: 'latest',
-    DOCKER_HUB_USERNAME: 'naivedh',
-    DOCKER_CREDENTIALS: 'docker_hub_up',
-    GITLAB_URL: 'https://gitlab.com/your-repo.git',
-    GIT_BRANCH: 'main'
+    DOCKER_HUB_USERNAME: 'naivedh',  // This is your Docker Hub username
+    DOCKER_CREDENTIALS: 'docker_hub_up'
 )*/
 
 def call(Map params) {
@@ -14,14 +13,12 @@ def call(Map params) {
     def IMAGE_TAG = params.IMAGE_TAG
     def DOCKER_HUB_USERNAME = params.DOCKER_HUB_USERNAME
     def DOCKER_CREDENTIALS = params.DOCKER_CREDENTIALS
-    def GITLAB_URL = params.GITLAB_URL
-    def GIT_BRANCH = params.GIT_BRANCH
 
-    if (!IMAGE_NAME || !IMAGE_TAG || !DOCKER_HUB_USERNAME || !DOCKER_CREDENTIALS || !GITLAB_URL || !GIT_BRANCH) {
+    if (!IMAGE_NAME || !IMAGE_TAG || !DOCKER_HUB_USERNAME || !DOCKER_CREDENTIALS) {
         error "Missing required parameters!"
     }
 
-    // Report file names
+    // Fixed report file name
     def REPORT_FILE = "trivy-report.sarif"
     def TABLE_REPORT_FILE = "trivy-report.txt"
 
@@ -37,42 +34,55 @@ def call(Map params) {
             IMAGE_TAG = "${IMAGE_TAG}"
             DOCKER_HUB_USERNAME = "${DOCKER_HUB_USERNAME}"
             DOCKER_CREDENTIALS = "${DOCKER_CREDENTIALS}"
-            GITLAB_URL = "${GITLAB_URL}"
-            GIT_BRANCH = "${GIT_BRANCH}"
             REPORT_FILE = "${REPORT_FILE}"
         }
 
         stages {
-            stage('Full Pipeline Execution') {
+            stage('Build Docker Image') {
                 steps {
                     container('docker') {
                         script {
                             try {
-                                echo "Cloning ${GITLAB_URL} - Branch: ${GIT_BRANCH}"
-                                sh "git clone --branch ${GIT_BRANCH} ${GITLAB_URL} repo"
+                                echo "Building ${IMAGE_NAME}"
+                                sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+                            } catch (Exception e) {
+                                error "Build Docker Image failed: ${e.getMessage()}"
+                            }
+                        }
+                    }
+                }
+            }
 
-                                echo "Building Docker image..."
-                                sh """
-                                    cd repo
-                                    docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
-                                """
-
-                                echo "Running Trivy scan..."
+            stage('Trivy Scan') {
+                steps {
+                    container('trivy') {
+                        script {
+                            try {
                                 sh "if [ ! -d /root/.cache/trivy/db ]; then mkdir -p /root/.cache/trivy/db; fi"
                                 sh "trivy image --download-db-only --timeout 15m --debug"
+                                echo "Scanning image with Trivy..."
                                 sh "trivy image ${IMAGE_NAME}:${IMAGE_TAG} --timeout 15m -f sarif -o ${REPORT_FILE}"
                                 sh "trivy image ${IMAGE_NAME}:${IMAGE_TAG} --timeout 15m -f table -o ${TABLE_REPORT_FILE}"
-
-                                echo "Archiving scan reports..."
                                 recordIssues(
                                     enabledForFailure: true,
-                                    tool: sarif(pattern: "${REPORT_FILE}", id: "trivy-sarif", name: "Image Scan Report")
-                                )
+                                    tool: sarif(pattern: "${env.REPORT_FILE}", id: "trivy-sarif", name: "Image Scan Report" ))
                                 archiveArtifacts artifacts: "${REPORT_FILE}", fingerprint: true
                                 archiveArtifacts artifacts: "${TABLE_REPORT_FILE}", fingerprint: true
+                            } catch (Exception e) {
+                                error "Trivy scan failed: ${e.getMessage()}"
+                            }
+                        }
+                    }
+                }
+            }
 
-                                echo "Pushing Docker image to Docker Hub..."
+            stage('Push Docker Image') {
+                steps {
+                    container('docker') {
+                        script {
+                            try {
                                 withCredentials([usernamePassword(credentialsId: DOCKER_CREDENTIALS, usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                                    echo "Logging into Docker Hub..."
                                     sh """
                                         echo \$PASSWORD | docker login -u \$USERNAME --password-stdin
                                         docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKER_HUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}
@@ -80,7 +90,7 @@ def call(Map params) {
                                     """
                                 }
                             } catch (Exception e) {
-                                error "Pipeline execution failed: ${e.getMessage()}"
+                                error "Push Docker Image failed: ${e.getMessage()}"
                             }
                         }
                     }

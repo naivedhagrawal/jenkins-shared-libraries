@@ -1,10 +1,6 @@
 /* @Library('k8s-shared-lib') _
 securityscan(
     params: [
-        gitleak: true,
-        owaspdependency: true,
-        semgrep: true,
-        checkov: true,
         GIT_URL: 'https://github.com/naivedhagrawal/devops_tools_kubernetes.git',
         GIT_BRANCH: 'main'
     ]
