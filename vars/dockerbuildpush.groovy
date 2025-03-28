@@ -1,3 +1,13 @@
+/*@Library('k8s-shared-lib') _
+dockerbuildpush(
+    IMAGE_NAME: 'test',
+    IMAGE_TAG: 'latest',
+    DOCKER_HUB_USERNAME: 'naivedh',  // This is your Docker Hub username
+    DOCKER_CREDENTIALS: 'docker_hub_up',
+    GITLAB_URL: 'https://repourl.git',
+    GIT_BRANCH: 'master'
+)*/
+
 def call(Map params = [:]) {
     // Extract parameters with default values
     def IMAGE_NAME = params.get('IMAGE_NAME', 'owasp-dependency')
