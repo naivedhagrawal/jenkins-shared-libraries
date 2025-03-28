@@ -86,24 +86,30 @@ def call(Map params = [:]) {
             stage('OWASP Dependency Check') {
                 steps {
                     container('owasp') {
-                        sh '''
-                            mkdir -p /source/reports
-                            /usr/share/dependency-check/bin/dependency-check.sh --scan /source \
-                                --format "SARIF"  \
-                                --exclude "**/*.zip" \
-                                --out "/source/reports/"
-                            
-                            mv /source/reports/dependency-check-report.sarif /source/${OWASP_DEP_REPORT}.sarif
-                        '''
-                        recordIssues(
-                            enabledForFailure: true,
-                            tool: sarif(
-                                pattern: "/source/${OWASP_DEP_REPORT}.sarif",
-                                id: "Owasp-Dependency-Check",
-                                name: "Dependency Check Report"
+                        sh """
+                                mkdir -p reports
+                                /usr/share/dependency-check/bin/dependency-check.sh --scan . \
+                                    --format "SARIF" \
+                                    --format "JSON" \
+                                    --format "CSV" \
+                                    --format "XML" \
+                                    --exclude "**/*.zip" \
+                                    --out "reports/"
+                                
+                                mv reports/dependency-check-report.sarif ${OWASP_DEP_REPORT}.sarif
+                                mv reports/dependency-check-report.json ${OWASP_DEP_REPORT}.json
+                                mv reports/dependency-check-report.csv ${OWASP_DEP_REPORT}.csv
+                                mv reports/dependency-check-report.xml ${OWASP_DEP_REPORT}.xml
+                            """
+                            recordIssues(
+                                enabledForFailure: true,
+                                tool: sarif(
+                                    pattern: "${OWASP_DEP_REPORT}.sarif",
+                                    id: "Owasp-Dependency-Check",
+                                    name: "Dependency Check Report"
+                                )
                             )
-                        )
-                        archiveArtifacts artifacts: "/source/${OWASP_DEP_REPORT}.*"
+                            archiveArtifacts artifacts: "${OWASP_DEP_REPORT}.*"
                     }
                 }
             }
@@ -111,22 +117,21 @@ def call(Map params = [:]) {
             stage('Semgrep Scan') {
                 steps {
                     container('semgrep') {
-                        withCredentials([string(credentialsId: SEMGREP_CREDENTIALS_ID, variable: 'SEMGREP_KEY')]) {
-                            sh '''
-                                echo "Running Semgrep Scan..."
-                                mkdir -p /source/reports
-                                semgrep --config=auto --sarif --output /source/reports/semgrep.sarif /source || true
-                            '''
-                            recordIssues(
-                                enabledForFailure: true,
-                                tool: sarif(
-                                    pattern: "/source/reports/semgrep.sarif",
-                                    id: "SEMGREP-SAST",
-                                    name: "SAST Report"
+                        withCredentials([string(credentialsId: 'SEMGREP_KEY', variable: 'SEMGREP_KEY')]) {
+                                sh "mkdir -p reports"
+                                sh "semgrep --config=auto --sarif --output reports/semgrep.sarif ."
+                                /*sh "semgrep --config=auto --json --output reports/semgrep.json ."
+                                sh "semgrep --config=auto --verbose --output reports/semgrep.txt ."*/
+                                archiveArtifacts artifacts: "reports/semgrep.*"
+                                recordIssues(
+                                    enabledForFailure: true,
+                                    tool: sarif(
+                                        pattern: "reports/semgrep.sarif",
+                                        id: "SEMGREP-SAST",
+                                        name: "SAST Report"
+                                    )
                                 )
-                            )
-                            archiveArtifacts artifacts: "/source/reports/semgrep.*"
-                        }
+                            }
                     }
                 }
             }
@@ -134,19 +139,16 @@ def call(Map params = [:]) {
             stage('Checkov Scan') {
                 steps {
                     container('checkov') {
-                        sh '''
-                            echo "Running Checkov Scan..."
-                            checkov --directory /source --output sarif --output-file-path /source/${CHECKOV_REPORT} || true
-                        '''
-                        recordIssues(
-                            enabledForFailure: true,
-                            tool: sarif(
-                                pattern: "/source/${CHECKOV_REPORT}",
-                                id: "Checkov-IaC",
-                                name: "IAC Test Report"
+                        sh "checkov --directory . --output sarif || true"
+                            recordIssues(
+                                enabledForFailure: true,
+                                tool: sarif(
+                                    pattern: "${CHECKOV_REPORT}",
+                                    id: "Checkov-IaC",
+                                    name: "IAC Test Report"
+                                )
                             )
-                        )
-                        archiveArtifacts artifacts: "/source/${CHECKOV_REPORT}"
+                            archiveArtifacts artifacts: "${CHECKOV_REPORT}"
                     }
                 }
             }
