@@ -1,3 +1,5 @@
+import com.mycompany.utils.PodGenerator
+
 def call(String GIT_URL, String GIT_BRANCH) {
     def GITLEAKS_REPORT = 'gitleaks-report'
     def OWASP_DEP_REPORT = 'owasp-dep-report'
@@ -16,7 +18,7 @@ def call(String GIT_URL, String GIT_BRANCH) {
     ]
 
     // Generate the pod YAML by calling the function from the shared library
-    def podYaml = generatePodYaml(containers, GIT_URL, GIT_BRANCH)
+    def podYaml = PodGenerator.generatePodYaml(containers, GIT_URL, GIT_BRANCH)
 
     pipeline {
         agent {
