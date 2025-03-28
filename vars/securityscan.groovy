@@ -21,12 +21,13 @@ def call(Map params = [:]) {
     String GIT_URL = ''
     String GIT_BRANCH = ''
     if (params instanceof Map) {
-        GIT_URL = params['GIT_URL'] ?: ''
-        GIT_BRANCH = params['GIT_BRANCH'] ?: ''
-    } else {
-        echo "⚠️  params is not a Map.  Defaulting to empty strings for GIT_URL and GIT_BRANCH."
-    }
-
+    // Handle nested params structure
+    def nestedParams = params['params'] ?: params
+    GIT_URL = nestedParams['GIT_URL'] ?: ''
+    GIT_BRANCH = nestedParams['GIT_BRANCH'] ?: ''
+} else {
+    echo "⚠️  params is not a Map.  Defaulting to empty strings for GIT_URL and GIT_BRANCH."
+}
     // 3. Log the retrieved values.
     echo "🔍 Retrieved GIT_URL: ${GIT_URL}, GIT_BRANCH: ${GIT_BRANCH}"
 
