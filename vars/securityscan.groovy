@@ -73,6 +73,7 @@ def call(Map params = [:]) {
                         sh '''
                             echo "Running Gitleaks scan..."
                             gitleaks detect --source=/source --report-path=/source/${GITLEAKS_REPORT}.sarif --report-format sarif --exit-code=0 || true
+                            ls -l /source
                         '''
                         recordIssues(
                             enabledForFailure: true,
