@@ -5,7 +5,8 @@ dockerbuildpush(
     DOCKER_HUB_USERNAME: 'naivedh',
     DOCKER_CREDENTIALS: 'docker_hub_up',
     GITLAB_URL: 'https://gitlab.com/your-repo.git',
-    GIT_BRANCH: 'main'
+    GIT_BRANCH: 'main',
+    GIT_CREDENTIALS: 'gitlab_cred'  // GitLab credentials ID
 )*/
 
 def call(Map params) {
@@ -16,8 +17,9 @@ def call(Map params) {
     def DOCKER_CREDENTIALS = params.DOCKER_CREDENTIALS
     def GITLAB_URL = params.GITLAB_URL
     def GIT_BRANCH = params.GIT_BRANCH
+    def GIT_CREDENTIALS = params.GIT_CREDENTIALS
 
-    if (!IMAGE_NAME || !IMAGE_TAG || !DOCKER_HUB_USERNAME || !DOCKER_CREDENTIALS || !GITLAB_URL || !GIT_BRANCH) {
+    if (!IMAGE_NAME || !IMAGE_TAG || !DOCKER_HUB_USERNAME || !DOCKER_CREDENTIALS || !GITLAB_URL || !GIT_BRANCH || !GIT_CREDENTIALS) {
         error "Missing required parameters!"
     }
 
@@ -39,6 +41,7 @@ def call(Map params) {
             DOCKER_CREDENTIALS = "${DOCKER_CREDENTIALS}"
             GITLAB_URL = "${GITLAB_URL}"
             GIT_BRANCH = "${GIT_BRANCH}"
+            GIT_CREDENTIALS = "${GIT_CREDENTIALS}"
             REPORT_FILE = "${REPORT_FILE}"
         }
 
@@ -48,8 +51,13 @@ def call(Map params) {
                     container('docker') {
                         script {
                             try {
-                                echo "Cloning ${GITLAB_URL} - Branch: ${GIT_BRANCH}"
-                                sh "git clone --branch ${GIT_BRANCH} ${GITLAB_URL} repo"
+                                echo "Cloning repository from ${GITLAB_URL} - Branch: ${GIT_BRANCH}"
+                                
+                                // Use GitLab credentials to authenticate
+                                withCredentials([usernamePassword(credentialsId: GIT_CREDENTIALS, usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
+                                    def gitUrlWithCreds = GITLAB_URL.replace('https://', "https://${GIT_USER}:${GIT_PASS}@")
+                                    sh "git clone --branch ${GIT_BRANCH} ${gitUrlWithCreds} repo"
+                                }
 
                                 echo "Building Docker image..."
                                 sh """
