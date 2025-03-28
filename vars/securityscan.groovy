@@ -6,8 +6,8 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
     def SEMGREP_REPORT = 'semgrep-report'
     def CHECKOV_REPORT = 'results.sarif'
     def SEMGREP_CREDENTIALS_ID = 'SEMGREP_KEY'
-    def GIT_URL = params.GIT_URL
-    def GIT_BRANCH = params.GIT_BRANCH
+    GIT_URL = params.GIT_URL
+    GIT_BRANCH = params.GIT_BRANCH
 
     // Define the containers. Add git container for cloning the repository
     def containers = [
