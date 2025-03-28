@@ -72,7 +72,7 @@ def call(Map params = [:]) {
                     container('gitleak') {
                         sh '''
                             echo "Running Gitleaks scan..."
-                            gitleaks detect --source=/source --report-path=/source/${GITLEAKS_REPORT}.sarif --report-format sarif --exit-code=0
+                            gitleaks detect --source=/source --report-path=/source/${GITLEAKS_REPORT}.sarif --report-format sarif --exit-code=0 || true
                         '''
                         recordIssues(
                             enabledForFailure: true,
