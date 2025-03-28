@@ -19,7 +19,7 @@ def call(Map params = [:]) {
     def GIT_BRANCH = params.get('GIT_BRANCH', '')
 
     if (!GIT_URL || !GIT_BRANCH) {
-        error "🚨 GIT_URL or GIT_BRANCH is not set!"
+        error "🚨 GIT_URL or GIT_BRANCH is not set!  Provided values: GIT_URL=${GIT_URL}, GIT_BRANCH=${GIT_BRANCH}"
     }
 
     def GITLEAKS_REPORT = 'gitleaks-report'
@@ -31,7 +31,7 @@ def call(Map params = [:]) {
     // Define the containers for the Kubernetes pod
     def containers = [
         [name: 'git', image: 'alpine/git:latest'],
-        [name: 'gitleak', image: 'zricethezav/gitleaks'],
+        [name: 'gitleak', image: 'zricethezav/gitleaks:latest'],
         [name: 'owasp', image: 'owasp/dependency-check-action:latest'],
         [name: 'semgrep', image: 'returntocorp/semgrep:latest'],
         [name: 'checkov', image: 'bridgecrew/checkov:latest']
