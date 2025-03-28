@@ -1,29 +1,17 @@
-/* @Library('k8s-shared-lib') _
-dockerbuildpush(
-    IMAGE_NAME: 'owasp-dependency',
-    IMAGE_TAG: 'latest',
-    DOCKER_HUB_USERNAME: 'naivedh',
-    DOCKER_CREDENTIALS: 'docker_hub_up',
-    GITLAB_URL: 'https://gitlab.com/your-repo.git',
-    GIT_BRANCH: 'main',
-    GIT_CREDENTIALS: 'gitlab_cred'  // GitLab credentials ID
-)*/
+def call(Map params = [:]) {
+    // Extract parameters with default values
+    def IMAGE_NAME = params.get('IMAGE_NAME', 'owasp-dependency')
+    def IMAGE_TAG = params.get('IMAGE_TAG', 'latest')
+    def DOCKER_HUB_USERNAME = params.get('DOCKER_HUB_USERNAME', 'naivedh')
+    def DOCKER_CREDENTIALS = params.get('DOCKER_CREDENTIALS', 'docker_hub_up')
+    def GITLAB_URL = params.get('GITLAB_URL', 'https://gitlab.com/your-repo.git')
+    def GIT_BRANCH = params.get('GIT_BRANCH', 'main')
 
-def call(Map params) {
-    // Extract parameters
-    def IMAGE_NAME = params.IMAGE_NAME
-    def IMAGE_TAG = params.IMAGE_TAG
-    def DOCKER_HUB_USERNAME = params.DOCKER_HUB_USERNAME
-    def DOCKER_CREDENTIALS = params.DOCKER_CREDENTIALS
-    def GITLAB_URL = params.GITLAB_URL
-    def GIT_BRANCH = params.GIT_BRANCH
-    def GIT_CREDENTIALS = params.GIT_CREDENTIALS
-
-    if (!IMAGE_NAME || !IMAGE_TAG || !DOCKER_HUB_USERNAME || !DOCKER_CREDENTIALS || !GITLAB_URL || !GIT_BRANCH || !GIT_CREDENTIALS) {
+    if (!IMAGE_NAME || !IMAGE_TAG || !DOCKER_HUB_USERNAME || !DOCKER_CREDENTIALS || !GITLAB_URL || !GIT_BRANCH) {
         error "Missing required parameters!"
     }
 
-    // Report file names
+    // Report files
     def REPORT_FILE = "trivy-report.sarif"
     def TABLE_REPORT_FILE = "trivy-report.txt"
 
@@ -41,7 +29,6 @@ def call(Map params) {
             DOCKER_CREDENTIALS = "${DOCKER_CREDENTIALS}"
             GITLAB_URL = "${GITLAB_URL}"
             GIT_BRANCH = "${GIT_BRANCH}"
-            GIT_CREDENTIALS = "${GIT_CREDENTIALS}"
             REPORT_FILE = "${REPORT_FILE}"
         }
 
@@ -51,12 +38,17 @@ def call(Map params) {
                     container('docker') {
                         script {
                             try {
-                                echo "Cloning repository from ${GITLAB_URL} - Branch: ${GIT_BRANCH}"
-                                
-                                // Use GitLab credentials to authenticate
-                                withCredentials([usernamePassword(credentialsId: GIT_CREDENTIALS, usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
-                                    def gitUrlWithCreds = GITLAB_URL.replace('https://', "https://${GIT_USER}:${GIT_PASS}@")
-                                    sh "git clone --branch ${GIT_BRANCH} ${gitUrlWithCreds} repo"
+                                echo "Cloning GitLab repo from ${GITLAB_URL} - Branch: ${GIT_BRANCH}"
+
+                                // ✅ Using GitLab credentials from Jenkins Credential Manager
+                                withCredentials([usernamePassword(credentialsId: 'gitlab', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
+                                    sh """
+                                        git config --global credential.helper store
+                                        echo "https://${GIT_USER}:${GIT_PASS}@${GITLAB_URL.replace('https://', '')}" > ~/.git-credentials
+                                        git config --global user.email "jenkins@local"
+                                        git config --global user.name "Jenkins"
+                                        git clone --branch ${GIT_BRANCH} ${GITLAB_URL} repo
+                                    """
                                 }
 
                                 echo "Building Docker image..."
