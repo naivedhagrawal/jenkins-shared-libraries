@@ -22,8 +22,12 @@ class PodGenerator implements Serializable {
       initContainers:
         - name: git-clone
           image: alpine/git
+          tty: true
           command: ['sh', '-c']
           args: ["git clone -b ${GIT_BRANCH} ${GIT_URL} /source"]
+          command:
+            - sleep
+            - infinity
           volumeMounts:
             - name: source-code
               mountPath: /source
