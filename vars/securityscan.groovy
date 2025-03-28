@@ -36,6 +36,7 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                             echo $GIT_URL
                             echo $GIT_BRANCH
                             echo "Cloning repository..."
+                            git config --global --add safe.directory $PWD
                             git init
                             git remote add origin ${GIT_URL}
                             git fetch --depth=1 origin ${GIT_BRANCH}
