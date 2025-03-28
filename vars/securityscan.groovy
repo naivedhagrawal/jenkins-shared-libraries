@@ -71,10 +71,8 @@ def call(Map params = [:]) {
                 steps {
                     container('gitleak') {
                         sh '''
-                            echo "Running Gitleaks scan..."
-                            gitleaks detect --source=/source --report-path=/source/${GITLEAKS_REPORT}.sarif --report-format sarif --exit-code=0 || true
-                            ls -l /source
-                        '''
+                            cd /source
+                            gitleaks detect --source=. --report-path=${GITLEAKS_REPORT}.sarif --report-format sarif --exit-code=0                        '''
                         recordIssues(
                             enabledForFailure: true,
                             tool: sarif(
@@ -92,7 +90,6 @@ def call(Map params = [:]) {
                 steps {
                     container('owasp') {
                         sh '''
-                            echo "Running OWASP Dependency Check..."
                             mkdir -p /source/reports
                             /usr/share/dependency-check/bin/dependency-check.sh --scan /source \
                                 --format "SARIF"  \
