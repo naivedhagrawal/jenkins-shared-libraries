@@ -6,6 +6,8 @@ securityscan(
     checkov: true,
 )*/
 
+import com.mycompany.utils.PodGenerator
+
 def call(Map params = [:]) {
     def GITLEAKS_REPORT = 'gitleaks-report'
     def OWASP_DEP_REPORT = 'owasp-dep-report'
