@@ -1,4 +1,3 @@
-// /home/naivedh/repo/jenkins-shared-libraries/src/com/mycompany/utils/PodGenerator.groovy
 package com.mycompany.utils
 
 class PodGenerator implements Serializable {
@@ -24,7 +23,7 @@ class PodGenerator implements Serializable {
         - name: git-clone
           image: alpine/git
           command: ['sh', '-c']
-          args: ["git clone '${GIT_URL}' -b '${GIT_BRANCH}' /source"]
+          args: ["git clone -b ${GIT_BRANCH} ${GIT_URL} /source"]
           volumeMounts:
             - name: source-code
               mountPath: /source

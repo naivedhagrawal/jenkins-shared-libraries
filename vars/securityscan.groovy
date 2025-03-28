@@ -1,13 +1,13 @@
 import com.mycompany.utils.PodGenerator
 
-def call(String GIT_URL, String GIT_BRANCH) {
+def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, checkov: true, GIT_URL: '', GIT_BRANCH: '']) {
     def GITLEAKS_REPORT = 'gitleaks-report'
     def OWASP_DEP_REPORT = 'owasp-dep-report'
     def SEMGREP_REPORT = 'semgrep-report'
     def CHECKOV_REPORT = 'results.sarif'
     def SEMGREP_CREDENTIALS_ID = 'semgrep-key'
-
-
+    def GIT_URL = params.GIT_URL
+    def GIT_BRANCH = params.GIT_BRANCH
 
     // Define the containers.  Include git, but remove the explicit declaration.
     def containers = [
@@ -29,89 +29,77 @@ def call(String GIT_URL, String GIT_BRANCH) {
         }
         stages {
             stage('Gitleak Check') {
+                when { expression { params.gitleak } }
                 steps {
-                    script {
-                        container('gitleak') {
-                            sh "gitleaks detect --source=/source --report-path=${GITLEAKS_REPORT}.sarif --report-format sarif --exit-code=0"
-                            recordIssues(
-                                enabledForFailure: true,
-                                tool: sarif(
-                                    pattern: "${GITLEAKS_REPORT}.sarif",
-                                    id: "Git-Leaks",
-                                    name: "Secret Scanning Report"
-                                )
-                            )
-                            archiveArtifacts artifacts: "${GITLEAKS_REPORT}.*"
-                        }
-                    }
+                    sh "gitleaks detect --source=/source --report-path=${GITLEAKS_REPORT}.sarif --report-format sarif --exit-code=0"
+                    recordIssues(
+                        enabledForFailure: true,
+                        tool: sarif(
+                            pattern: "${GITLEAKS_REPORT}.sarif",
+                            id: "Git-Leaks",
+                            name: "Secret Scanning Report"
+                        )
+                    )
+                    archiveArtifacts artifacts: "${GITLEAKS_REPORT}.*"
                 }
             }
 
             stage('OWASP Dependency Check') {
+                when { expression { params.owaspdependency } }
                 steps {
-                    script {
-                        container('owasp') {
-                            sh """
-                                mkdir -p reports
-                                /usr/share/dependency-check/bin/dependency-check.sh --scan /source \
-                                    --format "SARIF"  \
-                                    --exclude "**/*.zip" \
-                                    --out "reports/"
-                                
-                                mv reports/dependency-check-report.sarif ${OWASP_DEP_REPORT}.sarif
-                            """
-                            recordIssues(
-                                enabledForFailure: true,
-                                tool: sarif(
-                                    pattern: "${OWASP_DEP_REPORT}.sarif",
-                                    id: "Owasp-Dependency-Check",
-                                    name: "Dependency Check Report"
-                                )
-                            )
-                            archiveArtifacts artifacts: "${OWASP_DEP_REPORT}.*"
-                        }
-                    }
+                    sh """
+                        mkdir -p reports
+                        /usr/share/dependency-check/bin/dependency-check.sh --scan /source \
+                            --format "SARIF"  \
+                            --exclude "**/*.zip" \
+                            --out "reports/"
+                        
+                        mv reports/dependency-check-report.sarif ${OWASP_DEP_REPORT}.sarif
+                    """
+                    recordIssues(
+                        enabledForFailure: true,
+                        tool: sarif(
+                            pattern: "${OWASP_DEP_REPORT}.sarif",
+                            id: "Owasp-Dependency-Check",
+                            name: "Dependency Check Report"
+                        )
+                    )
+                    archiveArtifacts artifacts: "${OWASP_DEP_REPORT}.*"
                 }
             }
 
             stage('Semgrep Scan') {
+                when { expression { params.semgrep } }
                 steps {
-                    script {
-                        withCredentials([string(credentialsId: SEMGREP_CREDENTIALS_ID, variable: 'SEMGREP_KEY')]) {
-                            container('semgrep') {
-                                sh "mkdir -p reports"
-                                sh "semgrep --config=auto --sarif --output reports/semgrep.sarif /source"
-                                recordIssues(
-                                    enabledForFailure: true,
-                                    tool: sarif(
-                                        pattern: "reports/semgrep.sarif",
-                                        id: "SEMGREP-SAST",
-                                        name: "SAST Report"
-                                    )
-                                )
-                                archiveArtifacts artifacts: "reports/semgrep.*"
-                            }
-                        }
+                    withCredentials([string(credentialsId: SEMGREP_CREDENTIALS_ID, variable: 'SEMGREP_KEY')]) {
+                        sh "mkdir -p reports"
+                        sh "semgrep --config=auto --sarif --output reports/semgrep.sarif /source"
+                        recordIssues(
+                            enabledForFailure: true,
+                            tool: sarif(
+                                pattern: "reports/semgrep.sarif",
+                                id: "SEMGREP-SAST",
+                                name: "SAST Report"
+                            )
+                        )
+                        archiveArtifacts artifacts: "reports/semgrep.*"
                     }
                 }
             }
 
             stage('Checkov Scan') {
+                when { expression { params.checkov } }
                 steps {
-                    script {
-                        container('checkov') {
-                            sh "checkov --directory /source --output sarif || true"
-                            recordIssues(
-                                enabledForFailure: true,
-                                tool: sarif(
-                                    pattern: "${CHECKOV_REPORT}",
-                                    id: "Checkov-IaC",
-                                    name: "IAC Test Report"
-                                )
-                            )
-                            archiveArtifacts artifacts: "${CHECKOV_REPORT}"
-                        }
-                    }
+                    sh "checkov --directory /source --output sarif || true"
+                    recordIssues(
+                        enabledForFailure: true,
+                        tool: sarif(
+                            pattern: "${CHECKOV_REPORT}",
+                            id: "Checkov-IaC",
+                            name: "IAC Test Report"
+                        )
+                    )
+                    archiveArtifacts artifacts: "${CHECKOV_REPORT}"
                 }
             }
         }
