@@ -17,7 +17,7 @@ def call(Map params = [:]) {
     // 1. Log the entire params map at the beginning of the call method.
     echo "🔍 params at start of call: ${params}"
 
-    // 2.  Retrieve parameters directly and explicitly, with null checks and logging.
+    // 2. Retrieve parameters directly and explicitly, with null checks and logging.
     def GIT_URL = (params != null && params.containsKey('GIT_URL')) ? params.GIT_URL : ''
     def GIT_BRANCH = (params != null && params.containsKey('GIT_BRANCH')) ? params.GIT_BRANCH : ''
 
