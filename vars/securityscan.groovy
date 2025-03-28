@@ -72,7 +72,8 @@ def call(Map params = [:]) {
                     container('gitleak') {
                         sh '''
                             cd /source
-                            gitleaks detect --source=. --report-path=${GITLEAKS_REPORT}.sarif --report-format sarif --exit-code=0                        '''
+                            gitleaks detect --source=. --report-path=${GITLEAKS_REPORT}.sarif --report-format sarif --exit-code=0
+                        '''
                         recordIssues(
                             enabledForFailure: true,
                             tool: sarif(
@@ -81,11 +82,11 @@ def call(Map params = [:]) {
                                 name: "Secret Scanning Report"
                             )
                         )
-                        archiveArtifacts artifacts: "/source/${GITLEAKS_REPORT}.*"
+                        // Updated artifact path to match the filename
+                        archiveArtifacts artifacts: "/source/${GITLEAKS_REPORT}.sarif"
                     }
                 }
             }
-
             stage('OWASP Dependency Check') {
                 steps {
                     container('owasp') {
