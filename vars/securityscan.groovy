@@ -60,7 +60,7 @@ def call(Map params = [:]) {
                                 echo "GIT_BRANCH: $GIT_BRANCH"
                                 echo "Cloning repository..."
                                 git config --global --add safe.directory $PWD
-                                git clone --depth=1 --branch $GIT_BRANCH $GIT_URL
+                                git clone --depth=1 --branch $GIT_BRANCH $GIT_URL .
                             '''
                         }
                     }
