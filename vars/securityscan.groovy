@@ -71,6 +71,8 @@ def call(Map params = [:]) {
                 steps {
                     container('gitleak') {
                         sh "gitleaks detect --source=. --report-path=${GITLEAKS_REPORT}.sarif --report-format sarif --exit-code=0"
+                        sh "gitleaks detect --source=. --report-path=${GITLEAKS_REPORT}.json --report-format json --exit-code=0"
+                        sh "gitleaks detect --source=. --report-path=${GITLEAKS_REPORT}.csv --report-format csv --exit-code=0"
                         recordIssues(
                                 enabledForFailure: true,
                                 tool: sarif(
@@ -103,8 +105,8 @@ def call(Map params = [:]) {
                             """
                             recordIssues(
                                 enabledForFailure: true,
-                                tool: sarif(
-                                    pattern: "${OWASP_DEP_REPORT}.sarif",
+                                tool: owaspDependencyCheck(
+                                    pattern: "${OWASP_DEP_REPORT}.json",
                                     id: "Owasp-Dependency-Check",
                                     name: "Dependency Check Report"
                                 )
@@ -120,8 +122,8 @@ def call(Map params = [:]) {
                         withCredentials([string(credentialsId: 'SEMGREP_KEY', variable: 'SEMGREP_KEY')]) {
                                 sh "mkdir -p reports"
                                 sh "semgrep --config=auto --sarif --output reports/semgrep.sarif ."
-                                /*sh "semgrep --config=auto --json --output reports/semgrep.json ."
-                                sh "semgrep --config=auto --verbose --output reports/semgrep.txt ."*/
+                                sh "semgrep --config=auto --json --output reports/semgrep.json ."
+                                sh "semgrep --config=auto --verbose --output reports/semgrep.txt ."
                                 archiveArtifacts artifacts: "reports/semgrep.*"
                                 recordIssues(
                                     enabledForFailure: true,
@@ -139,7 +141,7 @@ def call(Map params = [:]) {
             stage('Checkov Scan') {
                 steps {
                     container('checkov') {
-                        sh "checkov --directory . --output sarif || true"
+                        sh "checkov --directory . -o sarif -o csv || true"
                             recordIssues(
                                 enabledForFailure: true,
                                 tool: sarif(
