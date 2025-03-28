@@ -72,8 +72,8 @@ def call(Map params = [:]) {
                             """
                             recordIssues(
                                 enabledForFailure: true,
-                                tool: sarif(
-                                    pattern: "${OWASP_DEP_REPORT}.sarif",
+                                tool: owaspDependencyCheck(
+                                    pattern: "${OWASP_DEP_REPORT}.json",
                                     id: "Owasp-Dependency-Check",
                                     name: "Dependency Check Report"
                                 )
