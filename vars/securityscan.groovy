@@ -33,18 +33,20 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                 steps {
                     container('git') {
                         sh '''
-                            echo $GIT_URL
-                            echo $GIT_BRANCH
+                            echo "GIT_URL: ${GIT_URL}"
+                            echo "GIT_BRANCH: ${GIT_BRANCH}"
+                            if [ -z "${GIT_URL}" ] || [ -z "${GIT_BRANCH}" ]; then
+                                echo "Error: GIT_URL or GIT_BRANCH is not set"
+                                exit 1
+                            fi
                             echo "Cloning repository..."
                             git config --global --add safe.directory $PWD
-                            git init
-                            git remote add origin ${GIT_URL}
-                            git fetch --depth=1 origin ${GIT_BRANCH}
-                            git checkout FETCH_HEAD
+                            git clone --depth=1 --branch ${GIT_BRANCH} ${GIT_URL} .
                         '''
                     }
                 }
             }
+
 
             stage('Gitleak Check') {
                 when { expression { params.gitleak } }
