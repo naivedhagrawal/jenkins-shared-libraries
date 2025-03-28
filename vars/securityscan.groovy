@@ -14,25 +14,17 @@ securityscan(
 import com.mycompany.utils.PodGenerator
 
 def call(Map params = [:]) {
-    // 1. Log the entire params map at the beginning of the call method.
-    echo "🔍 params at start of call: ${params}"
-
-    // 2. Robust parameter retrieval with explicit null and type checking.
     String GIT_URL = ''
     String GIT_BRANCH = ''
     if (params instanceof Map) {
-    // Handle nested params structure
-    def nestedParams = params['params'] ?: params
-    GIT_URL = nestedParams['GIT_URL'] ?: ''
-    GIT_BRANCH = nestedParams['GIT_BRANCH'] ?: ''
-} else {
-    echo "⚠️  params is not a Map.  Defaulting to empty strings for GIT_URL and GIT_BRANCH."
-}
-    // 3. Log the retrieved values.
-    echo "🔍 Retrieved GIT_URL: ${GIT_URL}, GIT_BRANCH: ${GIT_BRANCH}"
-
+        def nestedParams = params['params'] ?: params
+        GIT_URL = nestedParams['GIT_URL'] ?: ''
+        GIT_BRANCH = nestedParams['GIT_BRANCH'] ?: ''
+    } else {
+        error "params is not a Map."
+    }
     if (!GIT_URL || !GIT_BRANCH) {
-        error "🚨 GIT_URL or GIT_BRANCH is not set! Provided values: params=${params}, GIT_URL=${GIT_URL}, GIT_BRANCH=${GIT_BRANCH}.  Please ensure these are set either as parameters to the 'securityscan' step or as environment variables in your Jenkins job configuration. GIT_URL should be 'https://github.com/naivedhagrawal/devops_tools_kubernetes.git' and GIT_BRANCH should be 'main'."
+        error "GIT_URL or GIT_BRANCH is not set!"
     }
 
     def GITLEAKS_REPORT = 'gitleaks-report'
@@ -41,7 +33,6 @@ def call(Map params = [:]) {
     def CHECKOV_REPORT = 'results.sarif'
     def SEMGREP_CREDENTIALS_ID = 'SEMGREP_KEY'
 
-    // Define the containers for the Kubernetes pod
     def containers = [
         [name: 'git', image: 'alpine/git:latest'],
         [name: 'gitleak', image: 'zricethezav/gitleaks:latest'],
@@ -50,14 +41,13 @@ def call(Map params = [:]) {
         [name: 'checkov', image: 'bridgecrew/checkov:latest']
     ]
 
-    // Generate the pod YAML from the shared library
     def podYaml = PodGenerator.generatePodYaml(containers)
 
     pipeline {
         agent {
             kubernetes {
                 yaml podYaml
-                showRawYaml true
+                showRawYaml false
             }
         }
         stages {
@@ -78,7 +68,6 @@ def call(Map params = [:]) {
             }
 
             stage('Gitleak Check') {
-                when { expression { params.gitleak } }
                 steps {
                     container('gitleak') {
                         sh '''
@@ -99,7 +88,6 @@ def call(Map params = [:]) {
             }
 
             stage('OWASP Dependency Check') {
-                when { expression { params.owaspdependency } }
                 steps {
                     container('owasp') {
                         sh '''
@@ -126,7 +114,6 @@ def call(Map params = [:]) {
             }
 
             stage('Semgrep Scan') {
-                when { expression { params.semgrep } }
                 steps {
                     container('semgrep') {
                         withCredentials([string(credentialsId: SEMGREP_CREDENTIALS_ID, variable: 'SEMGREP_KEY')]) {
@@ -150,7 +137,6 @@ def call(Map params = [:]) {
             }
 
             stage('Checkov Scan') {
-                when { expression { params.checkov } }
                 steps {
                     container('checkov') {
                         sh '''
@@ -172,4 +158,3 @@ def call(Map params = [:]) {
         }
     }
 }
-
