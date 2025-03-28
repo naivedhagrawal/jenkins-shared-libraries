@@ -60,7 +60,7 @@ def call(Map params = [:]) {
                                 echo "GIT_BRANCH: $GIT_BRANCH"
                                 echo "Cloning repository..."
                                 git config --global --add safe.directory $PWD
-                                git clone --depth=1 --branch $GIT_BRANCH $GIT_URL /source
+                                git clone --depth=1 --branch $GIT_BRANCH $GIT_URL
                             '''
                         }
                     }
@@ -71,22 +71,17 @@ def call(Map params = [:]) {
                 steps {
                     container('gitleak') {
                         sh '''
-                            cd /source
                             gitleaks detect --source=. --report-path=${GITLEAKS_REPORT}.sarif --report-format sarif --exit-code=0
-                            ls -lh
-                            cd ..
-                            ls -lh
                         '''
                         recordIssues(
-                            enabledForFailure: true,
-                            tool: sarif(
-                                pattern: "/source/${GITLEAKS_REPORT}.sarif",
-                                id: "Git-Leaks",
-                                name: "Secret Scanning Report"
+                                enabledForFailure: true,
+                                tool: sarif(
+                                    pattern: "${GITLEAKS_REPORT}.sarif",
+                                    id: "Git-Leaks",
+                                    name: "Secret Scanning Report"
+                                )
                             )
-                        )
-                        // Updated artifact path to match the filename
-                        archiveArtifacts artifacts: "/source/${GITLEAKS_REPORT}.sarif"
+                            archiveArtifacts artifacts: "${GITLEAKS_REPORT}.*"
                     }
                 }
             }
