@@ -1,39 +1,36 @@
 /* @Library('k8s-shared-lib') _
-securityscan(String GIT_URL, String GIT_BRANCH) */
+securityscan(
+    gitleak: true,
+    owaspdependency: true,
+    semgrep: true,
+    checkov: true,
+)*/
 
-def call(String GIT_URL, String GIT_BRANCH) {
+def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, checkov: true]) {
     def GITLEAKS_REPORT = 'gitleaks-report'
     def OWASP_DEP_REPORT = 'owasp-dep-report'
     def SEMGREP_REPORT = 'semgrep-report'
     def CHECKOV_REPORT = 'results.sarif'
-    def SEMGREP_CREDENTIALS_ID = 'semgrep-key'
-
-
-
-    // Define the containers.  Include git, but remove the explicit declaration.
-    def containers = [
-        [name: 'gitleak', image: 'zricethezav/gitleaks'],
-        [name: 'owasp', image: 'owasp/dependency-check-action:latest'],
-        [name: 'semgrep', image: 'returntocorp/semgrep:latest'],
-        [name: 'checkov', image: 'bridgecrew/checkov:latest']
-    ]
-
-    // Generate the pod YAML
-    def podYaml = generatePodYaml(containers)
 
     pipeline {
-        agent {
-            kubernetes {
-                yaml podYaml
-                showRawYaml true
-            }
-        }
+        agent none
+
         stages {
             stage('Gitleak Check') {
+                when { expression { params.gitleak } }
+                agent {
+                    kubernetes {
+                        yaml pod('gitleak', 'zricethezav/gitleaks')
+                        showRawYaml false
+                    }
+                }
                 steps {
                     script {
                         container('gitleak') {
-                            sh "gitleaks detect --source=/source --report-path=${GITLEAKS_REPORT}.sarif --report-format sarif --exit-code=0"
+                            checkout scm
+                            sh "gitleaks detect --source=. --report-path=${GITLEAKS_REPORT}.sarif --report-format sarif --exit-code=0"
+                            /*sh "gitleaks detect --source=. --report-path=${GITLEAKS_REPORT}.json --report-format json --exit-code=0"
+                            sh "gitleaks detect --source=. --report-path=${GITLEAKS_REPORT}.csv --report-format csv --exit-code=0"*/
                             recordIssues(
                                 enabledForFailure: true,
                                 tool: sarif(
@@ -49,17 +46,31 @@ def call(String GIT_URL, String GIT_BRANCH) {
             }
 
             stage('OWASP Dependency Check') {
+                when { expression { params.owaspdependency } }
+                agent {
+                    kubernetes {
+                        yaml pod('owasp', 'owasp/dependency-check-action:latest')
+                        showRawYaml false
+                    }
+                }
                 steps {
                     script {
                         container('owasp') {
+                            checkout scm
                             sh """
                                 mkdir -p reports
-                                /usr/share/dependency-check/bin/dependency-check.sh --scan /source \
-                                    --format "SARIF"  \
+                                /usr/share/dependency-check/bin/dependency-check.sh --scan . \
+                                    --format "SARIF" \
+                                    --format "JSON" \
+                                    --format "CSV" \
+                                    --format "XML" \
                                     --exclude "**/*.zip" \
                                     --out "reports/"
                                 
                                 mv reports/dependency-check-report.sarif ${OWASP_DEP_REPORT}.sarif
+                                mv reports/dependency-check-report.json ${OWASP_DEP_REPORT}.json
+                                mv reports/dependency-check-report.csv ${OWASP_DEP_REPORT}.csv
+                                mv reports/dependency-check-report.xml ${OWASP_DEP_REPORT}.xml
                             """
                             recordIssues(
                                 enabledForFailure: true,
@@ -75,18 +86,29 @@ def call(String GIT_URL, String GIT_BRANCH) {
                 }
             }
 
+
             stage('Semgrep Scan') {
+                when { expression { params.semgrep } }
+                agent {
+                    kubernetes {
+                        yaml pod('semgrep', 'returntocorp/semgrep:latest')
+                        showRawYaml false
+                    }
+                }
                 steps {
                     script {
-                        withCredentials([string(credentialsId: SEMGREP_CREDENTIALS_ID, variable: 'SEMGREP_KEY')]) {
-                            container('semgrep') {
+                        container('semgrep') {
+                            checkout scm
+                            withCredentials([string(credentialsId: 'SEMGREP_KEY', variable: 'SEMGREP_KEY')]) {
                                 sh "mkdir -p reports"
-                                sh "semgrep --config=auto --sarif --output reports/semgrep.sarif /source"
+                                sh "semgrep --config=auto --sarif --output reports/semgrep.sarif ."
+                                /*sh "semgrep --config=auto --json --output reports/semgrep.json ."
+                                sh "semgrep --config=auto --verbose --output reports/semgrep.txt ."*/
                                 archiveArtifacts artifacts: "reports/semgrep.*"
                                 recordIssues(
                                     enabledForFailure: true,
                                     tool: sarif(
-                                        pattern: "${SEMGREP_REPORT}.sarif",
+                                        pattern: "reports/semgrep.sarif",
                                         id: "SEMGREP-SAST",
                                         name: "SAST Report"
                                     )
@@ -98,10 +120,18 @@ def call(String GIT_URL, String GIT_BRANCH) {
             }
 
             stage('Checkov Scan') {
+                when { expression { params.checkov } }
+                agent {
+                    kubernetes {
+                        yaml pod('checkov', 'bridgecrew/checkov:latest')
+                        showRawYaml false
+                    }
+                }
                 steps {
                     script {
                         container('checkov') {
-                            sh "checkov --directory /source --output sarif || true"
+                            checkout scm
+                            sh "checkov --directory . --output sarif || true"
                             recordIssues(
                                 enabledForFailure: true,
                                 tool: sarif(
