@@ -6,26 +6,32 @@ securityscan(
     checkov: true,
 )*/
 
-def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, checkov: true]) {
+def call(Map params = [:]) {
     def GITLEAKS_REPORT = 'gitleaks-report'
     def OWASP_DEP_REPORT = 'owasp-dep-report'
     def SEMGREP_REPORT = 'semgrep-report'
     def CHECKOV_REPORT = 'results.sarif'
 
+    def containers = [
+        [name: 'gitleak', image: 'zricethezav/gitleaks:latest'],
+        [name: 'owasp', image: 'owasp/dependency-check-action:latest'],
+        [name: 'semgrep', image: 'returntocorp/semgrep:latest'],
+        [name: 'checkov', image: 'bridgecrew/checkov:latest']
+    ]
+
+    def podYaml = PodGenerator.generatePodYaml(containers)
+
     pipeline {
-        agent none
+        agent {
+            kubernetes {
+                yaml podYaml
+                showRawYaml false
+            }
+        }
 
         stages {
-            stage('Gitleak Check') {
-                when { expression { params.gitleak } }
-                agent {
-                    kubernetes {
-                        yaml pod('gitleak', 'zricethezav/gitleaks')
-                        showRawYaml false
-                    }
-                }
+            stage('Gitleak Check'){
                 steps {
-                    script {
                         container('gitleak') {
                             checkout scm
                             sh "gitleaks detect --source=. --report-path=${GITLEAKS_REPORT}.sarif --report-format sarif --exit-code=0"
@@ -41,22 +47,12 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                             )
                             archiveArtifacts artifacts: "${GITLEAKS_REPORT}.*"
                         }
-                    }
                 }
             }
 
             stage('OWASP Dependency Check') {
-                when { expression { params.owaspdependency } }
-                agent {
-                    kubernetes {
-                        yaml pod('owasp', 'owasp/dependency-check-action:latest')
-                        showRawYaml false
-                    }
-                }
                 steps {
-                    script {
                         container('owasp') {
-                            checkout scm
                             sh """
                                 mkdir -p reports
                                 /usr/share/dependency-check/bin/dependency-check.sh --scan . \
@@ -82,23 +78,13 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                             )
                             archiveArtifacts artifacts: "${OWASP_DEP_REPORT}.*"
                         }
-                    }
                 }
             }
 
 
             stage('Semgrep Scan') {
-                when { expression { params.semgrep } }
-                agent {
-                    kubernetes {
-                        yaml pod('semgrep', 'returntocorp/semgrep:latest')
-                        showRawYaml false
-                    }
-                }
                 steps {
-                    script {
                         container('semgrep') {
-                            checkout scm
                             withCredentials([string(credentialsId: 'SEMGREP_KEY', variable: 'SEMGREP_KEY')]) {
                                 sh "mkdir -p reports"
                                 sh "semgrep --config=auto --sarif --output reports/semgrep.sarif ."
@@ -115,22 +101,12 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                                 )
                             }
                         }
-                    }
                 }
             }
 
             stage('Checkov Scan') {
-                when { expression { params.checkov } }
-                agent {
-                    kubernetes {
-                        yaml pod('checkov', 'bridgecrew/checkov:latest')
-                        showRawYaml false
-                    }
-                }
                 steps {
-                    script {
                         container('checkov') {
-                            checkout scm
                             sh "checkov --directory . --output sarif || true"
                             recordIssues(
                                 enabledForFailure: true,
@@ -142,7 +118,6 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                             )
                             archiveArtifacts artifacts: "${CHECKOV_REPORT}"
                         }
-                    }
                 }
             }
         }
