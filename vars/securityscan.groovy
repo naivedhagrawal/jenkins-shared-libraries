@@ -14,12 +14,12 @@ securityscan(
 import com.mycompany.utils.PodGenerator
 
 def call(Map params = [:]) {
-    // Retrieve parameters with safe defaults, now also checking environment variables
-    def GIT_URL = params.get('GIT_URL') ?: env.GIT_URL ?: ''
-    def GIT_BRANCH = params.get('GIT_BRANCH') ?: env.GIT_BRANCH ?: ''
+    // Retrieve parameters directly from the params map
+    def GIT_URL = params?.GIT_URL ?: ''
+    def GIT_BRANCH = params?.GIT_BRANCH ?: ''
 
     if (!GIT_URL || !GIT_BRANCH) {
-        error "🚨 GIT_URL or GIT_BRANCH is not set! Provided values: params=${params}, GIT_URL=${GIT_URL}, GIT_BRANCH=${GIT_BRANCH}.  Please ensure these are set either as parameters to the 'securityscan' step or as environment variables in your Jenkins job configuration."
+        error "🚨 GIT_URL or GIT_BRANCH is not set! Provided values: params=${params}, GIT_URL=${GIT_URL}, GIT_BRANCH=${GIT_BRANCH}.  Please ensure these are set either as parameters to the 'securityscan' step or as environment variables in your Jenkins job configuration.  GIT_URL should be 'https://github.com/naivedhagrawal/devops_tools_kubernetes.git' and GIT_BRANCH should be 'main'."
     }
 
     def GITLEAKS_REPORT = 'gitleaks-report'
