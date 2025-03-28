@@ -33,8 +33,13 @@ def call(Map params = [gitleak: true, owaspdependency: true, semgrep: true, chec
                 steps {
                     container('git') {
                         sh '''
-                            git config --global --add safe.directory $(pwd)
-                            git clone --branch ${GIT_BRANCH} ${GIT_URL} .
+                            echo $GIT_URL
+                            echo $GIT_BRANCH
+                            echo "Cloning repository..."
+                            git init
+                            git remote add origin ${GIT_URL}
+                            git fetch --depth=1 origin ${GIT_BRANCH}
+                            git checkout FETCH_HEAD
                         '''
                     }
                 }
