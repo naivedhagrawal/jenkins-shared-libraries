@@ -72,6 +72,7 @@ def call(Map params = [:]) {
                     container('gitleak') {
                         sh '''
                             gitleaks detect --source=. --report-path=${GITLEAKS_REPORT}.sarif --report-format sarif --exit-code=0
+                            ls -lh
                         '''
                         recordIssues(
                                 enabledForFailure: true,
