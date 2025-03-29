@@ -5,16 +5,13 @@ class PodGenerator implements Serializable {
         def containerYaml = containers.collect { container ->
             def volumeMounts = (container.volumeMounts ?: []) as List<Map>
 
-            // Use default mount if none provided
+            // Use specified mounts or fallback to empty list
             def volumeMountsYaml = volumeMounts ? volumeMounts.collect { mount ->
                 """
             - name: ${mount.name}
               mountPath: ${mount.mountPath}
                 """.stripIndent()
-            }.join('\n') : """
-            - name: default-volume
-              mountPath: /default-mount
-            """.stripIndent()
+            }.join('\n') : "[]"
 
             """
         - name: ${container.name}
