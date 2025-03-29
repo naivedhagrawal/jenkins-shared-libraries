@@ -3,7 +3,9 @@ package com.mycompany.utils
 class PodGenerator implements Serializable {
     static String generatePodYaml(List<Map> containers) {
         def containerYaml = containers.collect { container ->
-            def volumeMounts = container.volumeMounts ?: []  // Default to empty list
+            // Ensure volumeMounts is always initialized as a list
+            def volumeMounts = (container.volumeMounts ?: []) as List<Map>
+            
             def volumeMountsYaml = volumeMounts.collect { mount ->
                 """
             - name: ${mount.name}
@@ -24,8 +26,8 @@ class PodGenerator implements Serializable {
             """.stripIndent()
         }.join('\n')
 
-        // Collect all unique volumes from only the containers that have volume mounts
-        def volumes = containers.findAll { it.volumeMounts }
+        // Collect all unique volumes from containers with volume mounts
+        def volumes = containers.findAll { it.volumeMounts instanceof List }
             .collectMany { it.volumeMounts ?: [] }
             .unique { it.name }
             .collect { vol ->
