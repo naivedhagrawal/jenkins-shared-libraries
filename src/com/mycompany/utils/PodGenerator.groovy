@@ -3,9 +3,8 @@ package com.mycompany.utils
 class PodGenerator implements Serializable {
     static String generatePodYaml(List<Map> containers) {
         def containerYaml = containers.collect { container ->
-            // Ensure volumeMounts is always a list, even if empty
             def volumeMounts = (container.volumeMounts ?: []) as List<Map>
-            
+
             def volumeMountsYaml = volumeMounts.collect { mount ->
                 """
             - name: ${mount.name}
@@ -21,12 +20,12 @@ class PodGenerator implements Serializable {
             - /bin/sh
             - -c
             - sleep infinity
-          volumeMounts:  # Always include volumeMounts, even if empty
-        ${volumeMountsYaml ?: '[]'}
+          volumeMounts:
+        ${volumeMounts ? volumeMountsYaml : '[]'} 
             """.stripIndent()
         }.join('\n')
 
-        // Collect all unique volumes from containers with volume mounts
+        // Collect unique volumes
         def volumes = containers.findAll { it.volumeMounts instanceof List }
             .collectMany { it.volumeMounts ?: [] }
             .unique { it.name }
@@ -37,14 +36,21 @@ class PodGenerator implements Serializable {
                 """.stripIndent()
             }.join('\n')
 
+        // Add workspace volume to avoid NullPointerException
+        def workspaceVolume = """
+      volumes:
+        - name: jenkins-workspace-volume
+          emptyDir: {}
+        ${volumes}
+        """.stripIndent()
+
         return """
     apiVersion: v1
     kind: Pod
     spec:
       containers:
     ${containerYaml}
-      ${volumes ? 'volumes:' : ''}
-    ${volumes}
+      ${workspaceVolume}
     """.stripIndent()
     }
 }
