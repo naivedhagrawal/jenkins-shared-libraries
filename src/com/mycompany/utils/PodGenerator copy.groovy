@@ -15,13 +15,14 @@ package com.mycompany.utils
 class PodGenerator implements Serializable {
     static String generatePodYaml(List<Map> containers) {
         def containerYaml = containers.collect { container ->
-            def command = container.command ?: ['/bin/sh', '-c', 'sleep infinity']
             """
         - name: ${container.name}
           image: ${container.image}
           tty: true
           command:
-${command.collect { "            - ${it}" }.join('\n')}
+            - /bin/sh
+            - -c
+            - sleep infinity
           volumeMounts:
             - name: default
               mountPath: /default
