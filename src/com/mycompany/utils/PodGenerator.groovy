@@ -5,12 +5,16 @@ class PodGenerator implements Serializable {
         def containerYaml = containers.collect { container ->
             def volumeMounts = (container.volumeMounts ?: []) as List<Map>
 
-            def volumeMountsYaml = volumeMounts.collect { mount ->
+            // Use default mount if none provided
+            def volumeMountsYaml = volumeMounts ? volumeMounts.collect { mount ->
                 """
             - name: ${mount.name}
               mountPath: ${mount.mountPath}
                 """.stripIndent()
-            }.join('\n')
+            }.join('\n') : """
+            - name: default-volume
+              mountPath: /default-mount
+            """.stripIndent()
 
             """
         - name: ${container.name}
@@ -20,12 +24,12 @@ class PodGenerator implements Serializable {
             - /bin/sh
             - -c
             - sleep infinity
-          volumeMounts:
-        ${volumeMounts ? volumeMountsYaml : '[]'} 
+          volumeMounts: 
+        ${volumeMountsYaml}
             """.stripIndent()
         }.join('\n')
 
-        // Collect unique volumes
+        // Collect unique volumes, include default volume
         def volumes = containers.findAll { it.volumeMounts instanceof List }
             .collectMany { it.volumeMounts ?: [] }
             .unique { it.name }
@@ -36,10 +40,12 @@ class PodGenerator implements Serializable {
                 """.stripIndent()
             }.join('\n')
 
-        // Add workspace volume to avoid NullPointerException
+        // Add workspace volume and default volume
         def workspaceVolume = """
       volumes:
         - name: jenkins-workspace-volume
+          emptyDir: {}
+        - name: default-volume
           emptyDir: {}
         ${volumes}
         """.stripIndent()
