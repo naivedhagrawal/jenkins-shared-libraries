@@ -43,7 +43,7 @@ def call(Map params = [:]) {
         agent {
             kubernetes {
                 yaml podYaml
-                showRawYaml false
+                showRawYaml true
             }
         }
         stages {
