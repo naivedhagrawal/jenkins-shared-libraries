@@ -1,3 +1,15 @@
+/* def containers = [
+        [name: 'git', image: 'alpine/git:latest'],
+        [name: 'gitleak', image: 'zricethezav/gitleaks:latest'],
+        [name: 'owasp', image: 'owasp/dependency-check-action:latest'],
+        [name: 'semgrep', image: 'returntocorp/semgrep:latest'],
+        [name: 'checkov', image: 'bridgecrew/checkov:latest']
+    ]
+
+    def podYaml = PodGenerator.generatePodYaml(containers) */
+
+
+
 package com.mycompany.utils
 
 class PodGenerator implements Serializable {
@@ -12,8 +24,8 @@ class PodGenerator implements Serializable {
             - -c
             - sleep infinity
           volumeMounts:
-            - name: source-code
-              mountPath: /source
+            - name: default
+              mountPath: /default
             """
         }.join('\n')
 
@@ -24,7 +36,7 @@ class PodGenerator implements Serializable {
       containers:
     ${containerYaml}
       volumes:
-        - name: source-code
+        - name: default
           emptyDir: {}
     """
     }
