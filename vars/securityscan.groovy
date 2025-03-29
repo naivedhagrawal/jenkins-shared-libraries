@@ -30,7 +30,7 @@ def call(Map params = [:]) {
     def SEMGREP_CREDENTIALS_ID = 'SEMGREP_KEY'
 
     def containers = [
-        [name: 'git', image: 'alpine/git:latest'],
+        [name: 'git', image: 'alpine/git:latest',volumeMounts: [[name: 'git', mountPath: '/opt/git']]],
         [name: 'gitleak', image: 'zricethezav/gitleaks:latest'],
         [name: 'owasp', image: 'owasp/dependency-check-action:latest'],
         [name: 'semgrep', image: 'returntocorp/semgrep:latest'],
@@ -43,7 +43,7 @@ def call(Map params = [:]) {
         agent {
             kubernetes {
                 yaml podYaml
-                showRawYaml false
+                showRawYaml true
             }
         }
         stages {
