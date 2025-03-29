@@ -43,7 +43,7 @@ def call(Map params = [:]) {
         agent {
             kubernetes {
                 yaml podYaml
-                showRawYaml true
+                showRawYaml false
             }
         }
         stages {
@@ -52,8 +52,9 @@ def call(Map params = [:]) {
                     container('git') {
                         withEnv(["GIT_URL=${GIT_URL}", "GIT_BRANCH=${GIT_BRANCH}"]) {
                             sh '''
-                                echo "GIT_URL: $GIT_URL"
-                                echo "GIT_BRANCH: $GIT_BRANCH"
+                                echo "Cloning repository from $GIT_URL - Branch: $GIT_BRANCH"
+                                echo "Git version:"
+                                git --version
                                 echo "Cloning repository..."
                                 git config --global --add safe.directory $PWD
                                 git clone --depth=1 --branch $GIT_BRANCH $GIT_URL .
@@ -66,6 +67,9 @@ def call(Map params = [:]) {
             stage('Gitleak Check') {
                 steps {
                     container('gitleak') {
+                        sh "echo 'Gitleaks version:'"
+                        sh "gitleaks --version"
+                        sh "echo 'Running Gitleaks...'"
                         sh "gitleaks detect --source=. --report-path=${GITLEAKS_REPORT}.sarif --report-format sarif --exit-code=0"
                         /*sh "gitleaks detect --source=. --report-path=${GITLEAKS_REPORT}.json --report-format json --exit-code=0"
                         sh "gitleaks detect --source=. --report-path=${GITLEAKS_REPORT}.csv --report-format csv --exit-code=0"*/
@@ -86,6 +90,10 @@ def call(Map params = [:]) {
                     container('owasp') {
                         sh """
                                 mkdir -p reports
+                                echo "Running OWASP Dependency Check..."
+                                echo "OWASP Dependency Check version:"
+                                /usr/share/dependency-check/bin/dependency-check.sh --version
+                                echo "Scanning for vulnerabilities..."
                                 /usr/share/dependency-check/bin/dependency-check.sh --scan . \
                                     --format "SARIF" \
                                     --format "JSON" \
@@ -117,6 +125,9 @@ def call(Map params = [:]) {
                     container('semgrep') {
                         withCredentials([string(credentialsId: 'SEMGREP_KEY', variable: 'SEMGREP_KEY')]) {
                                 sh "mkdir -p reports"
+                                sh "echo 'Semgrep version:'"
+                                sh "semgrep --version"
+                                sh "echo 'Running Semgrep...'"
                                 sh "semgrep --config=auto --sarif --output reports/semgrep.sarif ."
                                 /*sh "semgrep --config=auto --json --output reports/semgrep.json ."
                                 sh "semgrep --config=auto --verbose --output reports/semgrep.txt ."*/
@@ -137,6 +148,9 @@ def call(Map params = [:]) {
             stage('Checkov Scan') {
                 steps {
                     container('checkov') {
+                        sh "echo 'Checkov version:'"
+                        sh "checkov --version"
+                        sh "echo 'Running Checkov...'"
                         sh "checkov --directory . -o sarif -o csv || true"
                             recordIssues(
                                 enabledForFailure: true,
