@@ -16,10 +16,15 @@ class PodGenerator implements Serializable {
     static String generatePodYaml(List<Map> containers) {
         def containerYaml = containers.collect { container ->
             def command = container.command ?: ['/bin/sh', '-c', 'sleep infinity']
+            def securityContext = container.securityContext && container.securityContext.privileged ? """
+          securityContext:
+            privileged: true
+            """ : ''
             """
         - name: ${container.name}
           image: ${container.image}
           tty: true
+${securityContext}
           command:
 ${command.collect { "            - ${it}" }.join('\n')}
           volumeMounts:
