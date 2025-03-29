@@ -3,7 +3,7 @@ package com.mycompany.utils
 class PodGenerator implements Serializable {
     static String generatePodYaml(List<Map> containers) {
         def containerYaml = containers.collect { container ->
-            // Ensure volumeMounts is always initialized as a list
+            // Ensure volumeMounts is always a list, even if empty
             def volumeMounts = (container.volumeMounts ?: []) as List<Map>
             
             def volumeMountsYaml = volumeMounts.collect { mount ->
@@ -21,8 +21,8 @@ class PodGenerator implements Serializable {
             - /bin/sh
             - -c
             - sleep infinity
-          ${volumeMounts ? 'volumeMounts:' : ''}
-        ${volumeMountsYaml}
+          volumeMounts:  # Always include volumeMounts, even if empty
+        ${volumeMountsYaml ?: '[]'}
             """.stripIndent()
         }.join('\n')
 
